@@ -23,3 +23,14 @@ public interface IEntity_Name
 {
 	public string Name { get; set; }
 }
+
+public interface IEntity_EditDate
+{
+	DateTime CreatedAt { get; set; }
+	DateTime LastUpdatedAt { get; set; }
+}
+
+public interface IEntity_SortOrder
+{
+	int SortOrder { get; set; }
+}

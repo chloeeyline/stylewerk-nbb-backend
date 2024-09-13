@@ -23,6 +23,17 @@ public static class Extension
 	}
 	public static void UseIEntity_Name<T>(this EntityTypeBuilder<T> b) where T : class, IEntity<T>, IEntity_Name
 	{
-		b.Property(s => s.Name).IsRequired(true).HasMaxLength(100);
+		b.Property(s => s.Name).IsRequired(true).HasMaxLength(250);
+	}
+
+	public static void UseIEntity_SortOrder<T>(this EntityTypeBuilder<T> b) where T : class, IEntity<T>, IEntity_SortOrder
+	{
+		b.Property(s => s.SortOrder).IsRequired(true);
+	}
+
+	public static void UseIEntity_EditDate<T>(this EntityTypeBuilder<T> b) where T : class, IEntity<T>, IEntity_EditDate
+	{
+		b.Property(s => s.CreatedAt).IsRequired(true).HasDefaultValueSql("NOW()");
+		b.Property(s => s.LastUpdatedAt).IsRequired(true).HasDefaultValueSql("NOW()");
 	}
 }
