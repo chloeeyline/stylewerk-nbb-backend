@@ -1,4 +1,8 @@
+using StyleWerk.NBB.Helper;
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers(options => options.UseDateOnlyTimeOnlyStringConverters());
 
 builder.Services.AddCors(options =>
 {
@@ -16,5 +20,7 @@ WebApplication app = builder.Build();
 
 app.UseRouting();
 app.UseCors();
+
+app.MapControllers();
 
 app.Run();
