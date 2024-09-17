@@ -1,11 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 
+using StyleWerk.NBB.AWS;
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Helper;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<NbbContext>(options => options.UseNpgsql(TempHelper.ConnectionString));
+SecretData secretData = builder.AddAmazonSecretsManager();
+
+builder.Services.AddDbContext<NbbContext>(options => options.UseNpgsql(secretData.GetConnectionString()));
 builder.Services.AddControllers(options => options.UseDateOnlyTimeOnlyStringConverters());
 
 builder.Services.AddCors(options =>

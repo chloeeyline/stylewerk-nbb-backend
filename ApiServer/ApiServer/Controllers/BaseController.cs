@@ -12,7 +12,8 @@ public class BaseController(NbbContext db) : Controller
 	[HttpGet(nameof(Index))]
 	public IActionResult Index()
 	{
-		return Ok(new { number = 1 });
+
+		return Ok(DB.Share_Group.ToList());
 	}
 }
 
