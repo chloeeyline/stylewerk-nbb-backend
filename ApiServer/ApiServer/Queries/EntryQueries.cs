@@ -4,7 +4,7 @@ using StyleWerk.NBB.Queries.Dto;
 
 namespace StyleWerk.NBB.Queries
 {
-    public class EntryQueries
+    public class EntryQueries : IEntryQueries
     {
         private readonly NbbContext _context;
 
