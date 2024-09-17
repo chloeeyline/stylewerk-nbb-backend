@@ -7,6 +7,10 @@
     <RootNamespace>StyleWerk.NBB</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'" />
+
   <ItemGroup>
     <PackageReference Include="AWSSDK.Core" Version="3.7.400.19" />
     <PackageReference Include="AWSSDK.SecretsManager" Version="3.7.400.19" />
