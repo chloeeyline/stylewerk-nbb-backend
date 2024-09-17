@@ -8,13 +8,18 @@ using StyleWerk.NBB.Database.User;
 
 namespace StyleWerk.NBB.Database;
 
+public static class TempHelper
+{
+	public const string ConnectionString = "User ID=postgres;Password=w9MWcR@j*L9m;Host=localhost;Port=5432;Database=stylewerk;Include Error Detail=true";
+}
+
 public class DbContextFactory : IDesignTimeDbContextFactory<NbbContext>
 {
 	public NbbContext CreateDbContext(string[] args)
 	{
 		//TODO implement AWS Secret and DB
 		//Connection string for Chloe until ported to use AWS Secrets and AWS RD (Online Database)
-		string connectionString = "User ID=postgres;Password=w9MWcR@j*L9m;Host=localhost;Port=5432;Database=stylewerk;Include Error Detail=true;";
+		string connectionString = TempHelper.ConnectionString;
 
 		DbContextOptionsBuilder<NbbContext> builder = new();
 		builder.UseNpgsql(connectionString);
