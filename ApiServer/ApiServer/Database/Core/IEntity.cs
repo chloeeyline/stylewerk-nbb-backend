@@ -35,7 +35,10 @@ public interface IConnectedEntity<TSelf> : IEntity<TSelf>
 /// </summary>
 public interface IEntity_GuidID
 {
-	public Guid ID { get; set; }
+	/// <summary>
+	/// The globally unique identifier for the entity, serving as its primary key.
+	/// </summary>
+	Guid ID { get; set; }
 }
 
 /// <summary>
@@ -43,7 +46,10 @@ public interface IEntity_GuidID
 /// </summary>
 public interface IEntity_Name
 {
-	public string Name { get; set; }
+	/// <summary>
+	/// The name of the entity.
+	/// </summary>
+	string Name { get; set; }
 }
 
 /// <summary>
@@ -51,7 +57,14 @@ public interface IEntity_Name
 /// </summary>
 public interface IEntity_EditDate
 {
+	/// <summary>
+	/// The date and time when the entity was created.
+	/// </summary>
 	DateTime CreatedAt { get; set; }
+
+	/// <summary>
+	/// The date and time when the entity was last updated.
+	/// </summary>
 	DateTime LastUpdatedAt { get; set; }
 }
 
@@ -60,5 +73,8 @@ public interface IEntity_EditDate
 /// </summary>
 public interface IEntity_SortOrder
 {
+	/// <summary>
+	/// The sort order of the entity within a list or collection.
+	/// </summary>
 	int SortOrder { get; set; }
 }

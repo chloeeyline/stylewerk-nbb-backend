@@ -10,6 +10,9 @@ namespace StyleWerk.NBB.Database.Share;
 /// </summary>
 public class Share_Group : IConnectedEntity<Share_Group>, IEntity_GuidID, IEntity_Name
 {
+	/// <summary>
+	/// <inheritdoc/>
+	/// </summary>
 	public Guid ID { get; set; }
 	/// <summary>
 	/// User ID of the group creator
