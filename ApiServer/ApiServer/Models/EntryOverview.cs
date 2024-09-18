@@ -1,7 +1,7 @@
 ﻿namespace StyleWerk.NBB.Models;
 
 ///OverView List Request
-public record Model_EntryFolders(Guid? ID, string? FolderTitle, Model_EntryItem[] Items);
+public record Model_EntryFolders(Guid? ID, string? FolderTitle, int SortOrder, Model_EntryItem[] Items);
 public record Model_EntryItem(Guid ID, string Name, string UserName, string TemplateName, DateTime CreatedAt, DateTime LastUpdatedAt, ShareType Share);
 
 /// <summary>
