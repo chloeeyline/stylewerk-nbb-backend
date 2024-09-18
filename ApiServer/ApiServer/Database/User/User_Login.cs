@@ -63,17 +63,17 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
 	/// <summary>
 	/// Navigation property for the user's detailed information.
 	/// </summary>
-	public virtual User_Information O_Information { get; set; } = new();
+	public virtual User_Information O_Information { get; set; }
 
 	/// <summary>
 	/// Navigation property for the user's rights.
 	/// </summary>
-	public virtual User_Right O_Right { get; set; } = new();
+	public virtual User_Right O_Right { get; set; }
 
 	/// <summary>
 	/// Navigation property for the user's authentication tokens.
 	/// </summary>
-	public virtual List<User_Token> O_Token { get; set; } = new List<User_Token>();
+	public virtual List<User_Token> O_Token { get; set; }
 
 	/// <summary>
 	/// Sets the user's email and updates the normalized version of the email.

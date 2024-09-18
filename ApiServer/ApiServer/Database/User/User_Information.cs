@@ -38,7 +38,7 @@ public class User_Information : IConnectedEntity<User_Information>, IEntity_Guid
 	/// <summary>
 	/// Navigation property for the user login associated with this information.
 	/// </summary>
-	public virtual User_Login O_User { get; set; } = new();
+	public virtual User_Login O_User { get; set; }
 
 	/// <summary>
 	/// <inheritdoc/>

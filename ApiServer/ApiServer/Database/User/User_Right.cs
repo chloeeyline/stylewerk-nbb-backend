@@ -23,7 +23,7 @@ public class User_Right : IConnectedEntity<User_Right>, IEntity_GuidID
 	/// <summary>
 	/// Navigation property to the associated user login entity.
 	/// </summary>
-	public virtual User_Login O_User { get; set; } = new();
+	public virtual User_Login O_User { get; set; }
 
 	/// <summary>
 	/// <inheritdoc/>

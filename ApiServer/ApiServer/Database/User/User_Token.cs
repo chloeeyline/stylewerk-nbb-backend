@@ -33,7 +33,7 @@ public class User_Token : IConnectedEntity<User_Token>
 	/// <summary>
 	/// Navigation property for the user login associated with this token.
 	/// </summary>
-	public virtual User_Login O_User { get; set; } = new();
+	public virtual User_Login O_User { get; set; }
 
 	/// <summary>
 	/// <inheritdoc/>
