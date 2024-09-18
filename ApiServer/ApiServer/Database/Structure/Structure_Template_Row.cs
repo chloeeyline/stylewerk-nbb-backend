@@ -7,13 +7,13 @@ namespace StyleWerk.NBB.Database.Structure;
 
 public class Structure_Template_Row : IConnectedEntity<Structure_Template_Row>, IEntity_GuidID, IEntity_SortOrder
 {
-	public Guid ID { get; set; } = Guid.Empty;
-	public Guid TemplateID { get; set; } = Guid.Empty;
-	public int SortOrder { get; set; } = 0;
-	public bool CanWrapCells { get; set; } = true;
+	public Guid ID { get; set; }
+	public Guid TemplateID { get; set; }
+	public int SortOrder { get; set; }
+	public bool CanWrapCells { get; set; }
 
-	public Structure_Template O_Template { get; set; } = new();
-	public List<Structure_Template_Cell> O_Cells { get; set; } = [];
+	public Structure_Template O_Template { get; set; }
+	public List<Structure_Template_Cell> O_Cells { get; set; }
 
 	public static void Build(EntityTypeBuilder<Structure_Template_Row> b)
 	{

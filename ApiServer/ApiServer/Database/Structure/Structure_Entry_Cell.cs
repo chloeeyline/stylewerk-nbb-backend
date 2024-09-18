@@ -6,13 +6,13 @@ namespace StyleWerk.NBB.Database.Structure;
 
 public class Structure_Entry_Cell : IConnectedEntity<Structure_Entry_Cell>
 {
-	public Guid EntryID { get; set; } = Guid.Empty;
-	public Guid CellID { get; set; } = Guid.Empty;
+	public Guid EntryID { get; set; }
+	public Guid CellID { get; set; }
 
-	public string Metadata { get; set; } = string.Empty;
+	public string Metadata { get; set; }
 
-	public Structure_Entry O_Entry { get; set; } = new();
-	public Structure_Template_Cell O_Cell { get; set; } = new();
+	public Structure_Entry O_Entry { get; set; }
+	public Structure_Template_Cell O_Cell { get; set; }
 
 	public static void Build(EntityTypeBuilder<Structure_Entry_Cell> b)
 	{

@@ -18,22 +18,22 @@ public class User_Token : IConnectedEntity<User_Token>
 	/// <summary>
 	/// The user agent string of the device or application where the token was issued.
 	/// </summary>
-	public string Agent { get; set; } = string.Empty;
+	public string Agent { get; set; }
 
 	/// <summary>
 	/// The actual token string used for authentication or security checks.
 	/// </summary>
-	public string RefreshToken { get; set; } = string.Empty;
+	public string RefreshToken { get; set; }
 
 	/// <summary>
 	/// The expiry date and time of the refresh token.
 	/// </summary>
-	public DateTime RefreshTokenExpiryTime { get; set; } = DateTime.UtcNow;
+	public DateTime RefreshTokenExpiryTime { get; set; }
 
 	/// <summary>
 	/// Navigation property for the user login associated with this token.
 	/// </summary>
-	public virtual User_Login O_User { get; set; } = new();
+	public virtual User_Login O_User { get; set; }
 
 	/// <summary>
 	/// <inheritdoc/>

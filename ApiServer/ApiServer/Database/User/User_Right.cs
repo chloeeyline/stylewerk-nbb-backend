@@ -18,12 +18,12 @@ public class User_Right : IConnectedEntity<User_Right>, IEntity_GuidID
 	/// <summary>
 	/// Indicates whether the user has administrative privileges.
 	/// </summary>
-	public bool Admin { get; set; } = false;
+	public bool Admin { get; set; }
 
 	/// <summary>
 	/// Navigation property to the associated user login entity.
 	/// </summary>
-	public virtual User_Login O_User { get; set; } = new();
+	public virtual User_Login O_User { get; set; }
 
 	/// <summary>
 	/// <inheritdoc/>

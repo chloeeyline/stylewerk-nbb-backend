@@ -18,62 +18,62 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
 	/// <summary>
 	/// The email address associated with the user account.
 	/// </summary>
-	public string Email { get; set; } = string.Empty;
+	public string Email { get; set; }
 
 	/// <summary>
 	/// A normalized version of the email for consistent lookups.
 	/// </summary>
-	public string EmailNormalized { get; set; } = string.Empty;
+	public string EmailNormalized { get; set; }
 
 	/// <summary>
 	/// The username associated with the user account.
 	/// </summary>
-	public string Username { get; set; } = string.Empty;
+	public string Username { get; set; }
 
 	/// <summary>
 	/// A normalized version of the username for consistent lookups.
 	/// </summary>
-	public string UsernameNormalized { get; set; } = string.Empty;
+	public string UsernameNormalized { get; set; }
 
 	/// <summary>
 	/// Hash of the user's password.
 	/// </summary>
-	public string PasswordHash { get; set; } = string.Empty;
+	public string PasswordHash { get; set; }
 
 	/// <summary>
 	/// Salt used along with the password hash.
 	/// </summary>
-	public string PasswordSalt { get; set; } = string.Empty;
+	public string PasswordSalt { get; set; }
 
 	/// <summary>
 	/// Current status code of the user, indicating states like email verification or password reset.
 	/// </summary>
-	public UserStatus StatusCode { get; set; } = UserStatus.None;
+	public UserStatus StatusCode { get; set; }
 
 	/// <summary>
 	/// Optional token used for operations such as password reset or email change verification.
 	/// </summary>
-	public Guid? StatusToken { get; set; } = null;
+	public Guid? StatusToken { get; set; }
 
 	/// <summary>
 	/// The timestamp when the status token was issued.
 	/// </summary>
-	public DateTimeOffset? StatusTokenTime { get; set; } = null;
+	public DateTimeOffset? StatusTokenTime { get; set; }
 
 	/// <summary>
 	/// Navigation property for the user's detailed information.
 	/// </summary>
-	public virtual User_Information O_Information { get; set; } = new();
+	public virtual User_Information O_Information { get; set; }
 
 	/// <summary>
 	/// Navigation property for the user's rights.
 	/// </summary>
-	public virtual User_Right O_Right { get; set; } = new();
+	public virtual User_Right O_Right { get; set; }
 
 	/// <summary>
 	/// Navigation property for the user's authentication tokens.
 	/// </summary>
-	public virtual List<User_Token> O_Token { get; set; } = new List<User_Token>();
+	public virtual List<User_Token> O_Token { get; set; }
 
 	/// <summary>
 	/// Sets the user's email and updates the normalized version of the email.

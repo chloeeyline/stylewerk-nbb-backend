@@ -8,18 +8,18 @@ namespace StyleWerk.NBB.Database.Structure;
 
 public class Structure_Template : IConnectedEntity<Structure_Template>, IEntity_GuidID, IEntity_Name, IEntity_EditDate
 {
-	public Guid ID { get; set; } = Guid.Empty;
-	public Guid UserID { get; set; } = Guid.Empty;
+	public Guid ID { get; set; }
+	public Guid UserID { get; set; }
 
-	public string Name { get; set; } = string.Empty;
-	public string? Description { get; set; } = string.Empty;
-	public bool IsPublic { get; set; } = false;
+	public string Name { get; set; }
+	public string? Description { get; set; }
+	public bool IsPublic { get; set; }
 	public DateTime CreatedAt { get; set; } = DateTime.MinValue;
 	public DateTime LastUpdatedAt { get; set; } = DateTime.MinValue;
 
-	public User_Login O_User { get; set; } = new();
-	public List<Structure_Entry> O_EntryList { get; set; } = [];
-	public List<Structure_Template_Row> O_Rows { get; set; } = [];
+	public User_Login O_User { get; set; }
+	public List<Structure_Entry> O_EntryList { get; set; }
+	public List<Structure_Template_Row> O_Rows { get; set; }
 
 	public static void Build(EntityTypeBuilder<Structure_Template> b)
 	{

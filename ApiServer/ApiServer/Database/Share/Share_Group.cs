@@ -22,7 +22,7 @@ public class Share_Group : IConnectedEntity<Share_Group>, IEntity_GuidID, IEntit
 	/// <summary>
 	/// Name of the group.
 	/// </summary>
-	public string Name { get; set; } = string.Empty;
+	public string Name { get; set; }
 
 	/// <summary>
 	/// Indicates if the group's presence is visible to others.
@@ -37,12 +37,12 @@ public class Share_Group : IConnectedEntity<Share_Group>, IEntity_GuidID, IEntit
 	/// <summary>
 	/// Navigation property for the group's user.
 	/// </summary>
-	public virtual User_Login O_User { get; set; } = new();
+	public virtual User_Login O_User { get; set; }
 
 	/// <summary>
 	/// Collection of users in the group.
 	/// </summary>
-	public virtual List<Share_GroupUser> O_GroupUser { get; set; } = new List<Share_GroupUser>();
+	public virtual List<Share_GroupUser> O_GroupUser { get; set; }
 
 	/// <summary>
 	/// <inheritdoc/>
