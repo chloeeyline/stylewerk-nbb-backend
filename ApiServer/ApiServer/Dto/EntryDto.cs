@@ -1,4 +1,6 @@
-﻿namespace StyleWerk.NBB.Dto
+﻿using System.Text.Json.Serialization;
+
+namespace StyleWerk.NBB.Dto
 {
     public class EntryDto
     {

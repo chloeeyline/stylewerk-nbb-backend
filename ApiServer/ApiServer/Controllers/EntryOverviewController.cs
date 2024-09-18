@@ -49,7 +49,7 @@ namespace StyleWerk.NBB.Controllers
 			newEntry.UserID = entry.UserId;
 			newEntry.TemplateID = entry.TemplateId;
 			newEntry.FolderID = entry.FolderId;
-
+			
 			_db.Structure_Entry.Add(newEntry);
 			_db.SaveChanges();
 
