@@ -16,10 +16,10 @@ public class Structure_Entry : IConnectedEntity<Structure_Entry>, IEntity_GuidID
 	public DateTime CreatedAt { get; set; } = DateTime.MinValue;
 	public DateTime LastUpdatedAt { get; set; } = DateTime.MinValue;
 
-	public virtual User_Login O_User { get; set; } = new();
-	public virtual Structure_Template O_Template { get; set; } = new();
-	public virtual Structure_Entry_Folder? O_Folder { get; set; } = new();
-	public virtual List<Structure_Entry_Cell> O_Cells { get; set; } = [];
+	public virtual User_Login O_User { get; set; }
+	public virtual Structure_Template O_Template { get; set; }
+	public virtual Structure_Entry_Folder? O_Folder { get; set; }
+	public virtual List<Structure_Entry_Cell> O_Cells { get; set; }
 
 	public static void Build(EntityTypeBuilder<Structure_Entry> b)
 	{

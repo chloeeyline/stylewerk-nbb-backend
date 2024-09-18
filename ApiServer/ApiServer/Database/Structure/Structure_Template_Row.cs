@@ -12,8 +12,8 @@ public class Structure_Template_Row : IConnectedEntity<Structure_Template_Row>, 
 	public int SortOrder { get; set; } = 0;
 	public bool CanWrapCells { get; set; } = true;
 
-	public Structure_Template O_Template { get; set; } = new();
-	public List<Structure_Template_Cell> O_Cells { get; set; } = [];
+	public Structure_Template O_Template { get; set; }
+	public List<Structure_Template_Cell> O_Cells { get; set; }
 
 	public static void Build(EntityTypeBuilder<Structure_Template_Row> b)
 	{

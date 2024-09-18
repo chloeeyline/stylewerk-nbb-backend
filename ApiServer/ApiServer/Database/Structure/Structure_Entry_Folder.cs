@@ -11,7 +11,7 @@ public class Structure_Entry_Folder : IConnectedEntity<Structure_Entry_Folder>, 
 	public string Name { get; set; } = string.Empty;
 	public int SortOrder { get; set; } = 0;
 
-	public List<Structure_Entry> O_EntryList { get; set; } = [];
+	public List<Structure_Entry> O_EntryList { get; set; }
 
 	public static void Build(EntityTypeBuilder<Structure_Entry_Folder> b)
 	{

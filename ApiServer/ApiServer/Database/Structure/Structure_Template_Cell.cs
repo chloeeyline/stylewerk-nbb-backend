@@ -17,8 +17,8 @@ public class Structure_Template_Cell : IConnectedEntity<Structure_Template_Cell>
 	public string? Text { get; set; } = null;
 	public string? MetaData { get; set; } = null;
 
-	public Structure_Template_Row O_Row { get; set; } = new();
-	public List<Structure_Entry_Cell> O_EntryCells { get; set; } = [];
+	public Structure_Template_Row O_Row { get; set; }
+	public List<Structure_Entry_Cell> O_EntryCells { get; set; }
 
 	public static void Build(EntityTypeBuilder<Structure_Template_Cell> b)
 	{
