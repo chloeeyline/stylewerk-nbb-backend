@@ -7,15 +7,15 @@ namespace StyleWerk.NBB.Database.Structure;
 
 public class Structure_Template_Cell : IConnectedEntity<Structure_Template_Cell>, IEntity_GuidID, IEntity_SortOrder
 {
-	public Guid ID { get; set; } = Guid.Empty;
-	public Guid RowID { get; set; } = Guid.Empty;
+	public Guid ID { get; set; }
+	public Guid RowID { get; set; }
 
-	public int SortOrder { get; set; } = 0;
-	public int InputHelper { get; set; } = -1;
-	public bool HideOnEmpty { get; set; } = false;
-	public bool IsRequiered { get; set; } = false;
-	public string? Text { get; set; } = null;
-	public string? MetaData { get; set; } = null;
+	public int SortOrder { get; set; }
+	public int InputHelper { get; set; }
+	public bool HideOnEmpty { get; set; }
+	public bool IsRequiered { get; set; }
+	public string? Text { get; set; }
+	public string? MetaData { get; set; }
 
 	public Structure_Template_Row O_Row { get; set; }
 	public List<Structure_Entry_Cell> O_EntryCells { get; set; }

@@ -7,12 +7,12 @@ namespace StyleWerk.NBB.Database.Structure;
 
 public class Structure_Entry : IConnectedEntity<Structure_Entry>, IEntity_GuidID, IEntity_EditDate
 {
-	public Guid ID { get; set; } = Guid.Empty;
+	public Guid ID { get; set; }
 
-	public string? Name { get; set; } = string.Empty;
-	public Guid UserID { get; set; } = Guid.Empty;
-	public Guid TemplateID { get; set; } = Guid.Empty;
-	public Guid? FolderID { get; set; } = Guid.Empty;
+	public string? Name { get; set; }
+	public Guid UserID { get; set; }
+	public Guid TemplateID { get; set; }
+	public Guid? FolderID { get; set; }
 	public DateTime CreatedAt { get; set; } = DateTime.MinValue;
 	public DateTime LastUpdatedAt { get; set; } = DateTime.MinValue;
 

@@ -6,10 +6,10 @@ namespace StyleWerk.NBB.Database.Structure;
 
 public class Structure_Entry_Folder : IConnectedEntity<Structure_Entry_Folder>, IEntity_GuidID, IEntity_Name, IEntity_SortOrder
 {
-	public Guid ID { get; set; } = Guid.Empty;
+	public Guid ID { get; set; }
 
-	public string Name { get; set; } = string.Empty;
-	public int SortOrder { get; set; } = 0;
+	public string Name { get; set; }
+	public int SortOrder { get; set; }
 
 	public List<Structure_Entry> O_EntryList { get; set; }
 

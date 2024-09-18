@@ -43,12 +43,12 @@ public class Share_GroupUser : IConnectedEntity<Share_GroupUser>
 	/// <summary>
 	/// Navigation property for the group.
 	/// </summary>
-	public virtual Share_Group O_Group { get; set; } = new();
+	public virtual Share_Group O_Group { get; set; }
 
 	/// <summary>
 	/// Navigation property for the user.
 	/// </summary>
-	public virtual User_Login O_User { get; set; } = new();
+	public virtual User_Login O_User { get; set; }
 
 	/// <summary>
 	/// <inheritdoc/>

@@ -18,22 +18,22 @@ public class User_Information : IConnectedEntity<User_Information>, IEntity_Guid
 	/// <summary>
 	/// The gender of the user.
 	/// </summary>
-	public UserGender Gender { get; set; } = UserGender.NotSpecified;
+	public UserGender Gender { get; set; }
 
 	/// <summary>
 	/// The first name of the user.
 	/// </summary>
-	public string FirstName { get; set; } = string.Empty;
+	public string FirstName { get; set; }
 
 	/// <summary>
 	/// The last name of the user.
 	/// </summary>
-	public string LastName { get; set; } = string.Empty;
+	public string LastName { get; set; }
 
 	/// <summary>
 	/// The birthday of the user.
 	/// </summary>
-	public DateOnly Birthday { get; set; } = new DateOnly(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.Day);
+	public DateOnly Birthday { get; set; }
 
 	/// <summary>
 	/// Navigation property for the user login associated with this information.
