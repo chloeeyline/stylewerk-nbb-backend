@@ -10,13 +10,13 @@ using StyleWerk.NBB.Queries.Dto;
 
 namespace StyleWerk.NBB.Controllers
 {
-	[ApiController, Route("Entry/Overview")]
-	public class EntryOverviewController : Controller
+    [ApiController, Route("Entry")]
+    public class EntryController : Controller
 	{
 		private readonly EntryQueries _entryQueries;
 		private readonly NbbContext _db;
 
-		public EntryOverviewController(NbbContext db, EntryQueries entryQueries)
+		public EntryController(EntryQueries entryQueries, NbbContext db)
 		{
 			_entryQueries = entryQueries;
 			_db = db;
@@ -51,8 +51,12 @@ namespace StyleWerk.NBB.Controllers
 			newEntry.Name = entry.EntryTitle;
 			newEntry.UserID = entry.UserId;
 			newEntry.TemplateID = entry.TemplateId;
-			newEntry.FolderID = entry.FolderId;
 
+			if(entry.FolderId == null)
+			{
+				newEntry.FolderID = null;
+			}
+			
 			_db.Structure_Entry.Add(newEntry);
 			_db.SaveChanges();
 

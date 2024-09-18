@@ -12,6 +12,8 @@ SecretData secretData = builder.AddAmazonSecretsManager();
 builder.Services.AddDbContext<NbbContext>(options => options.UseNpgsql(secretData.GetConnectionString()));
 builder.Services.AddScoped<IEntryQueries, EntryQueries>();
 builder.Services.AddScoped<EntryQueries>();
+builder.Services.AddScoped<ITemplateQueries, TemplateQueries>();
+builder.Services.AddScoped<TemplateQueries>();
 
 builder.Services.AddControllers(options => options.UseDateOnlyTimeOnlyStringConverters());
 
