@@ -72,7 +72,7 @@ namespace StyleWerk.NBB.Controllers
 			return Ok();
 		}
 
-		[HttpGet(nameof(AddTestUser))]
+		[HttpPost(nameof(AddTestUser))]
 		public IActionResult AddTestUser()
 		{
 			User_Login user = new()

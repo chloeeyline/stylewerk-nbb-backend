@@ -22,4 +22,4 @@ public record Model_ChangeFolder(Guid EntryID, Guid? FolderID);
 /// <param name="Username"></param>
 /// <param name="TemplateName"></param>
 /// <param name="Share"></param>
-public record Model_FilterEntry(string? Name, string? Username, string? TemplateName, ShareType Share);
+public record Model_FilterEntry(string? Name, string? Username, string? TemplateName, ShareType? Share);
