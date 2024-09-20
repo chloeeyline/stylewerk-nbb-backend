@@ -14,20 +14,19 @@ public record ApplicationUser(bool Instantiated, Guid ID, User_Login Login, User
 /// <param name="Data"></param>
 public record Model_Result(ResultType Type, int? ErrorCode, object? Data)
 {
-	public Model_Result() : this(ResultType.Success, null, null) { }
-	public Model_Result(object? data) : this(ResultType.SuccessReturnData, null, data) { }
-	public Model_Result(ResultType type) : this(type, null, null) { }
-	public Model_Result(ResultType type, int? errorCode) : this(type, errorCode, null) { }
+    public Model_Result() : this(ResultType.Success, null, null) { }
+    public Model_Result(object? data) : this(ResultType.SuccessReturnData, null, data) { }
+    public Model_Result(ResultType type) : this(type, null, null) { }
+    public Model_Result(ResultType type, int? errorCode) : this(type, errorCode, null) { }
 }
 
 public enum ResultType
 {
-	Success,
-	SuccessReturnData,
-	Authentification,
-	MissingRight,
-	NoDataFound,
-	NoDataSend,
-	ParameterRequirements
+    Success,
+    SuccessReturnData,
+    Authentification,
+    MissingRight,
+    NoDataFound,
+    NoDataSend,
+    ParameterRequirements
 }
-

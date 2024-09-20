@@ -1,121 +1,71 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using ChaosFox.Models;
+using Microsoft.AspNetCore.Mvc;
 
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Structure;
-using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Dto;
+using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
-using StyleWerk.NBB.Queries.Dto;
 
 namespace StyleWerk.NBB.Controllers
 {
     [ApiController, Route("Entry")]
     public class EntryController : Controller
-	{
-		private readonly EntryQueries _entryQueries;
-		private readonly NbbContext _db;
+    {
+        private readonly EntryQueries _entryQueries;
+        private readonly NbbContext _db;
 
-		public EntryController(EntryQueries entryQueries, NbbContext db)
-		{
-			_entryQueries = entryQueries;
-			_db = db;
-		}
+        public EntryController(NbbContext db)
+        {
+            _db = db;
+            CurrentUser = new ApplicationUser(false, Guid.Empty, new(), new(), new());
+            _entryQueries = new EntryQueries(db, CurrentUser);
+        }
 
+        private ApplicationUser CurrentUser { get; set; }
 
-		[HttpGet(nameof(Index))]
-		public IActionResult Index()
-		{
+        [HttpGet(nameof(GetEntries))]
+        public IActionResult GetEntries([FromBody] Model_FilterEntry filter)
+        {
+            var entries = _entryQueries.LoadEntryItem(filter);
+            return Ok(new Model_Result(entries));
+        }
 
-			return Ok("Lol");
-		}
+        [HttpPost(nameof(AddEntry))]
+        public IActionResult AddEntry(EntryDto entry)
+        {
+            Structure_Entry newEntry = new();
+            newEntry.Name = entry.EntryTitle;
+            newEntry.UserID = CurrentUser.ID;
+            newEntry.TemplateID = entry.TemplateId;
 
-		[HttpGet(nameof(GetEntriesByUserId))]
-		public IActionResult GetEntriesByUserId(Guid userId)
-		{
-			List<EntryViewModel> Entries = _entryQueries.LoadEntriesByUserId(userId);
-			return Ok(Entries);
-		}
+            if (entry.FolderId == null) newEntry.FolderID = null;
 
-		[HttpGet(nameof(GetEntryContent))]
-		public IActionResult GetEntryContent(Guid userId)
-		{
-			EntryContentViewModel Entry = _entryQueries.LoadEntryByUserId(userId);
-			return Ok(Entry);
-		}
+            _db.Structure_Entry.Add(newEntry);
+            _db.SaveChanges();
 
-		[HttpPost(nameof(SaveEntry))]
-		public IActionResult SaveEntry(EntryDto entry)
-		{
-			Structure_Entry newEntry = new();
-			newEntry.Name = entry.EntryTitle;
-			newEntry.UserID = entry.UserId;
-			newEntry.TemplateID = entry.TemplateId;
+            return Ok(new Model_Result());
+        }
 
-			if(entry.FolderId == null)
-			{
-				newEntry.FolderID = null;
-			}
-			
-			_db.Structure_Entry.Add(newEntry);
-			_db.SaveChanges();
+        [HttpPost(nameof(ChangeName))]
+        public IActionResult ChangeName(Model_ChangeEntryName entry)
+        {
+            var item = _db.Structure_Entry.FirstOrDefault(e => e.ID == entry.EntryID);
+            if (item != null) item.Name = entry.Name;
+            _db.SaveChanges();
 
-			return Ok();
-		}
+            return Ok(new Model_Result());
+        }
 
-		[HttpPost(nameof(UpdateEntry))]
-		public IActionResult UpdateEntry(EntryDto entry)
-		{
-			_db.Entry(entry).State = EntityState.Modified;
-			_db.SaveChanges();
+        //EntryEditor 
+        [HttpPost(nameof(DeleteEntry))]
+        public IActionResult DeleteEntry(Guid entryId)
+        {
+            var item = _db.Structure_Entry.FirstOrDefault(e => e.ID == entryId);
+            if (item != null) _db.Structure_Entry.Remove(item);
+            _db.SaveChanges();
 
-			return Ok();
-		}
-
-		[HttpPost(nameof(AddTestUser))]
-		public IActionResult AddTestUser()
-		{
-			User_Login user = new()
-			{
-				ID = Guid.NewGuid(),
-				Username = "test",
-				UsernameNormalized = "test",
-				Email = "test",
-				EmailNormalized = "test",
-				PasswordHash = "test",
-				PasswordSalt = "test",
-			};
-
-			User_Information userInformation = new()
-			{
-				ID = user.ID,
-				Gender = UserGender.NonBinary,
-				FirstName = "test",
-				LastName = "test",
-				Birthday = new DateOnly(2000, 9, 2),
-			};
-
-			User_Right userRight = new()
-			{
-				ID = user.ID,
-			};
-
-			_db.User_Login.Add(user);
-			_db.User_Information.Add(userInformation);
-			_db.User_Right.Add(userRight);
-			_db.SaveChanges();
-
-			return Ok();
-		}
-
-		[HttpPost(nameof(DeleteEntry))]
-		public IActionResult DeleteEntry(EntryDto entry)
-		{
-			_db.Entry(entry).State = EntityState.Deleted;
-			_db.SaveChanges();
-
-			return Ok();
-		}
-
-	}
+            return Ok(new Model_Result());
+        }
+    }
 }

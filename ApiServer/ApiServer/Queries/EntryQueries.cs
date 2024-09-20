@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ChaosFox.Models;
+using Microsoft.EntityFrameworkCore;
 
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Share;
@@ -7,124 +8,145 @@ using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Queries
 {
-	public class EntryQueries
-	{
-		private readonly NbbContext _context;
+    public class EntryQueries
+    {
+        private readonly NbbContext _context;
+        private readonly ApplicationUser _user;
 
-		public EntryQueries(NbbContext context)
-		{
-			_context = context;
-		}
+        public EntryQueries(NbbContext context, ApplicationUser user)
+        {
+            _user = user;
+            _context = context;
+        }
 
+        public List<Model_EntryFolders> LoadEntryFolders()
+        {
+            var entryFolders = _context.Structure_Entry_Folder
+                .OrderBy(f => f.SortOrder)
+                .Select(f => new Model_EntryFolders(f.ID, f.Name, f.SortOrder, new Model_EntryItem[0]))
+                .ToList();
 
-		//merge entries
-		public List<Model_EntryItem> LoadEntryItem(Model_FilterEntry filter)
-		{
-			List<Model_EntryItem> result = [];
-			if (filter.Share == ShareType.Own) result.AddRange(LoadUserEntryItems(filter));
-			if (filter.Share == ShareType.Group) result.AddRange(LoadGroupEntryItems(filter));
-			if (filter.Share == ShareType.Direcly) result.AddRange(LoadDirectlySharedEntryItems(filter));
-			if (filter.Share == ShareType.Public) result.AddRange(LoadPublicEntryItems(filter));
+            //alle entries die keinen folder haben 
+            IEnumerable<Structure_Entry> list = _context.Structure_Entry
+                .Where(s => s.UserID == _user.ID && s.FolderID == null)
+                .Include(s => s.O_Folder)
+                .Include(s => s.O_Template)
+                .Include(s => s.O_User);
 
-			//Dont think that it is neccacery because that should already be all unique items
-			List<Model_EntryItem> entries = result.DistinctBy(s => s.ID).ToList();
-			return entries;
-		}
+            Model_EntryItem[] result = list.Select(s => new Model_EntryItem(s, ShareType.Own)).ToArray();
+            entryFolders.Add(new Model_EntryFolders(null, null, 0, result));
+            return entryFolders;
+        }
 
-		//UserItems
-		private List<Model_EntryItem> LoadUserEntryItems(Model_FilterEntry filter)
-		{
-			Guid userID = Guid.Empty;
-			IEnumerable<Structure_Entry> list = _context.Structure_Entry
-				.Where(s => s.UserID == userID)
-				.Include(s => s.O_Folder)
-				.Include(s => s.O_Template);
+        //merge entries
+        public List<Model_EntryItem> LoadEntryItem(Model_FilterEntry filter)
+        {
+            List<Model_EntryItem> result = [];
+            if (filter.Own) result.AddRange(LoadUserEntryItems(filter));
+            if (filter.GroupShared) result.AddRange(LoadGroupEntryItems(filter));
+            if (filter.DirectlyShared) result.AddRange(LoadDirectlySharedEntryItems(filter));
+            if (filter.Public) result.AddRange(LoadPublicEntryItems(filter));
 
-			if (!string.IsNullOrEmpty(filter.Name)) list = list.Where(s => s.Name.Contains(filter.Name));
-			if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
-			if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
+            //Dont think that it is neccacery because that should already be all unique items
+            List<Model_EntryItem> entries = result.DistinctBy(s => s.ID).ToList();
+            return entries;
+        }
 
-			List<Model_EntryItem> result = list.Select(s => new Model_EntryItem(s, ShareType.Own)).ToList();
-			return result;
-		}
+        //UserItems
+        private List<Model_EntryItem> LoadUserEntryItems(Model_FilterEntry filter)
+        {
+            IEnumerable<Structure_Entry> list = _context.Structure_Entry
+                .Where(s => s.UserID == _user.ID)
+                .Include(s => s.O_Folder)
+                .Include(s => s.O_Template)
+                .Include(s => s.O_User);
 
-		//directly shared
-		private List<Model_EntryItem> LoadDirectlySharedEntryItems(Model_FilterEntry filter)
-		{
-			Guid userID = Guid.Empty;
-			List<Model_EntryItem> result = [];
+            if (!string.IsNullOrEmpty(filter.Name)) list = list.Where(s => s.Name.Contains(filter.Name));
+            if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
+            if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
 
-			IQueryable<Share_Item> sharedList = _context.Share_Item.Where(s => s.Group == false && s.ID == userID && s.ItemType == 1); //ItemType: 1 == entry
+            List<Model_EntryItem> result = list.Select(s => new Model_EntryItem(s, ShareType.Own)).ToList();
+            return result;
+        }
 
-			foreach (Share_Item? item in sharedList)
-			{
-				IEnumerable<Structure_Entry> list = _context.Structure_Entry
-				.Where(s => s.ID == item.ID)
-				.Include(s => s.O_Folder)
-				.Include(s => s.O_Template);
+        //directly shared
+        private List<Model_EntryItem> LoadDirectlySharedEntryItems(Model_FilterEntry filter)
+        {
+            List<Model_EntryItem> result = [];
 
-				if (!string.IsNullOrEmpty(filter.Name)) list = list.Where(s => s.Name.Contains(filter.Name));
-				if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
-				if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
+            IQueryable<Share_Item> sharedList = _context.Share_Item.Where(s => s.Group == false && s.ID == _user.ID && s.ItemType == 1); //ItemType: 1 == entry
 
-				//adding entries to List
-				result.AddRange(list.Select(s => new Model_EntryItem(s, ShareType.Direcly)));
-			}
+            foreach (Share_Item? item in sharedList)
+            {
+                IEnumerable<Structure_Entry> list = _context.Structure_Entry
+                .Where(s => s.ID == item.ID)
+                .Include(s => s.O_Folder)
+                .Include(s => s.O_Template)
+                .Include(s => s.O_User);
 
-			return result;
-		}
+                if (!string.IsNullOrEmpty(filter.Name)) list = list.Where(s => s.Name.Contains(filter.Name));
+                if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
+                if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
 
-		private List<Model_EntryItem> LoadPublicEntryItems(Model_FilterEntry filter)
-		{
-			List<Model_EntryItem> publicEntryItem = [];
+                //adding entries to List
+                result.AddRange(list.Select(s => new Model_EntryItem(s, ShareType.Direcly)));
+            }
 
-			IEnumerable<Structure_Entry> list = _context.Structure_Entry
-				//.Where(s => s.IsPublic)
-				.Include(s => s.O_Folder)
-				.Include(s => s.O_Template);
+            return result;
+        }
 
-			if (!string.IsNullOrEmpty(filter.Name)) list = list.Where(s => s.Name.Contains(filter.Name));
-			if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
-			if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
+        private List<Model_EntryItem> LoadPublicEntryItems(Model_FilterEntry filter)
+        {
+            List<Model_EntryItem> publicEntryItem = [];
 
-			List<Model_EntryItem> result = list.Select(s => new Model_EntryItem(s, ShareType.Public)).ToList();
-			return result;
-		}
+            IEnumerable<Structure_Entry> list = _context.Structure_Entry
+                //.Where(s => s.IsPublic)
+                .Include(s => s.O_Folder)
+                .Include(s => s.O_Template)
+                .Include(s => s.O_User);
 
-		//group items
-		private List<Model_EntryItem> LoadGroupEntryItems(Model_FilterEntry filter)
-		{
-			Guid userID = Guid.Empty;
-			List<Model_EntryItem> result = [];
+            if (!string.IsNullOrEmpty(filter.Name)) list = list.Where(s => s.Name.Contains(filter.Name));
+            if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
+            if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
 
-			//get all ShareGroups of User
-			IQueryable<Share_Group> sharedList = _context.Share_GroupUser
-				.Include(u => u.O_Group)
-				.Where(u => u.UserID == userID)
-				.Select(g => g.O_Group);
+            List<Model_EntryItem> result = list.Select(s => new Model_EntryItem(s, ShareType.Public)).ToList();
+            return result;
+        }
 
-			foreach (Share_Group? groupItem in sharedList)
-			{
-				//All shared entries in the group 
-				IQueryable<Share_Item> shareItem = _context.Share_Item.Where(s => s.Group == true && s.ID == groupItem.ID && s.ItemType == 1);
+        //group items
+        private List<Model_EntryItem> LoadGroupEntryItems(Model_FilterEntry filter)
+        {
+            List<Model_EntryItem> result = [];
 
-				foreach (Share_Item? item in shareItem)
-				{
-					IEnumerable<Structure_Entry> list = _context.Structure_Entry
-					.Where(s => s.ID == item.ID)
-					.Include(s => s.O_Folder)
-					.Include(s => s.O_Template);
+            //get all ShareGroups of User
+            IQueryable<Share_Group> sharedList = _context.Share_GroupUser
+                .Include(u => u.O_Group)
+                .Where(u => u.UserID == _user.ID)
+                .Select(g => g.O_Group);
 
-					if (!string.IsNullOrEmpty(filter.Name)) list = list.Where(s => s.Name.Contains(filter.Name));
-					if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
-					if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
+            foreach (Share_Group? groupItem in sharedList)
+            {
+                //All shared entries in the group 
+                IQueryable<Share_Item> shareItem = _context.Share_Item.Where(s => s.Group == true && s.ID == groupItem.ID && s.ItemType == 1);
 
-					//adding entries to List
-					result.AddRange(list.Select(s => new Model_EntryItem(s, ShareType.Group)));
-				}
-			}
+                foreach (Share_Item? item in shareItem)
+                {
+                    IEnumerable<Structure_Entry> list = _context.Structure_Entry
+                    .Where(s => s.ID == item.ID)
+                    .Include(s => s.O_Folder)
+                    .Include(s => s.O_Template)
+                    .Include(s => s.O_User);
 
-			return result;
-		}
-	}
+                    if (!string.IsNullOrEmpty(filter.Name)) list = list.Where(s => s.Name.Contains(filter.Name));
+                    if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
+                    if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
+
+                    //adding entries to List
+                    result.AddRange(list.Select(s => new Model_EntryItem(s, ShareType.Group)));
+                }
+            }
+
+            return result;
+        }
+    }
 }
