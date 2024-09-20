@@ -16,6 +16,7 @@ public class Structure_Template : IConnectedEntity<Structure_Template>, IEntity_
 	public bool IsPublic { get; set; }
 	public DateTime CreatedAt { get; set; } = DateTime.MinValue;
 	public DateTime LastUpdatedAt { get; set; } = DateTime.MinValue;
+	public string[]? Tags { get; set; }
 
 	public User_Login O_User { get; set; }
 	public List<Structure_Entry> O_EntryList { get; set; }
