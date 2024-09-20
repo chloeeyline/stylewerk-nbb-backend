@@ -10,74 +10,202 @@ namespace StyleWerk.NBB.Controllers;
 
 [ApiController, AllowAnonymous, Route("Auth")]
 
-public class AuthController(NbbContext db, IAuthenticationService Authentication) : BaseController(db)
+public class AuthController(NbbContext db, AuthenticationService Authentication) : BaseController(db)
 {
-	private string UserAgent => Request.Headers.UserAgent.ToString();
+    private string UserAgent => Request.Headers.UserAgent.ToString();
 
-	[HttpPost(nameof(Login))]
-	public IActionResult Login([FromBody] Model_Login? model)
-	{
-		if (model is null)
-			return Ok(new Model_Result(ResultType.NoDataSend));
+    protected override bool MissingRight(UserRight right) => false;
 
-		AuthenticationWarning warning = Authentication.GetUser(model, out User_Login user);
-		if (warning is not AuthenticationWarning.None)
-			return Ok(new Model_Result(warning));
+    #region Login
+    [HttpPost(nameof(Login))]
+    public IActionResult Login([FromBody] Model_Login? model)
+    {
+        try
+        {
+            User_Login user = Authentication.GetUser(model);
+            Model_Token accessToken = Authentication.GetAccessToken(user);
+            Model_Token refreshToken = Authentication.GetRefreshToken(user.ID, UserAgent, model.ConsistOverSession);
+            AuthenticationResult result = new(accessToken, refreshToken, "", new Model_RightList(user.O_Right));
 
-		warning = Authentication.GetLoginToken(user, out string loginToken);
-		if (warning is not AuthenticationWarning.None)
-			return Ok(new Model_Result(warning));
+            return Ok(new Model_Result(result));
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
 
-		string refreshToken = model.RememberMe ? Authentication.GetRefreshToken(user.ID, UserAgent) : "";
-		Model_LoginResult result = Authentication.GetLoginResult(user.ID, loginToken, refreshToken);
+    [HttpPost(nameof(RefreshToken))]
+    public IActionResult RefreshToken([FromBody] Model_RefreshToken model)
+    {
+        try
+        {
+            User_Login user = Authentication.GetUser(model, UserAgent);
+            Model_Token accessToken = Authentication.GetAccessToken(user);
+            Model_Token refreshToken = Authentication.GetRefreshToken(user.ID, UserAgent, model.ConsistOverSession);
+            AuthenticationResult result = new(accessToken, refreshToken, "", new Model_RightList(user.O_Right));
 
-		return Ok(new Model_Result(result));
-	}
+            return Ok(new Model_Result(result));
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
+    #endregion
 
-	[HttpPost(nameof(AutoLogin))]
-	public IActionResult AutoLogin([FromBody] string refreshToken)
-	{
-		AuthenticationWarning warning = Authentication.GetUserFromRefreshToken(UserAgent, refreshToken, out User_Login user);
-		if (warning is not AuthenticationWarning.None)
-			return Ok(new Model_Result(warning));
+    #region Registration
+    [HttpPost(nameof(Registration))]
+    public IActionResult Registration([FromBody] Model_Registration? model)
+    {
+        try
+        {
+            Authentication.Registration(model);
+            return Ok(new Model_Result());
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
 
-		warning = Authentication.GetLoginToken(user, out string loginToken);
-		if (warning is not AuthenticationWarning.None)
-			return Ok(new Model_Result(warning));
+    [HttpPost(nameof(VerifyEmail))]
+    public IActionResult VerifyEmail(Guid? token)
+    {
+        try
+        {
+            Authentication.VerifyEmail(token);
+            return Ok(new Model_Result());
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
+    #endregion
 
-		refreshToken = Authentication.GetRefreshToken(user.ID, UserAgent);
-		Model_LoginResult result = Authentication.GetLoginResult(user.ID, loginToken, refreshToken);
+    #region Forgot Password
+    [HttpPost(nameof(RequestPasswordReset))]
+    public IActionResult RequestPasswordReset(string email)
+    {
+        try
+        {
+            Authentication.RequestPasswordReset(email);
+            return Ok(new Model_Result());
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
 
-		return Ok(new Model_Result(result));
-	}
+    [HttpPost(nameof(ResetPassword))]
+    public IActionResult ResetPassword([FromBody] Model_ResetPassword? model)
+    {
+        try
+        {
+            Authentication.ResetPassword(model);
+            return Ok(new Model_Result());
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
+    #endregion
 
-	[HttpPost(nameof(Registration))]
-	public IActionResult Registration([FromBody] Model_Registration? model)
-	{
-		AuthenticationWarning warning = Authentication.Registration(model);
-		return warning is not AuthenticationWarning.None ? Ok(new Model_Result(warning)) : Ok(new Model_Result());
-	}
+    #region Userdata
+    //Muss angemeldet sein
+    [HttpPost(nameof(UpdateEmail))]
+    public IActionResult UpdateEmail(string? email)
+    {
+        try
+        {
+            return Ok(new Model_Result());
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
 
-	[HttpPost(nameof(EmailVerification))]
-	public IActionResult EmailVerification([FromBody] Model_VerifyEmail model)
-	{
-		AuthenticationWarning warning = Authentication.VerifyEmail(model);
-		return warning is not AuthenticationWarning.None ? Ok(new Model_Result(warning)) : Ok(new Model_Result());
-	}
+    //Muss angemeldet sein
+    [HttpPost(nameof(VerifyUpdatedEmail))]
+    public IActionResult VerifyUpdatedEmail(Guid? token)
+    {
+        try
+        {
+            return Ok(new Model_Result());
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
 
-	[HttpPost(nameof(ResetPassword))]
-	public IActionResult ResetPassword([FromBody] Model_ResetPassword? model)
-	{
-		AuthenticationWarning warning = Authentication.ResetPassword(model);
-		return warning is not AuthenticationWarning.None ? Ok(new Model_Result(warning)) : Ok(new Model_Result());
-	}
+    //Muss angemeldet sein
+    [HttpPost(nameof(GetUserData))]
+    public IActionResult GetUserData()
+    {
+        try
+        {
+            return Ok(new Model_Result());
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
 
-	[HttpPost(nameof(ValidatePassword))]
-	public IActionResult ValidatePassword(string password)
-	{
-		PasswordError warning = Authentication.ValidatePassword(password);
-		return Ok(new Model_Result(warning));
-	}
+    //Muss angemeldet sein
+    [HttpPost(nameof(UpdateUserData))]
+    public IActionResult UpdateUserData([FromBody] Model_Userdata model)
+    {
+        try
+        {
+            return Ok(new Model_Result());
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
+    #endregion
 
-	protected override bool MissingRight(UserRight right) => false;
+    #region Validation
+    [HttpPost(nameof(ValidatePassword))]
+    public IActionResult ValidatePassword(string password)
+    {
+        PasswordError warning = Authentication.ValidatePassword(password);
+        return Ok(new Model_Result(warning));
+    }
+
+    [HttpPost(nameof(ValidateEmail))]
+    public IActionResult ValidateEmail(string? email)
+    {
+        try
+        {
+            Authentication.ValidateEmail(email);
+            return Ok(new Model_Result());
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
+
+    [HttpPost(nameof(ValidateUsername))]
+    public IActionResult ValidateUsername(string? username)
+    {
+        try
+        {
+            Authentication.ValidateEmail(username);
+            return Ok(new Model_Result());
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
+    #endregion
 }

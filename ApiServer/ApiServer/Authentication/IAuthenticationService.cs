@@ -4,17 +4,22 @@ namespace StyleWerk.NBB.Authentication;
 
 public interface IAuthenticationService
 {
-	public AuthenticationWarning GetUser(Model_Login? model, out User_Login user);
-	public AuthenticationWarning GetUserFromRefreshToken(string userAgent, string refreshToken, out User_Login user);
+    User_Login GetUser(Model_Login? model);
+    User_Login GetUser(Model_RefreshToken? model, string userAgent);
 
-	public AuthenticationWarning GetLoginToken(User_Login user, out string loginToken);
-	public string GetRefreshToken(Guid userID, string UserAgent, bool rememberMe);
+    Model_Token GetAccessToken(User_Login user);
+    Model_Token GetRefreshToken(Guid userID, string userAgent, bool consistOverSession);
 
-	public AuthenticationWarning Registration(Model_Registration? model);
-	public AuthenticationWarning VerifyEmail(Model_VerifyEmail? model);
-	public AuthenticationWarning RequestPasswordReset(string user);
-	public AuthenticationWarning ResetPassword(Model_ResetPassword? model);
-	public PasswordError ValidatePassword(string password);
+    void Registration(Model_Registration? model);
+    void VerifyEmail(Guid? token);
 
-	public Model_LoginResult GetLoginResult(Guid userID, string loginToken, string refreshToken);
+    void RequestPasswordReset(string email);
+    void ResetPassword(Model_ResetPassword? model);
+    void UpdateEmail(string? email);
+    void VerifiyUpdatedEmail(Guid? token);
+    void GetUserData();
+    void UpdateUserData(Model_Userdata? model);
+    string ValidateEmail(string? email);
+    PasswordError ValidatePassword(string? password);
+    string ValidateUsername(string? username);
 }

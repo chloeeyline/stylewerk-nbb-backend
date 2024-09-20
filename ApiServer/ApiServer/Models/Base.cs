@@ -1,10 +1,6 @@
-﻿using StyleWerk.NBB.Database.User;
-
-namespace StyleWerk.NBB.Models;
+﻿namespace StyleWerk.NBB.Models;
 
 public record PagingList<T>(int Count, int Page, int MaxPage, int PerPage, List<T> Items);
-
-public record ApplicationUser(bool Instantiated, Guid ID, User_Login Login, User_Information Information, User_Right Right);
 
 /// <summary>
 /// The default Model to always wrap the results of a requests from the frontend
