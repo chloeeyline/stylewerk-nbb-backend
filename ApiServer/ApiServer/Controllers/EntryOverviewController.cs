@@ -9,14 +9,14 @@ using StyleWerk.NBB.Queries;
 namespace StyleWerk.NBB.Controllers
 {
     [ApiController, Route("EntryOverview")]
-    public class EntryController : Controller
+    public class EntryOverviewController : Controller
     {
         private readonly EntryQueries _entryQueries;
         private readonly NbbContext _db;
 
         private ApplicationUser CurrentUser { get; set; }
 
-        public EntryController(NbbContext db)
+        public EntryOverviewController(NbbContext db)
         {
             _db = db;
             CurrentUser = new ApplicationUser(false, CurrentUser.ID, new(), new(), new());
