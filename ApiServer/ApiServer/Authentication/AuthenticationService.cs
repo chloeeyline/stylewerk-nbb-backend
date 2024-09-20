@@ -35,7 +35,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             throw new AuthenticationException(AuthenticationWarning.ModelIncorrect);
 
         string userName = model.Username.ToLower().Normalize();
-        User_Login? user = DB.User_Login.FirstOrDefault(s => s.UsernameNormalized == userName)
+        User_Login? user = DB.User_Login.Include(s => s.O_Information).Include(s => s.O_Right).FirstOrDefault(s => s.UsernameNormalized == userName)
             ?? throw new AuthenticationException(AuthenticationWarning.NoUserFound);
 
         string hashedPassword = HashPassword(model.Password, user.PasswordSalt);
@@ -59,7 +59,10 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         if (DateTime.UtcNow >= token.RefreshTokenExpiryTime)
             throw new AuthenticationException(AuthenticationWarning.RefreshTokenExpired);
 
-        return token.O_User;
+        User_Login? user = DB.User_Login.Include(s => s.O_Information).Include(s => s.O_Right).FirstOrDefault(s => s.ID == token.ID)
+        ?? throw new AuthenticationException(AuthenticationWarning.NoUserFound);
+
+        return user;
     }
 
     public Model_Token GetAccessToken(User_Login user)
@@ -138,9 +141,9 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         {
             ID = Guid.NewGuid(),
             Username = model.Username,
-            UsernameNormalized = model.Username.ToLower().Normalize(),
+            UsernameNormalized = username,
             Email = model.Email,
-            EmailNormalized = model.Username.ToLower().Normalize(),
+            EmailNormalized = email,
             PasswordHash = HashPassword(model.Password, salt),
             PasswordSalt = salt,
             StatusToken = GetStatusToken(),

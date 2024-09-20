@@ -1,6 +1,6 @@
-﻿using ChaosFox.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
+using StyleWerk.NBB.Authentication;
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;

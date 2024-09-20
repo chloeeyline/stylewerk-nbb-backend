@@ -10,7 +10,7 @@ namespace StyleWerk.NBB.Controllers;
 
 [ApiController, AllowAnonymous, Route("Auth")]
 
-public class AuthController(NbbContext db, AuthenticationService Authentication) : BaseController(db)
+public class AuthController(NbbContext db, IAuthenticationService Authentication) : BaseController(db)
 {
     private string UserAgent => Request.Headers.UserAgent.ToString();
 
@@ -25,7 +25,7 @@ public class AuthController(NbbContext db, AuthenticationService Authentication)
             User_Login user = Authentication.GetUser(model);
             Model_Token accessToken = Authentication.GetAccessToken(user);
             Model_Token refreshToken = Authentication.GetRefreshToken(user.ID, UserAgent, model.ConsistOverSession);
-            AuthenticationResult result = new(accessToken, refreshToken, "", new Model_RightList(user.O_Right));
+            AuthenticationResult result = new(accessToken, refreshToken, user.Username, new Model_RightList(user.O_Right));
 
             return Ok(new Model_Result(result));
         }
@@ -43,7 +43,7 @@ public class AuthController(NbbContext db, AuthenticationService Authentication)
             User_Login user = Authentication.GetUser(model, UserAgent);
             Model_Token accessToken = Authentication.GetAccessToken(user);
             Model_Token refreshToken = Authentication.GetRefreshToken(user.ID, UserAgent, model.ConsistOverSession);
-            AuthenticationResult result = new(accessToken, refreshToken, "", new Model_RightList(user.O_Right));
+            AuthenticationResult result = new(accessToken, refreshToken, user.Username, new Model_RightList(user.O_Right));
 
             return Ok(new Model_Result(result));
         }
