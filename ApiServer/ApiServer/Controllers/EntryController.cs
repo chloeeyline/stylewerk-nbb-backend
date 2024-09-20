@@ -3,43 +3,59 @@ using Microsoft.AspNetCore.Mvc;
 
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Structure;
-using StyleWerk.NBB.Dto;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
 namespace StyleWerk.NBB.Controllers
 {
-    [ApiController, Route("Entry")]
+    [ApiController, Route("EntryOverview")]
     public class EntryController : Controller
     {
         private readonly EntryQueries _entryQueries;
         private readonly NbbContext _db;
 
+        private ApplicationUser CurrentUser { get; set; }
+
         public EntryController(NbbContext db)
         {
             _db = db;
-            CurrentUser = new ApplicationUser(false, Guid.Empty, new(), new(), new());
+            CurrentUser = new ApplicationUser(false, CurrentUser.ID, new(), new(), new());
             _entryQueries = new EntryQueries(db, CurrentUser);
         }
 
-        private ApplicationUser CurrentUser { get; set; }
+        [HttpGet(nameof(GetFolders))]
+        public IActionResult GetFolders()
+        {
+            List<Model_EntryFolders> entries = _entryQueries.LoadEntryFolders();
+            return Ok(new Model_Result(entries));
+        }
 
-        [HttpGet(nameof(GetEntries))]
+        [HttpGet(nameof(GetEntriesFromFolder))]
+        public IActionResult GetEntriesFromFolder(Guid folderId)
+        {
+            List<Model_EntryItem> entries = _entryQueries.GetEntriesFromFolder(folderId);
+            return Ok(new Model_Result(entries));
+        }
+
+        [HttpPost(nameof(GetEntries))]
         public IActionResult GetEntries([FromBody] Model_FilterEntry filter)
         {
-            var entries = _entryQueries.LoadEntryItem(filter);
+            List<Model_EntryItem> entries = _entryQueries.LoadEntryItem(filter);
             return Ok(new Model_Result(entries));
         }
 
         [HttpPost(nameof(AddEntry))]
-        public IActionResult AddEntry(EntryDto entry)
+        public IActionResult AddEntry([FromBody] Model_AddEntry entry)
         {
-            Structure_Entry newEntry = new();
-            newEntry.Name = entry.EntryTitle;
-            newEntry.UserID = CurrentUser.ID;
-            newEntry.TemplateID = entry.TemplateId;
+            Structure_Entry newEntry = new()
+            {
+                Name = entry.Name,
+                UserID = CurrentUser.ID,
+                TemplateID = entry.TemplateId
+            };
 
-            if (entry.FolderId == null) newEntry.FolderID = null;
+            if (entry.FolderId == null)
+                newEntry.FolderID = null;
 
             _db.Structure_Entry.Add(newEntry);
             _db.SaveChanges();
@@ -47,23 +63,49 @@ namespace StyleWerk.NBB.Controllers
             return Ok(new Model_Result());
         }
 
-        [HttpPost(nameof(ChangeName))]
-        public IActionResult ChangeName(Model_ChangeEntryName entry)
+        [HttpPost(nameof(AddFolder))]
+        public IActionResult AddFolder([FromBody] Model_AddFolder folder)
         {
-            var item = _db.Structure_Entry.FirstOrDefault(e => e.ID == entry.EntryID);
+            bool isFilled = _db.Structure_Entry_Folder.Any();
+            int sortOrder = isFilled ? (_db.Structure_Entry_Folder.Max(f => f.SortOrder) + 1) : 1;
+
+            Structure_Entry_Folder newFolder = new()
+            {
+                Name = folder.Name,
+                SortOrder = sortOrder,
+                UserID = folder.UserId
+            };
+
+            _db.Structure_Entry_Folder.Add(newFolder);
+            _db.SaveChanges();
+
+            return Ok(new Model_Result());
+        }
+
+        [HttpPost(nameof(ChangeEntryName))]
+        public IActionResult ChangeEntryName(Model_ChangeEntryName entry)
+        {
+            Structure_Entry? item = _db.Structure_Entry.FirstOrDefault(e => e.ID == entry.EntryID);
             if (item != null) item.Name = entry.Name;
             _db.SaveChanges();
 
             return Ok(new Model_Result());
         }
 
-        //EntryEditor 
-        [HttpPost(nameof(DeleteEntry))]
-        public IActionResult DeleteEntry(Guid entryId)
+        [HttpPost(nameof(ChangeFolder))]
+        public IActionResult ChangeFolder([FromBody] Model_ChangeFolder folder)
         {
-            var item = _db.Structure_Entry.FirstOrDefault(e => e.ID == entryId);
-            if (item != null) _db.Structure_Entry.Remove(item);
+            Structure_Entry? item = _db.Structure_Entry.FirstOrDefault(e => e.ID == folder.EntryID);
+            if (item != null)
+                item.FolderID = folder.FolderID;
             _db.SaveChanges();
+
+            return Ok(new Model_Result());
+        }
+
+        [HttpPost(nameof(DragAndDrop))]
+        public IActionResult DragAndDrop([FromBody] Model_ListFolderSortOrder listFolder)
+        {
 
             return Ok(new Model_Result());
         }

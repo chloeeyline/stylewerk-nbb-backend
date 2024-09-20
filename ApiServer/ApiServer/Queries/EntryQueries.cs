@@ -19,33 +19,50 @@ namespace StyleWerk.NBB.Queries
             _context = context;
         }
 
+        //get entries from specific folder by folderId
+        public List<Model_EntryItem> GetEntriesFromFolder(Guid folderId)
+        {
+            List<Model_EntryItem> list = _context.Structure_Entry
+                .Include(e => e.O_Folder)
+                .Include(e => e.O_Template)
+                .Include(e => e.O_User)
+                .Where(e => e.FolderID == folderId)
+                .Select(e => new Model_EntryItem(e, new ShareTypes(true, false, false, false))).ToList();
+
+            return list;
+        }
+
+        //Default
         public List<Model_EntryFolders> LoadEntryFolders()
         {
-            var entryFolders = _context.Structure_Entry_Folder
+            List<Model_EntryFolders> entryFolders = _context.Structure_Entry_Folder
                 .OrderBy(f => f.SortOrder)
+                .Where(f => f.UserID == _user.ID)
                 .Select(f => new Model_EntryFolders(f.ID, f.Name, f.SortOrder, new Model_EntryItem[0]))
                 .ToList();
 
-            //alle entries die keinen folder haben 
+            //all Entries without Folder
             IEnumerable<Structure_Entry> list = _context.Structure_Entry
                 .Where(s => s.UserID == _user.ID && s.FolderID == null)
                 .Include(s => s.O_Folder)
                 .Include(s => s.O_Template)
                 .Include(s => s.O_User);
 
-            Model_EntryItem[] result = list.Select(s => new Model_EntryItem(s, ShareType.Own)).ToArray();
+            Model_EntryItem[] result = list.Select(s => new Model_EntryItem(s, new ShareTypes(true, false, false, false))).ToArray();
             entryFolders.Add(new Model_EntryFolders(null, null, 0, result));
             return entryFolders;
         }
 
-        //merge entries
+        //Filter
         public List<Model_EntryItem> LoadEntryItem(Model_FilterEntry filter)
         {
             List<Model_EntryItem> result = [];
-            if (filter.Own) result.AddRange(LoadUserEntryItems(filter));
-            if (filter.GroupShared) result.AddRange(LoadGroupEntryItems(filter));
-            if (filter.DirectlyShared) result.AddRange(LoadDirectlySharedEntryItems(filter));
-            if (filter.Public) result.AddRange(LoadPublicEntryItems(filter));
+            filter = filter with { Username = filter.Username?.Normalize().ToLower() };
+
+            if (filter.Share.Own && string.IsNullOrEmpty(filter.Username)) result.AddRange(LoadUserEntryItems(filter));
+            if (filter.Share.GroupShared || !string.IsNullOrEmpty(filter.Username)) result.AddRange(LoadGroupEntryItems(filter));
+            if (filter.Share.DirectlyShared || !string.IsNullOrEmpty(filter.Username)) result.AddRange(LoadDirectlySharedEntryItems(filter));
+            if (filter.Share.Public || !string.IsNullOrEmpty(filter.Username)) result.AddRange(LoadPublicEntryItems(filter));
 
             //Dont think that it is neccacery because that should already be all unique items
             List<Model_EntryItem> entries = result.DistinctBy(s => s.ID).ToList();
@@ -65,7 +82,7 @@ namespace StyleWerk.NBB.Queries
             if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
             if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
 
-            List<Model_EntryItem> result = list.Select(s => new Model_EntryItem(s, ShareType.Own)).ToList();
+            List<Model_EntryItem> result = list.Select(s => new Model_EntryItem(s, new ShareTypes(true, false, false, false))).ToList();
             return result;
         }
 
@@ -84,12 +101,13 @@ namespace StyleWerk.NBB.Queries
                 .Include(s => s.O_Template)
                 .Include(s => s.O_User);
 
-                if (!string.IsNullOrEmpty(filter.Name)) list = list.Where(s => s.Name.Contains(filter.Name));
+                if (!string.IsNullOrEmpty(filter.Name) && !filter.directUser) list = list.Where(s => s.Name.Contains(filter.Name));
+                if (!string.IsNullOrEmpty(filter.Name) && filter.directUser) list = list.Where(s => s.Name == filter.Name);
                 if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
                 if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
 
                 //adding entries to List
-                result.AddRange(list.Select(s => new Model_EntryItem(s, ShareType.Direcly)));
+                result.AddRange(list.Select(s => new Model_EntryItem(s, new ShareTypes(false, false, false, true))));
             }
 
             return result;
@@ -105,11 +123,12 @@ namespace StyleWerk.NBB.Queries
                 .Include(s => s.O_Template)
                 .Include(s => s.O_User);
 
-            if (!string.IsNullOrEmpty(filter.Name)) list = list.Where(s => s.Name.Contains(filter.Name));
+            if (!string.IsNullOrEmpty(filter.Name) && !filter.directUser) list = list.Where(s => s.Name.Contains(filter.Name));
+            if (!string.IsNullOrEmpty(filter.Name) && filter.directUser) list = list.Where(s => s.Name == filter.Name);
             if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
             if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
 
-            List<Model_EntryItem> result = list.Select(s => new Model_EntryItem(s, ShareType.Public)).ToList();
+            List<Model_EntryItem> result = list.Select(s => new Model_EntryItem(s, new ShareTypes(false, false, true, false))).ToList();
             return result;
         }
 
@@ -137,12 +156,13 @@ namespace StyleWerk.NBB.Queries
                     .Include(s => s.O_Template)
                     .Include(s => s.O_User);
 
-                    if (!string.IsNullOrEmpty(filter.Name)) list = list.Where(s => s.Name.Contains(filter.Name));
+                    if (!string.IsNullOrEmpty(filter.Name) && !filter.directUser) list = list.Where(s => s.Name.Contains(filter.Name));
+                    if (!string.IsNullOrEmpty(filter.Name) && filter.directUser) list = list.Where(s => s.Name == filter.Name);
                     if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
                     if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
 
                     //adding entries to List
-                    result.AddRange(list.Select(s => new Model_EntryItem(s, ShareType.Group)));
+                    result.AddRange(list.Select(s => new Model_EntryItem(s, new ShareTypes(false, true, false, false))));
                 }
             }
 
