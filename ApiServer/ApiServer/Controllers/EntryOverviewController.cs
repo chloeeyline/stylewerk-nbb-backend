@@ -1,25 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-using StyleWerk.NBB.Authentication;
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Structure;
+using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
 namespace StyleWerk.NBB.Controllers
 {
     [ApiController, Route("EntryOverview")]
-    public class EntryOverviewController : Controller
+    public class EntryOverviewController : BaseController
     {
         private readonly EntryQueries _entryQueries;
-        private readonly NbbContext _db;
 
-        private ApplicationUser CurrentUser { get; set; }
-
-        public EntryOverviewController(NbbContext db)
+        public EntryOverviewController(NbbContext db) : base(db)
         {
-            _db = db;
-            CurrentUser = new ApplicationUser(false, CurrentUser.ID, new(), new(), new());
             _entryQueries = new EntryQueries(db, CurrentUser);
         }
 
@@ -57,8 +52,8 @@ namespace StyleWerk.NBB.Controllers
             if (entry.FolderId == null)
                 newEntry.FolderID = null;
 
-            _db.Structure_Entry.Add(newEntry);
-            _db.SaveChanges();
+            DB.Structure_Entry.Add(newEntry);
+            DB.SaveChanges();
 
             return Ok(new Model_Result());
         }
@@ -66,8 +61,8 @@ namespace StyleWerk.NBB.Controllers
         [HttpPost(nameof(AddFolder))]
         public IActionResult AddFolder([FromBody] Model_AddFolder folder)
         {
-            bool isFilled = _db.Structure_Entry_Folder.Any();
-            int sortOrder = isFilled ? (_db.Structure_Entry_Folder.Max(f => f.SortOrder) + 1) : 1;
+            bool isFilled = DB.Structure_Entry_Folder.Any();
+            int sortOrder = isFilled ? (DB.Structure_Entry_Folder.Max(f => f.SortOrder) + 1) : 1;
 
             Structure_Entry_Folder newFolder = new()
             {
@@ -76,8 +71,8 @@ namespace StyleWerk.NBB.Controllers
                 UserID = folder.UserId
             };
 
-            _db.Structure_Entry_Folder.Add(newFolder);
-            _db.SaveChanges();
+            DB.Structure_Entry_Folder.Add(newFolder);
+            DB.SaveChanges();
 
             return Ok(new Model_Result());
         }
@@ -85,9 +80,9 @@ namespace StyleWerk.NBB.Controllers
         [HttpPost(nameof(ChangeEntryName))]
         public IActionResult ChangeEntryName(Model_ChangeEntryName entry)
         {
-            Structure_Entry? item = _db.Structure_Entry.FirstOrDefault(e => e.ID == entry.EntryID);
+            Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == entry.EntryID);
             if (item != null) item.Name = entry.Name;
-            _db.SaveChanges();
+            DB.SaveChanges();
 
             return Ok(new Model_Result());
         }
@@ -95,10 +90,10 @@ namespace StyleWerk.NBB.Controllers
         [HttpPost(nameof(ChangeFolder))]
         public IActionResult ChangeFolder([FromBody] Model_ChangeFolder folder)
         {
-            Structure_Entry? item = _db.Structure_Entry.FirstOrDefault(e => e.ID == folder.EntryID);
+            Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == folder.EntryID);
             if (item != null)
                 item.FolderID = folder.FolderID;
-            _db.SaveChanges();
+            DB.SaveChanges();
 
             return Ok(new Model_Result());
         }
@@ -109,5 +104,6 @@ namespace StyleWerk.NBB.Controllers
 
             return Ok(new Model_Result());
         }
+        protected override bool MissingRight(UserRight right) => throw new NotImplementedException();
     }
 }
