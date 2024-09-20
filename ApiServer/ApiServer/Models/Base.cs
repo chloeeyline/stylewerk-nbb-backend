@@ -1,6 +1,10 @@
-﻿namespace ChaosFox.Models;
+﻿using StyleWerk.NBB.Database.User;
+
+namespace ChaosFox.Models;
 
 public record PagingList<T>(int Count, List<T> Items);
+
+public record ApplicationUser(bool Instantiated, Guid ID, User_Login Login, User_Information Information, User_Right Right);
 
 /// <summary>
 /// The default Model to always wrap the results of a requests from the frontend
