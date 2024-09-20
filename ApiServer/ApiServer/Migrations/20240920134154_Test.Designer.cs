@@ -12,8 +12,8 @@ using StyleWerk.NBB.Database;
 namespace StyleWerk.NBB.Migrations
 {
     [DbContext(typeof(NbbContext))]
-    [Migration("20240920133336_UserIdToFilder")]
-    partial class UserIdToFilder
+    [Migration("20240920134154_Test")]
+    partial class Test
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
