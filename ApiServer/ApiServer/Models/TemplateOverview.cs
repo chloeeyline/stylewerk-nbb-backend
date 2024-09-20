@@ -1,6 +1,4 @@
-﻿using ChaosFox.Models;
-
-namespace StyleWerk.NBB.Models;
+﻿namespace StyleWerk.NBB.Models;
 
 
 public record TemplateOVerview(int Count, List<TemplateItem> Items) : PagingList<TemplateItem>(Count, Items);

@@ -1,9 +1,5 @@
 ﻿using System.Text.Json;
 
-using Amazon;
-using Amazon.SecretsManager;
-using Amazon.SecretsManager.Model;
-
 namespace StyleWerk.NBB.AWS;
 
 public static class AmazonSecretsManager
@@ -55,14 +51,22 @@ public static class AmazonSecretsManager
 							"w9MWcR@j*L9m",
 							"localhost",
 							"5432",
-							"stylewerk"
+							"stylewerk",
+							"xxx",
+							"http://localhost:5115",
+							"http://localhost:5115",
+							"xxx"
 						),
 			_ => new SecretData(
 							"postgres",
 							"w9MWcR@j*L9m",
 							"localhost",
 							"5432",
-							"stylewerk"
+							"stylewerk",
+							"xxx",
+							"http://localhost:5115",
+							"http://localhost:5115",
+							"xxx"
 						),
 		};
 		return JsonSerializer.Serialize(debugSecretData);
@@ -107,7 +111,7 @@ public class AmazonSecretsManagerConfigurationSource() : IConfigurationSource
 	public IConfigurationProvider Build(IConfigurationBuilder builder) => new AmazonSecretsManagerConfigurationProvider();
 }
 
-public record SecretData(string DbUser, string DbPassword, string DbHost, string DbPort, string DbDatabase)
+public record SecretData(string DbUser, string DbPassword, string DbHost, string DbPort, string DbDatabase, string JwtKey, string JwtIssuer, string JwtAudience, string PasswortPepper)
 {
-	public SecretData() : this("", "", "", "", "") { }
+	public SecretData() : this("", "", "", "", "", "", "", "", "") { }
 }

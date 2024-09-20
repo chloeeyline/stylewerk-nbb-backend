@@ -1,4 +1,4 @@
-﻿using ChaosFox.Models;
+﻿using StyleWerk.NBB.Models;
 using Microsoft.EntityFrameworkCore;
 
 using StyleWerk.NBB.Database;

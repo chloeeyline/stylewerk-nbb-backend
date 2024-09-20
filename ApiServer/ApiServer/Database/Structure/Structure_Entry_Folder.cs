@@ -23,6 +23,6 @@ public class Structure_Entry_Folder : IConnectedEntity<Structure_Entry_Folder>, 
 
 	public static void Connect(EntityTypeBuilder<Structure_Entry_Folder> b)
 	{
-		b.HasMany(s => s.O_EntryList).WithOne(s => s.O_Folder).HasForeignKey(s => s.FolderID);
+		b.HasMany(s => s.O_EntryList).WithOne(s => s.O_Folder).HasForeignKey(s => s.FolderID).IsRequired(false);
 	}
 }

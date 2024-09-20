@@ -1,8 +1,8 @@
 ﻿using StyleWerk.NBB.Database.User;
 
-namespace ChaosFox.Models;
+namespace StyleWerk.NBB.Models;
 
-public record PagingList<T>(int Count, List<T> Items);
+public record PagingList<T>(int Count, int Page, int MaxPage, int PerPage, List<T> Items);
 
 public record ApplicationUser(bool Instantiated, Guid ID, User_Login Login, User_Information Information, User_Right Right);
 
