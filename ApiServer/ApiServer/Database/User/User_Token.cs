@@ -27,6 +27,8 @@ public class User_Token : IConnectedEntity<User_Token>
     /// </summary>
     public DateTimeOffset RefreshTokenExpiryTime { get; set; }
 
+    public bool ConsistOverSession { get; set; }
+
     /// <summary>
     /// Navigation property for the user login associated with this token.
     /// </summary>
@@ -45,6 +47,7 @@ public class User_Token : IConnectedEntity<User_Token>
 
         b.Property(s => s.RefreshToken).IsRequired(true);
         b.Property(s => s.RefreshTokenExpiryTime).IsRequired(true);
+        b.Property(s => s.ConsistOverSession).IsRequired(true);
     }
 
     /// <summary>

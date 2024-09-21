@@ -15,18 +15,21 @@ public record Model_ResetPassword(Guid Token, string Password);
 
 
 #region Result
-public record AuthenticationResult(Model_Token AccessToken, Model_Token RefreshToken, string Username, Model_RightList Rights);
+public record AuthenticationResult(Model_Token AccessToken, Model_Token RefreshToken, bool ConsistOverSession, string Username, bool Admin, Model_Rights[] Rights);
 public record Model_Token(string Token, long ExpireTime);
-public record Model_RightList(bool Admin, Model_RightItem Entries, Model_RightItem Templates)
-{
-    public Model_RightList() : this(false, new(UserRight.Restricted), new(UserRight.Restricted)) { }
-    public Model_RightList(User_Right right) : this(right.Admin, new(UserRight.Restricted), new(UserRight.Restricted)) { }
-}
 
-
-public record Model_RightItem(bool Restricted, bool Access, bool Create, bool Edit, bool Delete, bool Admin)
+public record Model_Rights(string Name, bool Restricted, bool Access, bool Create, bool Edit, bool Delete, bool Admin)
 {
-    public Model_RightItem(UserRight right) : this(false, false, false, false, false, false)
+    public Model_Rights(User_Right right) : this(right.Name, false, false, false, false, false, false)
+    {
+        if ((right.Type & UserRight.Restricted) == UserRight.Restricted) Restricted = true;
+        if ((right.Type & UserRight.Access) == UserRight.Access) Access = true;
+        if ((right.Type & UserRight.Create) == UserRight.Create) Create = true;
+        if ((right.Type & UserRight.Edit) == UserRight.Edit) Edit = true;
+        if ((right.Type & UserRight.Delete) == UserRight.Delete) Delete = true;
+        if ((right.Type & UserRight.Admin) == UserRight.Admin) Admin = true;
+    }
+    public Model_Rights(string Name, UserRight right) : this(Name, false, false, false, false, false, false)
     {
         if ((right & UserRight.Restricted) == UserRight.Restricted) Restricted = true;
         if ((right & UserRight.Access) == UserRight.Access) Access = true;

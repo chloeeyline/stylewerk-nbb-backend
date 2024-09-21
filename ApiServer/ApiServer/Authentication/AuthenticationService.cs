@@ -35,7 +35,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             throw new AuthenticationException(AuthenticationWarning.ModelIncorrect);
 
         string userName = model.Username.ToLower().Normalize();
-        User_Login? user = DB.User_Login.Include(s => s.O_Information).Include(s => s.O_Right).FirstOrDefault(s => s.UsernameNormalized == userName)
+        User_Login? user = DB.User_Login.FirstOrDefault(s => s.UsernameNormalized == userName)
             ?? throw new AuthenticationException(AuthenticationWarning.NoUserFound);
 
         string hashedPassword = HashPassword(model.Password, user.PasswordSalt);
@@ -59,7 +59,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         if (DateTime.UtcNow >= token.RefreshTokenExpiryTime)
             throw new AuthenticationException(AuthenticationWarning.RefreshTokenExpired);
 
-        User_Login? user = DB.User_Login.Include(s => s.O_Information).Include(s => s.O_Right).FirstOrDefault(s => s.ID == token.ID)
+        User_Login? user = DB.User_Login.FirstOrDefault(s => s.ID == token.ID)
         ?? throw new AuthenticationException(AuthenticationWarning.NoUserFound);
 
         return user;
@@ -86,11 +86,11 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         return new Model_Token(loginToken, expireTimeUnixTime);
     }
 
-    public Model_Token GetRefreshToken(Guid userID, string userAgent, bool consistOverSession)
+    public Model_Token GetRefreshToken(Guid userID, string userAgent, bool? consistOverSession)
     {
         string agent = GetUserAgentString(userAgent);
         string refreshToken = GenerateRandomKey();
-        DateTime expireTime = consistOverSession ? RefreshTokenDuration : RefreshTokenShortDuration;
+        DateTime expireTime = consistOverSession is true ? RefreshTokenDuration : RefreshTokenShortDuration;
         long expireTimeUnixTime = new DateTimeOffset(expireTime).ToUnixTimeMilliseconds();
 
         User_Token? userToken = DB.User_Token.FirstOrDefault(s => s.ID == userID && s.Agent == agent);
@@ -98,6 +98,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         {
             userToken.RefreshToken = refreshToken;
             userToken.RefreshTokenExpiryTime = expireTime;
+            userToken.ConsistOverSession = consistOverSession is true;
             DB.SaveChanges();
         }
         else
@@ -108,12 +109,24 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
                 Agent = agent,
                 RefreshToken = refreshToken,
                 RefreshTokenExpiryTime = expireTime,
+                ConsistOverSession = consistOverSession is true
             };
             DB.User_Token.Add(userToken);
             DB.SaveChanges();
         }
 
         return new Model_Token(refreshToken, expireTimeUnixTime);
+    }
+
+    public AuthenticationResult GetAuthenticationResult(Guid id, Model_Token accessToken, Model_Token refreshToken, bool? consistOverSession)
+    {
+        User_Login? user = DB.User_Login.Include(s => s.O_Information)
+            .FirstOrDefault(s => s.ID == id)
+            ?? throw new AuthenticationException(AuthenticationWarning.NoUserFound);
+
+        Model_Rights[] rights = DB.User_Right.Where(s => s.ID == id).Select(s => new Model_Rights(s)).ToArray();
+
+        return new AuthenticationResult(accessToken, refreshToken, consistOverSession is true, user.Username, user.Admin, rights);
     }
     #endregion
 
@@ -127,7 +140,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             throw new AuthenticationException(AuthenticationWarning.ModelIncorrect);
 
         string email = ValidateEmail(model.Email);
-        string username = ValidateUsername(model.Email);
+        string username = ValidateUsername(model.Username);
 
         if (ValidatePassword(model.Password) != PasswordError.None)
             throw new AuthenticationException(AuthenticationWarning.PasswordInvalid);
@@ -147,7 +160,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             PasswordHash = HashPassword(model.Password, salt),
             PasswordSalt = salt,
             StatusToken = GetStatusToken(),
-            StatusTokenTime = StatusTokenDuration,
+            StatusTokenExpireTime = StatusTokenDuration,
             StatusCode = UserStatus.EmailVerification
         };
 
@@ -160,14 +173,8 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             Birthday = model.Birthday,
         };
 
-        User_Right userRight = new()
-        {
-            ID = user.ID,
-        };
-
         DB.User_Login.Add(user);
         DB.User_Information.Add(userInformation);
-        DB.User_Right.Add(userRight);
         DB.SaveChanges();
     }
 
@@ -180,12 +187,12 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             ?? throw new AuthenticationException(AuthenticationWarning.StatusTokenNotFound);
         if (user.StatusCode != UserStatus.EmailVerification)
             throw new AuthenticationException(AuthenticationWarning.WrongStatusCode);
-        if (DateTime.UtcNow >= user.StatusTokenTime)
+        if (DateTime.UtcNow >= user.StatusTokenExpireTime)
             throw new AuthenticationException(AuthenticationWarning.StatusTokenExpired);
 
         user.StatusCode = UserStatus.None;
         user.StatusToken = null;
-        user.StatusTokenTime = null;
+        user.StatusTokenExpireTime = null;
         DB.SaveChanges();
     }
     #endregion
@@ -205,7 +212,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         DB.User_Token.RemoveRange(user.O_Token);
         user.StatusCode = UserStatus.PasswordReset;
         user.StatusToken = GetStatusToken();
-        user.StatusTokenTime = StatusTokenDuration;
+        user.StatusTokenExpireTime = StatusTokenDuration;
         DB.SaveChanges();
     }
 
@@ -224,7 +231,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             throw new AuthenticationException(AuthenticationWarning.StatusTokenNotFound);
         if (user.StatusCode == UserStatus.PasswordReset)
             throw new AuthenticationException(AuthenticationWarning.WrongPassword);
-        if (DateTime.UtcNow >= user.StatusTokenTime)
+        if (DateTime.UtcNow >= user.StatusTokenExpireTime)
             throw new AuthenticationException(AuthenticationWarning.RefreshTokenExpired);
 
         user.PasswordSalt = GetSalt();
@@ -232,7 +239,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
 
         user.StatusCode = UserStatus.None;
         user.StatusToken = null;
-        user.StatusTokenTime = null;
+        user.StatusTokenExpireTime = null;
         DB.SaveChanges();
     }
     #endregion

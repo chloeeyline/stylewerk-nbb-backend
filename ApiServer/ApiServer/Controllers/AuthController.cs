@@ -24,8 +24,8 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
         {
             User_Login user = Authentication.GetUser(model);
             Model_Token accessToken = Authentication.GetAccessToken(user);
-            Model_Token refreshToken = Authentication.GetRefreshToken(user.ID, UserAgent, model.ConsistOverSession);
-            AuthenticationResult result = new(accessToken, refreshToken, user.Username, new Model_RightList(user.O_Right));
+            Model_Token refreshToken = Authentication.GetRefreshToken(user.ID, UserAgent, model?.ConsistOverSession);
+            AuthenticationResult result = Authentication.GetAuthenticationResult(user.ID, accessToken, refreshToken, model?.ConsistOverSession);
 
             return Ok(new Model_Result(result));
         }
@@ -36,14 +36,14 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     [HttpPost(nameof(RefreshToken))]
-    public IActionResult RefreshToken([FromBody] Model_RefreshToken model)
+    public IActionResult RefreshToken([FromBody] Model_RefreshToken? model)
     {
         try
         {
             User_Login user = Authentication.GetUser(model, UserAgent);
             Model_Token accessToken = Authentication.GetAccessToken(user);
-            Model_Token refreshToken = Authentication.GetRefreshToken(user.ID, UserAgent, model.ConsistOverSession);
-            AuthenticationResult result = new(accessToken, refreshToken, user.Username, new Model_RightList(user.O_Right));
+            Model_Token refreshToken = Authentication.GetRefreshToken(user.ID, UserAgent, model?.ConsistOverSession);
+            AuthenticationResult result = Authentication.GetAuthenticationResult(user.ID, accessToken, refreshToken, model?.ConsistOverSession);
 
             return Ok(new Model_Result(result));
         }

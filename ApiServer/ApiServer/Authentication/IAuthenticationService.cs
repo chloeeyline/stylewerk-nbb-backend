@@ -8,7 +8,8 @@ public interface IAuthenticationService
     User_Login GetUser(Model_RefreshToken? model, string userAgent);
 
     Model_Token GetAccessToken(User_Login user);
-    Model_Token GetRefreshToken(Guid userID, string userAgent, bool consistOverSession);
+    Model_Token GetRefreshToken(Guid userID, string userAgent, bool? consistOverSession);
+    AuthenticationResult GetAuthenticationResult(Guid id, Model_Token accessToken, Model_Token refreshToken, bool? consistOverSession);
 
     void Registration(Model_Registration? model);
     void VerifyEmail(Guid? token);
