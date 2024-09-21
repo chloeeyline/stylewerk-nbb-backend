@@ -10,37 +10,61 @@ public static class AmazonSecretsManager
 {
     public static string GetSecret()
     {
+        public static string GetSecret()
+        {
 #if Local
 		// Use static local values in Local mode based on Windows username until AWS is configurated for the team
 		return GetDebugSecret();
 #else
 
-        string region = "eu-north-1";
-        string secretName = "nbb/dev";
+            string region = "eu-north-1";
+            string secretName = "nbb/dev";
+            string region = "eu-north-1";
+            string secretName = "nbb/dev";
 
-        GetSecretValueRequest request = new()
-        {
-            SecretId = secretName,
-            VersionStage = "AWSCURRENT"
-        };
+            GetSecretValueRequest request = new()
+            {
+                SecretId = secretName,
+                VersionStage = "AWSCURRENT"
+            };
+            GetSecretValueRequest request = new()
+            {
+                SecretId = secretName,
+                VersionStage = "AWSCURRENT"
+            };
 
-        using AmazonSecretsManagerClient client = new(RegionEndpoint.GetBySystemName(region));
-        GetSecretValueResponse response = client.GetSecretValueAsync(request).Result;
+            using AmazonSecretsManagerClient client = new(RegionEndpoint.GetBySystemName(region));
+            GetSecretValueResponse response = client.GetSecretValueAsync(request).Result;
+            using AmazonSecretsManagerClient client = new(RegionEndpoint.GetBySystemName(region));
+            GetSecretValueResponse response = client.GetSecretValueAsync(request).Result;
 
-        string secretString;
-        if (response.SecretString != null)
-        {
-            secretString = response.SecretString;
-        }
-        else
-        {
-            MemoryStream memoryStream = response.SecretBinary;
-            StreamReader reader = new(memoryStream);
-            secretString = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(reader.ReadToEnd()));
-        }
+            string secretString;
+            if (response.SecretString != null)
+            {
+                secretString = response.SecretString;
+            }
+            else
+            {
+                MemoryStream memoryStream = response.SecretBinary;
+                StreamReader reader = new(memoryStream);
+                secretString = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(reader.ReadToEnd()));
+            }
+            string secretString;
+            if (response.SecretString != null)
+            {
+                secretString = response.SecretString;
+            }
+            else
+            {
+                MemoryStream memoryStream = response.SecretBinary;
+                StreamReader reader = new(memoryStream);
+                secretString = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(reader.ReadToEnd()));
+            }
 
-        return secretString;
+            return secretString;
+            return secretString;
 #endif
+        }
     }
 
     private static string GetDebugSecret()
@@ -81,7 +105,20 @@ public static class AmazonSecretsManager
         AmazonSecretsManagerConfigurationSource configurationSource = new();
         configurationBuilder.Add(configurationSource);
     }
+    private static void AddAmazonSecretsManagerConfiguration(this IConfigurationBuilder configurationBuilder)
+    {
+        AmazonSecretsManagerConfigurationSource configurationSource = new();
+        configurationBuilder.Add(configurationSource);
+    }
 
+    public static SecretData AddAmazonSecretsManager(this WebApplicationBuilder builder)
+    {
+        builder.Configuration.AddAmazonSecretsManagerConfiguration();
+        builder.Services.Configure<SecretData>(builder.Configuration);
+        builder.Services.Configure<SecretData>(builder.Configuration.GetSection(nameof(SecretData)));
+        SecretData secretData = builder.Configuration.Get<SecretData>() ?? throw new Exception();
+        return secretData;
+    }
     public static SecretData AddAmazonSecretsManager(this WebApplicationBuilder builder)
     {
         builder.Configuration.AddAmazonSecretsManagerConfiguration();
@@ -95,7 +132,12 @@ public static class AmazonSecretsManager
     {
         return $"Username={secretData.DbUser};Password={secretData.DbPassword};Host={secretData.DbHost};Port={secretData.DbPort};Database={secretData.DbDatabase};Include Error Detail=true;";
     }
+    public static string GetConnectionString(this SecretData secretData)
+    {
+        return $"Username={secretData.DbUser};Password={secretData.DbPassword};Host={secretData.DbHost};Port={secretData.DbPort};Database={secretData.DbDatabase};Include Error Detail=true;";
+    }
 
+    public static SecretData? GetData() => JsonSerializer.Deserialize<SecretData?>(GetSecret());
     public static SecretData? GetData() => JsonSerializer.Deserialize<SecretData?>(GetSecret());
 }
 
@@ -108,10 +150,18 @@ public class AmazonSecretsManagerConfigurationProvider() : ConfigurationProvider
         temp ??= [];
         Data = temp;
     }
+    public override void Load()
+    {
+        string secret = AmazonSecretsManager.GetSecret();
+        Dictionary<string, string?>? temp = JsonSerializer.Deserialize<Dictionary<string, string?>>(secret);
+        temp ??= [];
+        Data = temp;
+    }
 }
 
 public class AmazonSecretsManagerConfigurationSource() : IConfigurationSource
 {
+    public IConfigurationProvider Build(IConfigurationBuilder builder) => new AmazonSecretsManagerConfigurationProvider();
     public IConfigurationProvider Build(IConfigurationBuilder builder) => new AmazonSecretsManagerConfigurationProvider();
 }
 

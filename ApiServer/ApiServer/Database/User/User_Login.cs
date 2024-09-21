@@ -46,6 +46,11 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
     public string PasswordSalt { get; set; }
 
     /// <summary>
+    /// Indicates whether the user has administrative privileges.
+    /// </summary>
+    public bool Admin { get; set; }
+
+    /// <summary>
     /// Current status code of the user, indicating states like email verification or password reset.
     /// </summary>
     public UserStatus StatusCode { get; set; }
@@ -58,7 +63,7 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
     /// <summary>
     /// The timestamp when the status token was issued.
     /// </summary>
-    public DateTimeOffset? StatusTokenTime { get; set; }
+    public DateTimeOffset? StatusTokenExpireTime { get; set; }
 
     /// <summary>
     /// Navigation property for the user's detailed information.
@@ -68,32 +73,12 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
     /// <summary>
     /// Navigation property for the user's rights.
     /// </summary>
-    public virtual User_Right O_Right { get; set; }
+    public virtual List<User_Right> O_Right { get; set; }
 
     /// <summary>
     /// Navigation property for the user's authentication tokens.
     /// </summary>
     public virtual List<User_Token> O_Token { get; set; }
-
-    /// <summary>
-    /// Sets the user's email and updates the normalized version of the email.
-    /// </summary>
-    /// <param name="email">The email address to set.</param>
-    public void SetEmail(string email)
-    {
-        Email = email;
-        EmailNormalized = email.ToLower().Normalize();
-    }
-
-    /// <summary>
-    /// Sets the user's username and updates the normalized version of the username.
-    /// </summary>
-    /// <param name="username">The username to set.</param>
-    public void SetUsername(string username)
-    {
-        Username = username;
-        UsernameNormalized = username.ToLower().Normalize();
-    }
 
     /// <summary>
     /// <inheritdoc/>
@@ -104,17 +89,19 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
         b.UseTemplates();
         b.Property(s => s.Username).IsRequired(true).HasMaxLength(30);
         b.Property(s => s.UsernameNormalized).IsRequired(true).HasMaxLength(30);
-        b.HasIndex(s => s.UsernameNormalized).IsUnique(true);
         b.Property(s => s.Email).IsRequired(true).HasMaxLength(100);
         b.Property(s => s.EmailNormalized).IsRequired(true).HasMaxLength(100);
-        b.HasIndex(s => s.EmailNormalized).IsUnique(true);
         b.Property(s => s.PasswordHash).IsRequired(true);
         b.Property(s => s.PasswordSalt).IsRequired(true);
-        b.HasIndex(s => s.PasswordHash).IsUnique(true);
-        b.HasIndex(s => s.PasswordSalt).IsUnique(true);
+        b.Property(s => s.Admin).IsRequired(true);
         b.Property(s => s.StatusCode).IsRequired(true).HasDefaultValue(UserStatus.None);
         b.Property(s => s.StatusToken).IsRequired(false);
-        b.Property(s => s.StatusTokenTime).IsRequired(false);
+        b.Property(s => s.StatusTokenExpireTime).IsRequired(false);
+
+        b.HasIndex(s => s.UsernameNormalized).IsUnique(true);
+        b.HasIndex(s => s.EmailNormalized).IsUnique(true);
+        b.HasIndex(s => s.PasswordHash).IsUnique(true);
+        b.HasIndex(s => s.PasswordSalt).IsUnique(true);
         b.HasIndex(s => s.StatusToken).IsUnique(true);
     }
 
@@ -129,10 +116,10 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
             .IsRequired(false)
             .HasForeignKey<User_Information>(s => s.ID)
             .HasConstraintName("Information");
-        b.HasOne(s => s.O_Right)
+        b.HasMany(s => s.O_Right)
             .WithOne(s => s.O_User)
             .IsRequired(false)
-            .HasForeignKey<User_Right>(s => s.ID)
+            .HasForeignKey(s => s.ID)
             .HasConstraintName("Right");
         b.HasMany(s => s.O_Token)
             .WithOne(s => s.O_User)
@@ -150,21 +137,21 @@ public enum UserStatus
     /// <summary>
     /// Indicates that no special status is applied to the user account. This is the default state.
     /// </summary>
-    None = 0,
+    None,
 
     /// <summary>
     /// Indicates that the user's email address needs to be verified. This status is typically set after a new user registration or when a user updates their email address.
     /// </summary>
-    EmailVerification = 1,
+    EmailVerification,
 
     /// <summary>
     /// Indicates that the user has requested a change of email address and this new email needs verification before it can replace the old one.
     /// </summary>
-    EmailChange = 2,
+    EmailChange,
 
     /// <summary>
     /// Indicates that the user has requested a password reset. This status is usually set when a user has forgotten their password and initiated a process to set a new one.
     /// </summary>
-    PasswordReset = 3
+    PasswordReset
 }
 
