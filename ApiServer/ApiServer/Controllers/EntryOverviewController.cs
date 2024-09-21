@@ -32,6 +32,7 @@ namespace StyleWerk.NBB.Controllers
             return Ok(new Model_Result(entries));
         }
 
+        //Filter by Tags isn't possible yet
         [HttpPost(nameof(GetEntries))]
         public IActionResult GetEntries([FromBody] Model_FilterEntry filter)
         {
