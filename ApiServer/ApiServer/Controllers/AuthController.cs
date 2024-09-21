@@ -86,7 +86,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Forgot Password
     [HttpPost(nameof(RequestPasswordReset))]
-    public IActionResult RequestPasswordReset(string email)
+    public IActionResult RequestPasswordReset([FromBody] string email)
     {
         try
         {
@@ -174,18 +174,25 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Validation
     [HttpPost(nameof(ValidatePassword))]
-    public IActionResult ValidatePassword(string password)
-    {
-        PasswordError warning = Authentication.ValidatePassword(password);
-        return Ok(new Model_Result(warning));
-    }
-
-    [HttpPost(nameof(ValidateEmail))]
-    public IActionResult ValidateEmail(string? email)
+    public IActionResult ValidatePassword([FromBody] Model_ValidateIdentification model)
     {
         try
         {
-            Authentication.ValidateEmail(email);
+            Authentication.ValidatePassword(model?.ToValidate);
+            return Ok(new Model_Result());
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
+
+    [HttpPost(nameof(ValidateEmail))]
+    public IActionResult ValidateEmail([FromBody] Model_ValidateIdentification? model)
+    {
+        try
+        {
+            Authentication.ValidateEmail(model?.ToValidate);
             return Ok(new Model_Result());
         }
         catch (AuthenticationException ex)
@@ -195,11 +202,11 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     [HttpPost(nameof(ValidateUsername))]
-    public IActionResult ValidateUsername(string? username)
+    public IActionResult ValidateUsername([FromBody] Model_ValidateIdentification? model)
     {
         try
         {
-            Authentication.ValidateEmail(username);
+            Authentication.ValidateUsername(model?.ToValidate);
             return Ok(new Model_Result());
         }
         catch (AuthenticationException ex)

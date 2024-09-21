@@ -21,6 +21,6 @@ public interface IAuthenticationService
     void GetUserData();
     void UpdateUserData(Model_Userdata? model);
     string ValidateEmail(string? email);
-    PasswordError ValidatePassword(string? password);
+    void ValidatePassword(string? password);
     string ValidateUsername(string? username);
 }

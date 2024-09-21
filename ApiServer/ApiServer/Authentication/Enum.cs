@@ -1,37 +1,35 @@
 ﻿namespace StyleWerk.NBB.Authentication;
 
-public enum AuthenticationWarning
+public enum AuthenticationErrorCodes
 {
-    ModelIncorrect = 2,
+    ModelIncorrect = 1,
 
     EmailInvalid = 10,
-    UsernameInvalid = 11,
-    PasswordInvalid = 12,
-    EmailAlreadyExists = 13,
-    UsernameAlreadyExists = 14,
+    EmailAlreadyExists = 11,
+    UsernameInvalid = 12,
+    UnToShort = 13,
+    UnToLong = 14,
+    UnUsesInvalidChars = 15,
+    UsernameAlreadyExists = 16,
 
-    WrongStatusCode = 15,
-    StatusTokenNotFound = 16,
-    StatusTokenExpired = 17,
-    StatusTokenAlreadyRequested = 18,
+    WrongStatusCode = 20,
+    StatusTokenNotFound = 21,
+    StatusTokenExpired = 22,
+    StatusTokenAlreadyRequested = 23,
 
     NoUserFound = 50,
-    EmailIsNotVerified = 51,
-    PasswordResetWasRequested = 52,
-    WrongPassword = 53,
-    RefreshTokenNotFound = 54,
-    RefreshTokenExpired = 55
-}
+    RefreshTokenNotFound = 51,
+    RefreshTokenExpired = 52,
+    EmailIsNotVerified = 53,
+    PasswordResetWasRequested = 54,
 
-[Flags]
-public enum PasswordError
-{
-    None = 0,  // Represents no errors.
-    TooShort = 1 << 0,  // 2^0 = 1
-    HasNoLowercaseLetter = 1 << 1,  // 2^1 = 2
-    HasNoUppercaseLetter = 1 << 2,  // 2^2 = 4
-    HasNoNumber = 1 << 3,  // 2^3 = 8
-    HasNoSpecialChars = 1 << 4,  // 2^4 = 16
-    HasWhitespace = 1 << 5,  // 2^5 = 32
-    UsesInvalidChars = 1 << 6   // 2^6 = 64
+    // Password Errors
+    PasswordInvalid = 100,
+    PwTooShort = 101,
+    PwHasNoLowercaseLetter = 102,
+    PwHasNoUppercaseLetter = 103,
+    PwHasNoNumber = 104,
+    PwHasNoSpecialChars = 105,
+    PwHasWhitespace = 106,
+    PwUsesInvalidChars = 107,
 }

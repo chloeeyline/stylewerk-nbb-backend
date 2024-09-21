@@ -3,7 +3,7 @@
 [Serializable]
 public class AuthenticationException : Exception
 {
-    public AuthenticationWarning ErrorCode { get; set; }
-    public AuthenticationException(AuthenticationWarning code, string message, Exception inner) : base(message, inner) => ErrorCode = code;
-    public AuthenticationException(AuthenticationWarning code) : base() => ErrorCode = code;
+    public AuthenticationErrorCodes ErrorCode { get; set; }
+    public AuthenticationException(AuthenticationErrorCodes code, string message, Exception inner) : base(message, inner) => ErrorCode = code;
+    public AuthenticationException(AuthenticationErrorCodes code) : base() => ErrorCode = code;
 }

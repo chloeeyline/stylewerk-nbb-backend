@@ -11,6 +11,8 @@ public record Model_RefreshToken(string Token, bool ConsistOverSession);
 
 public record Model_Userdata(string Email, string? Password, string FirstName, string LastName, UserGender Gender, DateOnly Birthday);
 public record Model_ResetPassword(Guid Token, string Password);
+public record Model_ValidateIdentification(string ToValidate);
+public record Model_StatusToken(Guid Token);
 
 
 
