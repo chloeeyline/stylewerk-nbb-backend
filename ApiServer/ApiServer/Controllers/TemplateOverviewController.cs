@@ -1,8 +1,8 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
+
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Structure;
-using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
@@ -21,10 +21,12 @@ namespace StyleWerk.NBB.Controllers
         [HttpPost(nameof(AddTemplate))]
         public IActionResult AddTemplate(Model_AddTemplate newTemplate)
         {
-            Structure_Template template = new();
-            template.Description = newTemplate.Description;
-            template.UserID = CurrentUser.ID;
-            template.Name = newTemplate.Name;
+            Structure_Template template = new()
+            {
+                Description = newTemplate.Description,
+                UserID = CurrentUser.ID,
+                Name = newTemplate.Name
+            };
 
             DB.Structure_Template.Add(template);
             DB.SaveChanges();
@@ -56,7 +58,5 @@ namespace StyleWerk.NBB.Controllers
         {
             return Ok(new Model_Result());
         }
-
-        protected override bool MissingRight(UserRight right) => throw new NotImplementedException();
     }
 }

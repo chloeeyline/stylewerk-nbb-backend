@@ -13,6 +13,6 @@ public class TemplateController : BaseController
 
     public TemplateController(NbbContext db) : base(db)
     {
-        _templateQueries = new TemplateQueries(db);
+        _templateQueries = new TemplateQueries(db, CurrentUser);
     }
 }
