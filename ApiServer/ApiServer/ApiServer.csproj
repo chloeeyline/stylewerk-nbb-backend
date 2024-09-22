@@ -10,6 +10,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />
 
   <ItemGroup>
+    <None Remove="AWS\EmailVerification.html" />
+    <None Remove="AWS\ResetPassword.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="AWS\EmailTemplates\EmailVerification.html" />
+    <EmbeddedResource Include="AWS\EmailTemplates\ResetPassword.html" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AWSSDK.Core" Version="3.7.400.19" />
     <PackageReference Include="AWSSDK.SecretsManager" Version="3.7.400.19" />
     <PackageReference Include="AWSSDK.SecretsManager.Caching" Version="1.0.6" />

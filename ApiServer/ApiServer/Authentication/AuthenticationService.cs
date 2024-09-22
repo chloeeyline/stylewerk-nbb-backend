@@ -4,6 +4,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
+using ChaosFox.AWS;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -172,6 +174,8 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             LastName = model.LastName,
             Birthday = new DateOnly(birthday.Year, birthday.Month, birthday.Day),
         };
+
+        SendMail_EmailVeification(email, user.StatusToken);
 
         DB.User_Login.Add(user);
         DB.User_Information.Add(userInformation);
@@ -399,7 +403,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             throw new AuthenticationException(AuthenticationErrorCodes.UnToShort);
         if (!OnlyUsernameValidChars().IsMatch(username))
             throw new AuthenticationException(AuthenticationErrorCodes.UnUsesInvalidChars);
-        if (DB.User_Login.Any(s => s.Username == username))
+        if (DB.User_Login.Any(s => s.UsernameNormalized == username))
             throw new AuthenticationException(AuthenticationErrorCodes.UsernameAlreadyExists);
         return username;
     }
@@ -432,5 +436,15 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     [GeneratedRegex(@"\s")] private static partial Regex ContainsWhitespace();
     [GeneratedRegex(@"[a-zA-Z\d!#$%&'*+\-./?@\\_|^\s]")] private static partial Regex OnlyPasswordValidChars();
     [GeneratedRegex(@"[a-zA-Z\d&'*+\-./\\_|^\s]")] private static partial Regex OnlyUsernameValidChars();
+    #endregion
+
+    #region Email
+    private bool SendMail_EmailVeification(string email, Guid? token)
+    {
+        string content = SimpleEmailService.AccessEmailTemplate("EmailVerification.html");
+        string url = $"{SecretData.Value.FrontendUrl}/User/EmailVerification?id={token}";
+        content = content.Replace("YOUR_VERIFICATION_LINK_HERE", url);
+        return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
+    }
     #endregion
 }
