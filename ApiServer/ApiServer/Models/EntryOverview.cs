@@ -5,9 +5,9 @@ namespace StyleWerk.NBB.Models;
 ///OverView List Request
 public record Model_EntryFolders(Guid? ID, string? FolderTitle, int SortOrder, Model_EntryItem[] Items);
 
-public record Model_EntryItem(Guid ID, string Name, string? FolderName, string UserName, string TemplateName, DateTime CreatedAt, DateTime LastUpdatedAt, ShareTypes Share)
+public record Model_EntryItem(Guid ID, string Name, string? FolderName, string UserName, string TemplateName, long CreatedAt, long LastUpdatedAt, ShareTypes Share)
 {
-    public Model_EntryItem(Structure_Entry item, ShareTypes share) : this(item.ID, item.Name, item.O_Folder?.Name, item.O_User.Username, item.OTemplate.Name, item.CreatedAt, item.LastUpdatedAt, share) { }
+    public Model_EntryItem(Structure_Entry item, ShareTypes share) : this(item.ID, item.Name, item.O_Folder?.Name, item.O_User.Username, item.OTemplate.Name, item.CreatedAt.ToUnixTimeMilliseconds(), item.LastUpdatedAt.ToUnixTimeMilliseconds(), share) { }
 }
 
 /// <summary>

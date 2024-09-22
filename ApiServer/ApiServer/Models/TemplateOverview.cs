@@ -3,9 +3,9 @@ using StyleWerk.NBB.Database.Structure;
 namespace StyleWerk.NBB.Models
 {
     //Chloe = Tags vergessen
-    public record Model_Templates(Guid Id, string TemplateTitle, string? Description, string UserName, DateTime CreatedAt, DateTime LastUpdated, ShareTypes Share)
+    public record Model_Templates(Guid Id, string TemplateTitle, string? Description, string UserName, long CreatedAt, long LastUpdated, ShareTypes Share)
     {
-        public Model_Templates(Structure_Template item, ShareTypes share) : this(item.ID, item.Name, item.Description, item.O_User.Username, item.CreatedAt, item.LastUpdatedAt, share) { }
+        public Model_Templates(Structure_Template item, ShareTypes share) : this(item.ID, item.Name, item.Description, item.O_User.Username, item.CreatedAt.ToUnixTimeMilliseconds(), item.LastUpdatedAt.ToUnixTimeMilliseconds(), share) { }
     }
 
     public record Model_TemplateRow(Guid RowId, Guid TemplateId, int SortOrder, bool CanWrapCells);

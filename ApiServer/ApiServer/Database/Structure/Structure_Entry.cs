@@ -13,8 +13,8 @@ public class Structure_Entry : IConnectedEntity<Structure_Entry>, IEntity_GuidID
     public required Guid TemplateID { get; set; }
     public Guid? FolderID { get; set; }
     public bool IsPublic { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.MinValue;
-    public DateTime LastUpdatedAt { get; set; } = DateTime.MinValue;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.MinValue;
+    public DateTimeOffset LastUpdatedAt { get; set; } = DateTimeOffset.MinValue;
     public string[]? Tags { get; set; }
 
 #pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.

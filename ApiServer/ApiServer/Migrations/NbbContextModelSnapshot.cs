@@ -333,7 +333,7 @@ namespace StyleWerk.NBB.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("Right");
+                    b.ToTable("Right", (string)null);
                 });
 
             modelBuilder.Entity("StyleWerk.NBB.Database.User.User_Information", b =>

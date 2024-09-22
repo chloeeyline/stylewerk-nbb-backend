@@ -142,6 +142,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         string email = ValidateEmail(model.Email);
         string username = ValidateUsername(model.Username);
         string salt = GetSalt();
+        DateTimeOffset birthday = DateTimeOffset.FromUnixTimeMilliseconds(model.Birthday);
         ValidatePassword(model.Password);
 
         Guid id = Guid.NewGuid();
@@ -169,7 +170,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             Gender = model.Gender,
             FirstName = model.FirstName,
             LastName = model.LastName,
-            Birthday = model.Birthday,
+            Birthday = new DateOnly(birthday.Year, birthday.Month, birthday.Day),
         };
 
         DB.User_Login.Add(user);

@@ -42,12 +42,11 @@ public record ApplicationUser
     public bool Instantiated { get; init; }
     public Guid ID { get; init; }
     public User_Login Login { get; init; }
-
     public User_Information Information { get; init; }
     public string[] Rights { get; init; }
 }
 
-public record Model_Registration(string Username, string Email, string Password, string FirstName, string LastName, UserGender Gender, DateOnly Birthday);
+public record Model_Registration(string Username, string Email, string Password, string FirstName, string LastName, UserGender Gender, long Birthday);
 
 public record Model_Login(string Username, string Password, bool ConsistOverSession);
 public record Model_RefreshToken(string Token, bool ConsistOverSession);

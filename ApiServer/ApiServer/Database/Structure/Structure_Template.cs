@@ -13,8 +13,8 @@ public class Structure_Template : IConnectedEntity<Structure_Template>, IEntity_
     public required string Name { get; set; }
     public string? Description { get; set; }
     public bool IsPublic { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.MinValue;
-    public DateTime LastUpdatedAt { get; set; } = DateTime.MinValue;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.MinValue;
+    public DateTimeOffset LastUpdatedAt { get; set; } = DateTimeOffset.MinValue;
     public string[]? Tags { get; set; }
 
 #pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
