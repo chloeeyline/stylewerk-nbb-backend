@@ -7,7 +7,7 @@ public record Model_EntryFolders(Guid? ID, string? FolderTitle, int SortOrder, M
 
 public record Model_EntryItem(Guid ID, string Name, string? FolderName, string UserName, string TemplateName, DateTime CreatedAt, DateTime LastUpdatedAt, ShareTypes Share)
 {
-    public Model_EntryItem(Structure_Entry item, ShareTypes share) : this(item.ID, item.Name, item.O_User.Username, item.O_Template.Name, item.O_Folder?.Name, item.CreatedAt, item.LastUpdatedAt, share) { }
+    public Model_EntryItem(Structure_Entry item, ShareTypes share) : this(item.ID, item.Name, item.O_Folder?.Name, item.O_User.Username, item.OTemplate.Name, item.CreatedAt, item.LastUpdatedAt, share) { }
 }
 
 /// <summary>
@@ -29,7 +29,7 @@ public record Model_ChangeEntryName(Guid EntryID, string Name);
 /// <param name="Username"></param>
 /// <param name="TemplateName"></param>
 /// <param name="Share"></param>
-public record Model_FilterEntry(string? Name, string? Username, string? TemplateName, string[]? Tags, ShareTypes Share, bool directUser);
+public record Model_FilterEntry(string? Name, string? Username, string? TemplateName, string[]? Tags, ShareTypes Share, bool DirectUser);
 public record Model_AddEntry(string Name, Guid TemplateId, Guid? FolderId);
 public record Model_AddFolder(string Name, Guid UserId);
 public record Model_FolderSortOrder(Guid FolderID, int SortOrder);

@@ -14,8 +14,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 {
     private string UserAgent => Request.Headers.UserAgent.ToString();
 
-    protected override bool MissingRight(UserRight right) => false;
-
     #region Login
     [HttpPost(nameof(Login))]
     public IActionResult Login([FromBody] Model_Login? model)

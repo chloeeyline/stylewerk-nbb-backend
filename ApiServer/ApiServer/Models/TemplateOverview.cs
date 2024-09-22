@@ -16,7 +16,7 @@ namespace StyleWerk.NBB.Models
     public record Model_TemplatePreviewItems(Guid Id, string TemplateTitle, Model_TemplateRow[] TemplateRows, Model_TemplateCell[] TemplateCells);
 
 
-    public record Model_FilterTemplate(string? Name, string? Username, string? TemplateName, string[]? Tags, ShareTypes Share, bool directUser);
+    public record Model_FilterTemplate(string? Name, string? Username, string? TemplateName, string[]? Tags, ShareTypes Share, bool DirectUser);
     public record Model_ChangeTemplateName(string Name, Guid TemplateId);
     //Chloe = Beim Erstellen der Vorlage wuerde ich noch nicht angeben obs public ist
     public record Model_AddTemplate(string Name, string Description, bool IsPublic);

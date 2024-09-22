@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 
 using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Queries;
 
 namespace StyleWerk.NBB.Controllers;
@@ -16,6 +15,4 @@ public class TemplateController : BaseController
     {
         _templateQueries = new TemplateQueries(db);
     }
-
-    protected override bool MissingRight(UserRight right) => throw new NotImplementedException();
 }

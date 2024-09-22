@@ -124,9 +124,9 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             .FirstOrDefault(s => s.ID == id)
             ?? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound);
 
-        Model_Rights[] rights = DB.User_Right.Where(s => s.ID == id).Select(s => new Model_Rights(s)).ToArray();
+        string[] rights = [.. DB.User_Right.Where(s => s.ID == id).Select(s => s.Name)];
 
-        return new AuthenticationResult(accessToken, refreshToken, consistOverSession is true, user.Username, user.Admin, rights);
+        return new AuthenticationResult(accessToken, refreshToken, user.StatusCode, consistOverSession is true, user.Username, user.Admin, rights);
     }
     #endregion
 
@@ -159,7 +159,8 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             PasswordSalt = salt,
             StatusToken = GetStatusToken(),
             StatusTokenExpireTime = StatusTokenDuration,
-            StatusCode = UserStatus.EmailVerification
+            StatusCode = UserStatus.EmailVerification,
+            Admin = false
         };
 
         User_Information userInformation = new()
@@ -188,7 +189,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         if (DateTime.UtcNow >= user.StatusTokenExpireTime)
             throw new AuthenticationException(AuthenticationErrorCodes.StatusTokenExpired);
 
-        user.StatusCode = UserStatus.None;
+        user.StatusCode = null;
         user.StatusToken = null;
         user.StatusTokenExpireTime = null;
         DB.SaveChanges();
@@ -204,8 +205,8 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         email = email.ToLower().Normalize();
         User_Login? user = DB.User_Login.Include(s => s.O_Token).FirstOrDefault(s => s.EmailNormalized == email)
             ?? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound);
-        if (user.StatusCode is not UserStatus.None)
-            throw new AuthenticationException(AuthenticationErrorCodes.StatusTokenAlreadyRequested);
+        if (user.StatusCode is not null) //new email verification code request oder bei change trotzdem lassen
+            throw new AuthenticationException(AuthenticationErrorCodes.EmailIsNotVerified);
 
         DB.User_Token.RemoveRange(user.O_Token);
         user.StatusCode = UserStatus.PasswordReset;
@@ -234,7 +235,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         user.PasswordSalt = GetSalt();
         user.PasswordHash = HashPassword(model.Password, user.PasswordSalt);
 
-        user.StatusCode = UserStatus.None;
+        user.StatusCode = null;
         user.StatusToken = null;
         user.StatusTokenExpireTime = null;
         DB.SaveChanges();
@@ -242,13 +243,13 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     #endregion
 
     #region Userdata
-    public void UpdateEmail(string? email) { }
+    public void UpdateEmail(string? email) { }//wenn password reset angefordert nicht m;glich
 
     public void VerifiyUpdatedEmail(Guid? token) { }
 
     public void GetUserData() { }
 
-    public void UpdateUserData(Model_Userdata? model) { }
+    public void UpdateUserData(Model_Userdata? model) { } //wenn stautscode da nicht erlaubt
     #endregion
 
     #region Helpers
