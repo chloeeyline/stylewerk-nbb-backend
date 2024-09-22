@@ -161,12 +161,13 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Userdata
     //Muss angemeldet sein
-    [HttpPost(nameof(GetUserData))]
+    [HttpPost(nameof(GetUserData)), Authorize]
     public IActionResult GetUserData()
     {
         try
         {
-            return Ok(new Model_Result());
+            Model_UserData user = Authentication.GetUserData(CurrentUser);
+            return Ok(new Model_Result(user));
         }
         catch (AuthenticationException ex)
         {
@@ -175,11 +176,12 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     //Muss angemeldet sein
-    [HttpPost(nameof(UpdateUserData))]
-    public IActionResult UpdateUserData([FromBody] Model_Userdata model)
+    [HttpPost(nameof(UpdateUserData)), Authorize]
+    public IActionResult UpdateUserData([FromBody] Model_UpdateUserData model)
     {
         try
         {
+            Authentication.UpdateUserData(model, CurrentUser.ID);
             return Ok(new Model_Result());
         }
         catch (AuthenticationException ex)

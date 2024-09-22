@@ -23,8 +23,8 @@ public interface IAuthenticationService
     void UpdateEmail(string? email, User_Login user);
     void VerifyUpdatedEmail(string? code, User_Login user, string userAgent);
 
-    void GetUserData();
-    void UpdateUserData(Model_Userdata? model);
+    Model_UserData GetUserData(ApplicationUser user);
+    void UpdateUserData(Model_UpdateUserData? model, Guid userID);
 
     string ValidateEmail(string? email);
     void ValidatePassword(string? password);

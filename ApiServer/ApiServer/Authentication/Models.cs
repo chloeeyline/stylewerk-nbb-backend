@@ -46,12 +46,14 @@ public record ApplicationUser
     public string[] Rights { get; init; }
 }
 
+public record Model_UserData(string Username, string Email, string FirstName, string LastName, UserGender Gender, long Birthday);
+public record Model_UpdateUserData(string? Password, string? FirstName, string? LastName, UserGender? Gender);
+
 public record Model_Registration(string Username, string Email, string Password, string FirstName, string LastName, UserGender Gender, long Birthday);
 
 public record Model_Login(string Username, string Password, bool ConsistOverSession);
 public record Model_RefreshToken(string Token, bool ConsistOverSession);
 
-public record Model_Userdata(string Email, string? Password, string FirstName, string LastName, UserGender Gender, DateOnly Birthday);
 public record Model_ResetPassword(Guid Token, string Password);
 public record Model_ValidateIdentification(string ToValidate);
 public record Model_StatusToken(Guid Token);

@@ -299,9 +299,41 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     #endregion
 
     #region Userdata
-    public void GetUserData() { }
+    public Model_UserData GetUserData(ApplicationUser user)
+    {
+        DateTimeOffset birthday = new(user.Information.Birthday.ToDateTime(TimeOnly.MinValue));
+        return new Model_UserData(
+            user.Login.Username,
+            user.Login.Email,
+            user.Information.FirstName,
+            user.Information.LastName,
+            user.Information.Gender,
+            birthday.ToUnixTimeMilliseconds());
+    }
 
-    public void UpdateUserData(Model_Userdata? model) { } //wenn stautscode da nicht erlaubt
+    public void UpdateUserData(Model_UpdateUserData? model, Guid userID)
+    {
+        if (model is null)
+            throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
+
+        User_Login? user = DB.User_Login.Include(s => s.O_Information).FirstOrDefault(s => s.ID == userID)
+            ?? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound);
+        if (user.StatusCode is not null)
+            throw new AuthenticationException(AuthenticationErrorCodes.PendingChangeOpen);
+
+        if (!string.IsNullOrWhiteSpace(model.Password))
+        {
+            ValidatePassword(model.Password);
+            user.PasswordSalt = GetSalt();
+            user.PasswordHash = HashPassword(model.Password, user.PasswordSalt);
+
+        }
+        if (!string.IsNullOrWhiteSpace(model.FirstName)) user.O_Information.FirstName = model.FirstName;
+        if (!string.IsNullOrWhiteSpace(model.LastName)) user.O_Information.LastName = model.LastName;
+        if (model.Gender is not null) user.O_Information.Gender = model.Gender.Value;
+
+        DB.SaveChanges();
+    }
     #endregion
 
     #region Helpers

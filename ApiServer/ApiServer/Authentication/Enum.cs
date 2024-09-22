@@ -17,6 +17,7 @@ public enum AuthenticationErrorCodes
     StatusTokenExpired = 22,
     StatusTokenAlreadyRequested = 23,
     EmailChangeCodeWrong = 24,
+    PendingChangeOpen = 25,
 
     NoUserFound = 50,
     RefreshTokenNotFound = 51,
