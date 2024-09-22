@@ -1,5 +1,9 @@
 ﻿using System.Text.Json;
 
+using Amazon;
+using Amazon.SecretsManager;
+using Amazon.SecretsManager.Model;
+
 namespace StyleWerk.NBB.AWS;
 
 public static class AmazonSecretsManager
