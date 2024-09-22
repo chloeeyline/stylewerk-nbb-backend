@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StyleWerk.NBB.Database;
@@ -11,9 +12,11 @@ using StyleWerk.NBB.Database;
 namespace StyleWerk.NBB.Migrations
 {
     [DbContext(typeof(NbbContext))]
-    partial class NbbContextModelSnapshot : ModelSnapshot
+    [Migration("20240922135452_ReworkedRightSystem")]
+    partial class ReworkedRightSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -130,7 +133,7 @@ namespace StyleWerk.NBB.Migrations
                         .HasColumnName("ID")
                         .HasDefaultValueSql("uuid_generate_v4()");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -141,7 +144,7 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<bool>("IsPublic")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset>("LastUpdatedAt")
+                    b.Property<DateTime>("LastUpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -224,7 +227,7 @@ namespace StyleWerk.NBB.Migrations
                         .HasColumnName("ID")
                         .HasDefaultValueSql("uuid_generate_v4()");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -237,7 +240,7 @@ namespace StyleWerk.NBB.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<DateTimeOffset>("LastUpdatedAt")
+                    b.Property<DateTime>("LastUpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -379,16 +382,10 @@ namespace StyleWerk.NBB.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("EmailChangeCode")
-                        .HasColumnType("text");
-
                     b.Property<string>("EmailNormalized")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<string>("NewEmail")
-                        .HasColumnType("text");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()

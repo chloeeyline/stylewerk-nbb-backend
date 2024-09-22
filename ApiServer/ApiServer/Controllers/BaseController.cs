@@ -22,15 +22,13 @@ public abstract class BaseController(NbbContext db) : Controller
         {
             User_Login? login = DB.User_Login.FirstOrDefault(s => s.ID == id);
             User_Information? information = DB.User_Information.FirstOrDefault(s => s.ID == id);
-            User_Right? right = DB.User_Right.FirstOrDefault(s => s.ID == id);
-            CurrentUser = login is null || information is null || right is null ?
-                new ApplicationUser(false, Guid.Empty, new(), new(), new()) :
-                new ApplicationUser(true, information.ID, login, information, right);
+            string[] rights = [.. DB.User_Right.Where(s => s.ID == id).Select(s => s.Name)];
+            CurrentUser = login is null || information is null ?
+                new ApplicationUser() :
+                new ApplicationUser(login, information, rights);
         }
     }
 
-    public ApplicationUser CurrentUser { get; private set; } = new ApplicationUser(false, Guid.Empty, new(), new(), new());
-
-    protected abstract bool MissingRight(UserRight right);
+    public ApplicationUser CurrentUser { get; private set; } = new ApplicationUser();
 }
 

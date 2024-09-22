@@ -1,4 +1,6 @@
-﻿namespace StyleWerk.NBB.Models;
+﻿using StyleWerk.NBB.Authentication;
+
+namespace StyleWerk.NBB.Models;
 
 public record PagingList<T>(int Count, int Page, int MaxPage, int PerPage, List<T> Items);
 
@@ -14,6 +16,7 @@ public record Model_Result(ResultType Type, int? ErrorCode, object? Data)
     public Model_Result(object? data) : this(ResultType.SuccessReturnData, null, data) { }
     public Model_Result(ResultType type) : this(type, null, null) { }
     public Model_Result(ResultType type, int? errorCode) : this(type, errorCode, null) { }
+    public Model_Result(AuthenticationErrorCodes warning) : this(ResultType.Authentification, (int) warning, null) { }
 }
 
 public enum ResultType

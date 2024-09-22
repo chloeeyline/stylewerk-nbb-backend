@@ -8,26 +8,20 @@ using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Queries
 {
-    public class EntryQueries
+    public class EntryQueries(NbbContext DB, ApplicationUser User)
     {
-        private readonly NbbContext _context;
-        private readonly ApplicationUser _user;
-
-        public EntryQueries(NbbContext context, ApplicationUser user)
-        {
-            _user = user;
-            _context = context;
-        }
-
         //get entries from specific folder by folderId
         public List<Model_EntryItem> GetEntriesFromFolder(Guid folderId)
         {
-            List<Model_EntryItem> list = _context.Structure_Entry
-                .Include(e => e.O_Folder)
-                .Include(e => e.O_Template)
-                .Include(e => e.O_User)
-                .Where(e => e.FolderID == folderId)
-                .Select(e => new Model_EntryItem(e, new ShareTypes(true, false, false, false))).ToList();
+            List<Model_EntryItem> list =
+            [
+                .. DB.Structure_Entry
+                    .Include(e => e.O_Folder)
+                    .Include(e => e.OTemplate)
+                    .Include(e => e.O_User)
+                    .Where(e => e.FolderID == folderId)
+                    .Select(e => new Model_EntryItem(e, new ShareTypes(true, false, false, false))),
+            ];
 
             return list;
         }
@@ -35,17 +29,20 @@ namespace StyleWerk.NBB.Queries
         //Default
         public List<Model_EntryFolders> LoadEntryFolders()
         {
-            List<Model_EntryFolders> entryFolders = _context.Structure_Entry_Folder
-                .OrderBy(f => f.SortOrder)
-                .Where(f => f.UserID == _user.ID)
-                .Select(f => new Model_EntryFolders(f.ID, f.Name, f.SortOrder, new Model_EntryItem[0]))
-                .ToList();
+            List<Model_EntryFolders> entryFolders =
+            [
+                .. DB.Structure_Entry_Folder
+                    .OrderBy(f => f.SortOrder)
+                    .Where(f => f.UserID == User.ID)
+                    .Select(f => new Model_EntryFolders(f.ID, f.Name, f.SortOrder, new Model_EntryItem[0]))
+,
+            ];
 
             //all Entries without Folder
-            IEnumerable<Structure_Entry> list = _context.Structure_Entry
-                .Where(s => s.UserID == _user.ID && s.FolderID == null)
+            IEnumerable<Structure_Entry> list = DB.Structure_Entry
+                .Where(s => s.UserID == User.ID && s.FolderID == null)
                 .Include(s => s.O_Folder)
-                .Include(s => s.O_Template)
+                .Include(s => s.OTemplate)
                 .Include(s => s.O_User);
 
             Model_EntryItem[] result = list.Select(s => new Model_EntryItem(s, new ShareTypes(true, false, false, false))).ToArray();
@@ -72,14 +69,14 @@ namespace StyleWerk.NBB.Queries
         //UserItems
         private List<Model_EntryItem> LoadUserEntryItems(Model_FilterEntry filter)
         {
-            IEnumerable<Structure_Entry> list = _context.Structure_Entry
-                .Where(s => s.UserID == _user.ID)
+            IEnumerable<Structure_Entry> list = DB.Structure_Entry
+                .Where(s => s.UserID == User.ID)
                 .Include(s => s.O_Folder)
-                .Include(s => s.O_Template)
+                .Include(s => s.OTemplate)
                 .Include(s => s.O_User);
 
             if (!string.IsNullOrEmpty(filter.Name)) list = list.Where(s => s.Name.Contains(filter.Name));
-            if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
+            if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.OTemplate.Name.Contains(filter.TemplateName));
             if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
 
             List<Model_EntryItem> result = list.Select(s => new Model_EntryItem(s, new ShareTypes(true, false, false, false))).ToList();
@@ -91,19 +88,19 @@ namespace StyleWerk.NBB.Queries
         {
             List<Model_EntryItem> result = [];
 
-            IQueryable<Share_Item> sharedList = _context.Share_Item.Where(s => s.Group == false && s.ID == _user.ID && s.ItemType == 1); //ItemType: 1 == entry
+            IQueryable<Share_Item> sharedList = DB.Share_Item.Where(s => s.Group == false && s.ID == User.ID && s.ItemType == 1); //ItemType: 1 == entry
 
             foreach (Share_Item? item in sharedList)
             {
-                IEnumerable<Structure_Entry> list = _context.Structure_Entry
+                IEnumerable<Structure_Entry> list = DB.Structure_Entry
                 .Where(s => s.ID == item.ID)
                 .Include(s => s.O_Folder)
-                .Include(s => s.O_Template)
+                .Include(s => s.OTemplate)
                 .Include(s => s.O_User);
 
-                if (!string.IsNullOrEmpty(filter.Name) && !filter.directUser) list = list.Where(s => s.Name.Contains(filter.Name));
-                if (!string.IsNullOrEmpty(filter.Name) && filter.directUser) list = list.Where(s => s.Name == filter.Name);
-                if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
+                if (!string.IsNullOrEmpty(filter.Name) && !filter.DirectUser) list = list.Where(s => s.Name.Contains(filter.Name));
+                if (!string.IsNullOrEmpty(filter.Name) && filter.DirectUser) list = list.Where(s => s.Name == filter.Name);
+                if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.OTemplate.Name.Contains(filter.TemplateName));
                 if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
 
                 //adding entries to List
@@ -117,15 +114,15 @@ namespace StyleWerk.NBB.Queries
         {
             List<Model_EntryItem> publicEntryItem = [];
 
-            IEnumerable<Structure_Entry> list = _context.Structure_Entry
+            IEnumerable<Structure_Entry> list = DB.Structure_Entry
                 //.Where(s => s.IsPublic)
                 .Include(s => s.O_Folder)
-                .Include(s => s.O_Template)
+                .Include(s => s.OTemplate)
                 .Include(s => s.O_User);
 
-            if (!string.IsNullOrEmpty(filter.Name) && !filter.directUser) list = list.Where(s => s.Name.Contains(filter.Name));
-            if (!string.IsNullOrEmpty(filter.Name) && filter.directUser) list = list.Where(s => s.Name == filter.Name);
-            if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
+            if (!string.IsNullOrEmpty(filter.Name) && !filter.DirectUser) list = list.Where(s => s.Name.Contains(filter.Name));
+            if (!string.IsNullOrEmpty(filter.Name) && filter.DirectUser) list = list.Where(s => s.Name == filter.Name);
+            if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.OTemplate.Name.Contains(filter.TemplateName));
             if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
 
             List<Model_EntryItem> result = list.Select(s => new Model_EntryItem(s, new ShareTypes(false, false, true, false))).ToList();
@@ -138,27 +135,27 @@ namespace StyleWerk.NBB.Queries
             List<Model_EntryItem> result = [];
 
             //get all ShareGroups of User
-            IQueryable<Share_Group> sharedList = _context.Share_GroupUser
+            IQueryable<Share_Group> sharedList = DB.Share_GroupUser
                 .Include(u => u.O_Group)
-                .Where(u => u.UserID == _user.ID)
+                .Where(u => u.UserID == User.ID)
                 .Select(g => g.O_Group);
 
             foreach (Share_Group? groupItem in sharedList)
             {
                 //All shared entries in the group 
-                IQueryable<Share_Item> shareItem = _context.Share_Item.Where(s => s.Group == true && s.ID == groupItem.ID && s.ItemType == 1);
+                IQueryable<Share_Item> shareItem = DB.Share_Item.Where(s => s.Group == true && s.ID == groupItem.ID && s.ItemType == 1);
 
                 foreach (Share_Item? item in shareItem)
                 {
-                    IEnumerable<Structure_Entry> list = _context.Structure_Entry
+                    IEnumerable<Structure_Entry> list = DB.Structure_Entry
                     .Where(s => s.ID == item.ID)
                     .Include(s => s.O_Folder)
-                    .Include(s => s.O_Template)
+                    .Include(s => s.OTemplate)
                     .Include(s => s.O_User);
 
-                    if (!string.IsNullOrEmpty(filter.Name) && !filter.directUser) list = list.Where(s => s.Name.Contains(filter.Name));
-                    if (!string.IsNullOrEmpty(filter.Name) && filter.directUser) list = list.Where(s => s.Name == filter.Name);
-                    if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.O_Template.Name.Contains(filter.TemplateName));
+                    if (!string.IsNullOrEmpty(filter.Name) && !filter.DirectUser) list = list.Where(s => s.Name.Contains(filter.Name));
+                    if (!string.IsNullOrEmpty(filter.Name) && filter.DirectUser) list = list.Where(s => s.Name == filter.Name);
+                    if (!string.IsNullOrEmpty(filter.TemplateName)) list = list.Where(s => s.OTemplate.Name.Contains(filter.TemplateName));
                     if (!string.IsNullOrEmpty(filter.Username)) list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
 
                     //adding entries to List

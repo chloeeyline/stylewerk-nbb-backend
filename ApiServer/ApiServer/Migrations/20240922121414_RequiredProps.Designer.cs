@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StyleWerk.NBB.Database;
@@ -11,9 +12,11 @@ using StyleWerk.NBB.Database;
 namespace StyleWerk.NBB.Migrations
 {
     [DbContext(typeof(NbbContext))]
-    partial class NbbContextModelSnapshot : ModelSnapshot
+    [Migration("20240922121414_RequiredProps")]
+    partial class RequiredProps
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -130,7 +133,7 @@ namespace StyleWerk.NBB.Migrations
                         .HasColumnName("ID")
                         .HasDefaultValueSql("uuid_generate_v4()");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -141,7 +144,7 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<bool>("IsPublic")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset>("LastUpdatedAt")
+                    b.Property<DateTime>("LastUpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -224,7 +227,7 @@ namespace StyleWerk.NBB.Migrations
                         .HasColumnName("ID")
                         .HasDefaultValueSql("uuid_generate_v4()");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -237,7 +240,7 @@ namespace StyleWerk.NBB.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<DateTimeOffset>("LastUpdatedAt")
+                    b.Property<DateTime>("LastUpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("NOW()");
@@ -326,16 +329,6 @@ namespace StyleWerk.NBB.Migrations
                     b.ToTable("Structure_Template_Row", (string)null);
                 });
 
-            modelBuilder.Entity("StyleWerk.NBB.Database.User.Right", b =>
-                {
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.HasKey("Name");
-
-                    b.ToTable("Right");
-                });
-
             modelBuilder.Entity("StyleWerk.NBB.Database.User.User_Information", b =>
                 {
                     b.Property<Guid>("ID")
@@ -379,16 +372,10 @@ namespace StyleWerk.NBB.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<string>("EmailChangeCode")
-                        .HasColumnType("text");
-
                     b.Property<string>("EmailNormalized")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<string>("NewEmail")
-                        .HasColumnType("text");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -447,9 +434,10 @@ namespace StyleWerk.NBB.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("character varying(250)");
 
-                    b.HasKey("ID", "Name");
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
-                    b.HasIndex("Name");
+                    b.HasKey("ID", "Name");
 
                     b.ToTable("User_Right", (string)null);
                 });
@@ -514,7 +502,7 @@ namespace StyleWerk.NBB.Migrations
                         .WithMany("O_EntryList")
                         .HasForeignKey("FolderID");
 
-                    b.HasOne("StyleWerk.NBB.Database.Structure.Structure_Template", "OTemplate")
+                    b.HasOne("StyleWerk.NBB.Database.Structure.Structure_Template", "O_Template")
                         .WithMany("O_EntryList")
                         .HasForeignKey("TemplateID")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -526,9 +514,9 @@ namespace StyleWerk.NBB.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("OTemplate");
-
                     b.Navigation("O_Folder");
+
+                    b.Navigation("O_Template");
 
                     b.Navigation("O_User");
                 });
@@ -617,14 +605,6 @@ namespace StyleWerk.NBB.Migrations
                         .IsRequired()
                         .HasConstraintName("User");
 
-                    b.HasOne("StyleWerk.NBB.Database.User.Right", "O_Right")
-                        .WithMany("O_User")
-                        .HasForeignKey("Name")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("O_Right");
-
                     b.Navigation("O_User");
                 });
 
@@ -670,11 +650,6 @@ namespace StyleWerk.NBB.Migrations
             modelBuilder.Entity("StyleWerk.NBB.Database.Structure.Structure_Template_Row", b =>
                 {
                     b.Navigation("O_Cells");
-                });
-
-            modelBuilder.Entity("StyleWerk.NBB.Database.User.Right", b =>
-                {
-                    b.Navigation("O_User");
                 });
 
             modelBuilder.Entity("StyleWerk.NBB.Database.User.User_Login", b =>

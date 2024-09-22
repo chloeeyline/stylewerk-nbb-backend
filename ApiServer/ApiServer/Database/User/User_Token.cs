@@ -8,31 +8,33 @@ namespace StyleWerk.NBB.Database.User;
 /// <summary>
 /// Represents a security or authentication token associated with a user.
 /// </summary>
-public class User_Token : IConnectedEntity<User_Token>
+public class User_Token : IConnectedEntity<User_Token>, IEntity_GuidID
 {
-    public Guid ID { get; set; }
+    public required Guid ID { get; set; }
 
     /// <summary>
     /// The user agent string of the device or application where the token was issued.
     /// </summary>
-    public string Agent { get; set; }
+    public required string Agent { get; set; }
 
     /// <summary>
     /// The actual token string used for authentication or security checks.
     /// </summary>
-    public string RefreshToken { get; set; }
+    public required string RefreshToken { get; set; }
 
     /// <summary>
     /// The expiry date and time of the refresh token.
     /// </summary>
-    public DateTimeOffset RefreshTokenExpiryTime { get; set; }
+    public required DateTimeOffset RefreshTokenExpiryTime { get; set; }
 
-    public bool ConsistOverSession { get; set; }
+    public required bool ConsistOverSession { get; set; }
 
+#pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
     /// <summary>
     /// Navigation property for the user login associated with this token.
     /// </summary>
     public virtual User_Login O_User { get; set; }
+#pragma warning restore CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
 
     /// <summary>
     /// <inheritdoc/>
@@ -41,13 +43,14 @@ public class User_Token : IConnectedEntity<User_Token>
     public static void Build(EntityTypeBuilder<User_Token> b)
     {
         b.UseTemplates();
-        b.Property(s => s.ID).IsRequired(true).HasColumnName("ID");
+        b.UseIEntity_GuidID(false);
         b.Property(s => s.Agent).IsRequired(true);
         b.HasKey(s => new { s.ID, s.Agent });
 
         b.Property(s => s.RefreshToken).IsRequired(true);
         b.Property(s => s.RefreshTokenExpiryTime).IsRequired(true);
         b.Property(s => s.ConsistOverSession).IsRequired(true);
+
     }
 
     /// <summary>

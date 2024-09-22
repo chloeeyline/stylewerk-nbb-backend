@@ -11,8 +11,8 @@ public static class AmazonSecretsManager
     public static string GetSecret()
     {
 #if Local
-		// Use static local values in Local mode based on Windows username until AWS is configurated for the team
-		return GetDebugSecret();
+        // Use static local values in Local mode based on Windows username until AWS is configurated for the team
+        return GetDebugSecret();
 #else
 
         string region = "eu-north-1";
@@ -68,7 +68,7 @@ public static class AmazonSecretsManager
                             "localhost",
                             "5432",
                             "stylewerk",
-                            "xxx",
+                            "nwhRqucOl04Kgk7IUJ/J+oimkLA0eiqhVKFyayQscBA=",
                             "http://localhost:5115",
                             "http://localhost:5115",
                             "xxx"

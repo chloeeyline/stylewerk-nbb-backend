@@ -14,8 +14,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 {
     private string UserAgent => Request.Headers.UserAgent.ToString();
 
-    protected override bool MissingRight(UserRight right) => false;
-
     #region Login
     [HttpPost(nameof(Login))]
     public IActionResult Login([FromBody] Model_Login? model)
@@ -86,7 +84,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Forgot Password
     [HttpPost(nameof(RequestPasswordReset))]
-    public IActionResult RequestPasswordReset(string email)
+    public IActionResult RequestPasswordReset([FromBody] string email)
     {
         try
         {
@@ -114,13 +112,29 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
     #endregion
 
-    #region Userdata
-    //Muss angemeldet sein
-    [HttpPost(nameof(UpdateEmail))]
+    #region Session
+    [HttpPost(nameof(RemoveSessions)), Authorize]
+    public IActionResult RemoveSessions()
+    {
+        Authentication.RemoveSessions(CurrentUser.ID, UserAgent);
+        return Ok(new Model_Result());
+    }
+
+    [HttpPost(nameof(Logout)), Authorize]
+    public IActionResult Logout()
+    {
+        Authentication.Logout(CurrentUser.ID, UserAgent);
+        return Ok(new Model_Result());
+    }
+    #endregion
+
+    #region Change Email
+    [HttpPost(nameof(UpdateEmail)), Authorize]
     public IActionResult UpdateEmail(string? email)
     {
         try
         {
+            Authentication.UpdateEmail(email, CurrentUser.Login);
             return Ok(new Model_Result());
         }
         catch (AuthenticationException ex)
@@ -130,11 +144,12 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     //Muss angemeldet sein
-    [HttpPost(nameof(VerifyUpdatedEmail))]
-    public IActionResult VerifyUpdatedEmail(Guid? token)
+    [HttpPost(nameof(VerifyUpdatedEmail)), Authorize]
+    public IActionResult VerifyUpdatedEmail(string? code)
     {
         try
         {
+            Authentication.VerifyUpdatedEmail(code, CurrentUser.Login, UserAgent);
             return Ok(new Model_Result());
         }
         catch (AuthenticationException ex)
@@ -142,14 +157,17 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
             return Ok(new Model_Result(ex.ErrorCode));
         }
     }
+    #endregion
 
+    #region Userdata
     //Muss angemeldet sein
-    [HttpPost(nameof(GetUserData))]
+    [HttpPost(nameof(GetUserData)), Authorize]
     public IActionResult GetUserData()
     {
         try
         {
-            return Ok(new Model_Result());
+            Model_UserData user = Authentication.GetUserData(CurrentUser);
+            return Ok(new Model_Result(user));
         }
         catch (AuthenticationException ex)
         {
@@ -158,11 +176,12 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     //Muss angemeldet sein
-    [HttpPost(nameof(UpdateUserData))]
-    public IActionResult UpdateUserData([FromBody] Model_Userdata model)
+    [HttpPost(nameof(UpdateUserData)), Authorize]
+    public IActionResult UpdateUserData([FromBody] Model_UpdateUserData model)
     {
         try
         {
+            Authentication.UpdateUserData(model, CurrentUser.ID);
             return Ok(new Model_Result());
         }
         catch (AuthenticationException ex)
@@ -174,18 +193,25 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Validation
     [HttpPost(nameof(ValidatePassword))]
-    public IActionResult ValidatePassword(string password)
-    {
-        PasswordError warning = Authentication.ValidatePassword(password);
-        return Ok(new Model_Result(warning));
-    }
-
-    [HttpPost(nameof(ValidateEmail))]
-    public IActionResult ValidateEmail(string? email)
+    public IActionResult ValidatePassword([FromBody] Model_ValidateIdentification model)
     {
         try
         {
-            Authentication.ValidateEmail(email);
+            Authentication.ValidatePassword(model?.ToValidate);
+            return Ok(new Model_Result());
+        }
+        catch (AuthenticationException ex)
+        {
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+    }
+
+    [HttpPost(nameof(ValidateEmail))]
+    public IActionResult ValidateEmail([FromBody] Model_ValidateIdentification? model)
+    {
+        try
+        {
+            Authentication.ValidateEmail(model?.ToValidate);
             return Ok(new Model_Result());
         }
         catch (AuthenticationException ex)
@@ -195,11 +221,11 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     [HttpPost(nameof(ValidateUsername))]
-    public IActionResult ValidateUsername(string? username)
+    public IActionResult ValidateUsername([FromBody] Model_ValidateIdentification? model)
     {
         try
         {
-            Authentication.ValidateEmail(username);
+            Authentication.ValidateUsername(model?.ToValidate);
             return Ok(new Model_Result());
         }
         catch (AuthenticationException ex)

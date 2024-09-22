@@ -8,18 +8,19 @@ namespace StyleWerk.NBB.Database.User;
 /// <summary>
 /// Represents the rights or permissions assigned to a user.
 /// </summary>
-public class User_Right : IConnectedEntity<User_Right>, IEntity_Name
+public class User_Right : IConnectedEntity<User_Right>, IEntity_GuidID, IEntity_Name
 {
-    public Guid ID { get; set; }
-
-    public string Name { get; set; }
-    public UserRight Type { get; set; }
+    public required Guid ID { get; set; }
+    public required string Name { get; set; }
 
 
+#pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
     /// <summary>
     /// Navigation property to the associated user login entity.
     /// </summary>
     public virtual User_Login O_User { get; set; }
+    public virtual Right O_Right { get; set; }
+#pragma warning restore CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
 
     /// <summary>
     /// <inheritdoc/>
@@ -28,10 +29,9 @@ public class User_Right : IConnectedEntity<User_Right>, IEntity_Name
     public static void Build(EntityTypeBuilder<User_Right> b)
     {
         b.UseTemplates();
-        b.Property(s => s.ID).IsRequired(true).HasColumnName("ID");
+        b.UseIEntity_GuidID(false);
         b.UseIEntity_Name();
         b.HasKey(s => new { s.ID, s.Name });
-        b.Property(s => s.Type).IsRequired();
     }
 
     /// <summary>
@@ -45,63 +45,32 @@ public class User_Right : IConnectedEntity<User_Right>, IEntity_Name
             .IsRequired(true)
             .HasForeignKey(s => s.ID)
             .HasConstraintName("User");
+        b.HasOne(s => s.O_Right)
+             .WithMany(s => s.O_User)
+             .HasForeignKey(s => s.Name);
     }
-
-
 }
 
-/// <summary>
-/// Flags enumeration for detailed user rights, allowing combination of multiple rights.
-/// This supports setting and checking multiple permissions easily using bitwise operations.
-/// </summary>
-[Flags]
-public enum UserRight
+public class Right : IConnectedEntity<Right>
 {
+    public required string Name { get; set; }
+#pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
     /// <summary>
-    /// No rights assigned. This value is used to represent a state where the user has no permissions.
+    /// Navigation property to the associated user login entity.
     /// </summary>
-    Restricted = 0,
+    public virtual List<User_Right> O_User { get; set; }
+#pragma warning restore CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
 
-    /// <summary>
-    /// Basic access right, allowing the user to access general areas or features within the system.
-    /// </summary>
-    Access = 1,
+    public static void Build(EntityTypeBuilder<Right> b)
+    {
+        b.Property(s => s.Name).IsRequired(true);
+        b.HasKey(s => s.Name);
+    }
 
-    /// <summary>
-    /// Permission to create new entities or documents within the system.
-    /// </summary>
-    Create = 2,
-
-    /// <summary>
-    /// Permission to edit existing entities or documents.
-    /// </summary>
-    Edit = 4,
-
-    /// <summary>
-    /// Permission to delete entities or documents.
-    /// </summary>
-    Delete = 8,
-
-    /// <summary>
-    /// Administrative rights, granting the ability to perform administrative functions beyond typical user capabilities.
-    /// </summary>
-    Admin = 16,
-
-    /// <summary>
-    /// Default usage combination, granting both access and create rights.
-    /// This combination is typically assigned to users who need to contribute to the system by adding and accessing content.
-    /// </summary>
-    DefaultUsage = Access | Create,
-
-    /// <summary>
-    /// Combination of edit and delete rights, enabling users to modify and remove existing content.
-    /// This set is usually assigned to users who manage areas of the system where content needs to be regularly updated or pruned.
-    /// </summary>
-    ManipulateOthers = Edit | Delete,
-
-    /// <summary>
-    /// The highest level of rights, combining administrative, editing, deleting, and creating capabilities.
-    /// This level is reserved for users who need full control over all aspects of the system.
-    /// </summary>
-    SuperAdmin = Admin | ManipulateOthers | DefaultUsage,
+    public static void Connect(EntityTypeBuilder<Right> b)
+    {
+        b.HasMany(s => s.O_User)
+             .WithOne(s => s.O_Right)
+             .HasForeignKey(s => s.Name);
+    }
 }
