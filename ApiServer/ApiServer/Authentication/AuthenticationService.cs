@@ -243,32 +243,41 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     }
     #endregion
 
-    #region Userdata
-    public void UpdateEmail(string? email, Guid userID, string userAgent)
+    #region Edit Session
+    public void RemoveSessions(Guid userID, string userAgent)
+    {
+        DB.User_Token.RemoveRange(DB.User_Token.Where(s => s.ID == userID && s.Agent != userAgent));
+    }
+
+    public void Logout(Guid userID, string userAgent)
+    {
+        DB.User_Token.RemoveRange(DB.User_Token.Where(s => s.ID == userID && s.Agent == userAgent));
+    }
+    #endregion
+
+    #region Change Email
+    public void UpdateEmail(string? email, User_Login user)
     {
         if (string.IsNullOrWhiteSpace(email))
             throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
 
-        User_Login? user = DB.User_Login.Include(s => s.O_Token).FirstOrDefault(s => s.ID == userID)
-            ?? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound);
         if (user.StatusCode is UserStatus.PasswordReset)
             throw new AuthenticationException(AuthenticationErrorCodes.PasswordResetWasRequested);
 
-        DB.User_Token.RemoveRange(user.O_Token.Where(s => s.Agent != userAgent));
         user.NewEmail = email;
         user.StatusCode = UserStatus.EmailChange;
-        user.StatusToken = GetStatusToken();
+        user.EmailChangeCode = new Random().Next(100001).ToString("D6");
         user.StatusTokenExpireTime = StatusTokenDuration;
         DB.SaveChanges();
     }
 
-    public void VerifyUpdatedEmail(Guid? token)
+    public void VerifyUpdatedEmail(string? code, User_Login user, string userAgent)
     {
-        if (token is null || token == Guid.Empty)
+        if (string.IsNullOrWhiteSpace(code))
             throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
 
-        User_Login? user = DB.User_Login.FirstOrDefault(s => s.StatusToken == token)
-            ?? throw new AuthenticationException(AuthenticationErrorCodes.StatusTokenNotFound);
+        if (string.IsNullOrEmpty(user.EmailChangeCode) || !code.Equals(user.EmailChangeCode))
+            throw new AuthenticationException(AuthenticationErrorCodes.EmailChangeCodeWrong);
         if (user.StatusCode is not UserStatus.EmailChange)
             throw new AuthenticationException(AuthenticationErrorCodes.WrongStatusCode);
         if (string.IsNullOrWhiteSpace(user.NewEmail))
@@ -276,16 +285,20 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         if (DateTime.UtcNow >= user.StatusTokenExpireTime)
             throw new AuthenticationException(AuthenticationErrorCodes.StatusTokenExpired);
 
+        DB.User_Token.RemoveRange(DB.User_Token.Where(s => s.ID == user.ID && s.Agent != userAgent));
         user.Email = user.NewEmail;
         user.EmailNormalized = user.NewEmail.ToLower().Normalize();
         user.NewEmail = null;
 
+        user.EmailChangeCode = null;
         user.StatusCode = null;
         user.StatusToken = null;
         user.StatusTokenExpireTime = null;
         DB.SaveChanges();
     }
+    #endregion
 
+    #region Userdata
     public void GetUserData() { }
 
     public void UpdateUserData(Model_Userdata? model) { } //wenn stautscode da nicht erlaubt

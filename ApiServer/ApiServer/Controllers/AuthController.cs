@@ -112,14 +112,29 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
     #endregion
 
-    #region Userdata
-    //Muss angemeldet sein
+    #region Session
+    [HttpPost(nameof(RemoveSessions)), Authorize]
+    public IActionResult RemoveSessions()
+    {
+        Authentication.RemoveSessions(CurrentUser.ID, UserAgent);
+        return Ok(new Model_Result());
+    }
+
+    [HttpPost(nameof(Logout)), Authorize]
+    public IActionResult Logout()
+    {
+        Authentication.Logout(CurrentUser.ID, UserAgent);
+        return Ok(new Model_Result());
+    }
+    #endregion
+
+    #region Change Email
     [HttpPost(nameof(UpdateEmail)), Authorize]
     public IActionResult UpdateEmail(string? email)
     {
         try
         {
-            Authentication.UpdateEmail(email, CurrentUser.ID, UserAgent);
+            Authentication.UpdateEmail(email, CurrentUser.Login);
             return Ok(new Model_Result());
         }
         catch (AuthenticationException ex)
@@ -130,11 +145,11 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     //Muss angemeldet sein
     [HttpPost(nameof(VerifyUpdatedEmail)), Authorize]
-    public IActionResult VerifyUpdatedEmail(Guid? token)
+    public IActionResult VerifyUpdatedEmail(string? code)
     {
         try
         {
-            Authentication.VerifyUpdatedEmail(token);
+            Authentication.VerifyUpdatedEmail(code, CurrentUser.Login, UserAgent);
             return Ok(new Model_Result());
         }
         catch (AuthenticationException ex)
@@ -142,7 +157,9 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
             return Ok(new Model_Result(ex.ErrorCode));
         }
     }
+    #endregion
 
+    #region Userdata
     //Muss angemeldet sein
     [HttpPost(nameof(GetUserData))]
     public IActionResult GetUserData()

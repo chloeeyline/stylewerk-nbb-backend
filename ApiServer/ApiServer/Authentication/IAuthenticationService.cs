@@ -14,12 +14,18 @@ public interface IAuthenticationService
     void Registration(Model_Registration? model);
     void VerifyEmail(Guid? token);
 
+    void RemoveSessions(Guid userID, string userAgent);
+    void Logout(Guid userID, string userAgent);
+
     void RequestPasswordReset(string email);
     void ResetPassword(Model_ResetPassword? model);
-    void UpdateEmail(string? email, Guid userID, string userAgent);
-    void VerifyUpdatedEmail(Guid? token);
+
+    void UpdateEmail(string? email, User_Login user);
+    void VerifyUpdatedEmail(string? code, User_Login user, string userAgent);
+
     void GetUserData();
     void UpdateUserData(Model_Userdata? model);
+
     string ValidateEmail(string? email);
     void ValidatePassword(string? password);
     string ValidateUsername(string? username);
