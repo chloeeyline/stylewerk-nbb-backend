@@ -114,11 +114,12 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Userdata
     //Muss angemeldet sein
-    [HttpPost(nameof(UpdateEmail))]
+    [HttpPost(nameof(UpdateEmail)), Authorize]
     public IActionResult UpdateEmail(string? email)
     {
         try
         {
+            Authentication.UpdateEmail(email, CurrentUser.ID, UserAgent);
             return Ok(new Model_Result());
         }
         catch (AuthenticationException ex)
@@ -128,11 +129,12 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     //Muss angemeldet sein
-    [HttpPost(nameof(VerifyUpdatedEmail))]
+    [HttpPost(nameof(VerifyUpdatedEmail)), Authorize]
     public IActionResult VerifyUpdatedEmail(Guid? token)
     {
         try
         {
+            Authentication.VerifyUpdatedEmail(token);
             return Ok(new Model_Result());
         }
         catch (AuthenticationException ex)

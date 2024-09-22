@@ -65,6 +65,8 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
     /// </summary>
     public DateTimeOffset? StatusTokenExpireTime { get; set; }
 
+    public string? NewEmail { get; set; }
+
 #pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
     /// <summary>
     /// Navigation property for the user's detailed information.
@@ -100,6 +102,7 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
         b.Property(s => s.StatusCode).IsRequired(false);
         b.Property(s => s.StatusToken).IsRequired(false);
         b.Property(s => s.StatusTokenExpireTime).IsRequired(false);
+        b.Property(s => s.NewEmail).IsRequired(false);
 
         b.HasIndex(s => s.UsernameNormalized).IsUnique(true);
         b.HasIndex(s => s.EmailNormalized).IsUnique(true);

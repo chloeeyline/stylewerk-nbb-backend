@@ -16,8 +16,8 @@ public interface IAuthenticationService
 
     void RequestPasswordReset(string email);
     void ResetPassword(Model_ResetPassword? model);
-    void UpdateEmail(string? email);
-    void VerifiyUpdatedEmail(Guid? token);
+    void UpdateEmail(string? email, Guid userID, string userAgent);
+    void VerifyUpdatedEmail(Guid? token);
     void GetUserData();
     void UpdateUserData(Model_Userdata? model);
     string ValidateEmail(string? email);

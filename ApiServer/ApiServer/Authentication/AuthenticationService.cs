@@ -67,7 +67,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
 
     public Model_Token GetAccessToken(User_Login user)
     {
-        if (user.StatusCode is UserStatus.EmailVerification or UserStatus.EmailChange)
+        if (user.StatusCode is UserStatus.EmailVerification)
             throw new AuthenticationException(AuthenticationErrorCodes.EmailIsNotVerified);
         if (user.StatusCode == UserStatus.PasswordReset)
             throw new AuthenticationException(AuthenticationErrorCodes.PasswordResetWasRequested);
@@ -185,7 +185,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
 
         User_Login? user = DB.User_Login.FirstOrDefault(s => s.StatusToken == token)
             ?? throw new AuthenticationException(AuthenticationErrorCodes.StatusTokenNotFound);
-        if (user.StatusCode != UserStatus.EmailVerification)
+        if (user.StatusCode is not UserStatus.EmailVerification)
             throw new AuthenticationException(AuthenticationErrorCodes.WrongStatusCode);
         if (DateTime.UtcNow >= user.StatusTokenExpireTime)
             throw new AuthenticationException(AuthenticationErrorCodes.StatusTokenExpired);
@@ -204,9 +204,9 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
 
         email = email.ToLower().Normalize();
-        User_Login? user = DB.User_Login.Include(s => s.O_Token).FirstOrDefault(s => s.EmailNormalized == email)
+        User_Login? user = DB.User_Login.Include(s => s.O_Token).FirstOrDefault(s => s.EmailNormalized == email && s.StatusCode != null)
             ?? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound);
-        if (user.StatusCode is not null) //new email verification code request oder bei change trotzdem lassen
+        if (user.StatusCode is UserStatus.EmailVerification)
             throw new AuthenticationException(AuthenticationErrorCodes.EmailIsNotVerified);
 
         DB.User_Token.RemoveRange(user.O_Token);
@@ -228,7 +228,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         ValidatePassword(model.Password);
         if (user is null)
             throw new AuthenticationException(AuthenticationErrorCodes.StatusTokenNotFound);
-        if (user.StatusCode != UserStatus.PasswordReset)
+        if (user.StatusCode is not UserStatus.PasswordReset)
             throw new AuthenticationException(AuthenticationErrorCodes.WrongStatusCode);
         if (DateTime.UtcNow >= user.StatusTokenExpireTime)
             throw new AuthenticationException(AuthenticationErrorCodes.RefreshTokenExpired);
@@ -244,9 +244,47 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     #endregion
 
     #region Userdata
-    public void UpdateEmail(string? email) { }//wenn password reset angefordert nicht m;glich
+    public void UpdateEmail(string? email, Guid userID, string userAgent)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
 
-    public void VerifiyUpdatedEmail(Guid? token) { }
+        User_Login? user = DB.User_Login.Include(s => s.O_Token).FirstOrDefault(s => s.ID == userID)
+            ?? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound);
+        if (user.StatusCode is UserStatus.PasswordReset)
+            throw new AuthenticationException(AuthenticationErrorCodes.PasswordResetWasRequested);
+
+        DB.User_Token.RemoveRange(user.O_Token.Where(s => s.Agent != userAgent));
+        user.NewEmail = email;
+        user.StatusCode = UserStatus.EmailChange;
+        user.StatusToken = GetStatusToken();
+        user.StatusTokenExpireTime = StatusTokenDuration;
+        DB.SaveChanges();
+    }
+
+    public void VerifyUpdatedEmail(Guid? token)
+    {
+        if (token is null || token == Guid.Empty)
+            throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
+
+        User_Login? user = DB.User_Login.FirstOrDefault(s => s.StatusToken == token)
+            ?? throw new AuthenticationException(AuthenticationErrorCodes.StatusTokenNotFound);
+        if (user.StatusCode is not UserStatus.EmailChange)
+            throw new AuthenticationException(AuthenticationErrorCodes.WrongStatusCode);
+        if (string.IsNullOrWhiteSpace(user.NewEmail))
+            throw new AuthenticationException(AuthenticationErrorCodes.WrongStatusCode);
+        if (DateTime.UtcNow >= user.StatusTokenExpireTime)
+            throw new AuthenticationException(AuthenticationErrorCodes.StatusTokenExpired);
+
+        user.Email = user.NewEmail;
+        user.EmailNormalized = user.NewEmail.ToLower().Normalize();
+        user.NewEmail = null;
+
+        user.StatusCode = null;
+        user.StatusToken = null;
+        user.StatusTokenExpireTime = null;
+        DB.SaveChanges();
+    }
 
     public void GetUserData() { }
 
