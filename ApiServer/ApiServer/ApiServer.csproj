@@ -10,11 +10,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />
 
   <ItemGroup>
+    <None Remove="AWS\EmailTemplates\EmailChange.html" />
     <None Remove="AWS\EmailVerification.html" />
     <None Remove="AWS\ResetPassword.html" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="AWS\EmailTemplates\EmailChange.html" />
     <EmbeddedResource Include="AWS\EmailTemplates\EmailVerification.html" />
     <EmbeddedResource Include="AWS\EmailTemplates\ResetPassword.html" />
   </ItemGroup>
