@@ -29,6 +29,7 @@ builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogL
 
 WebApplication app = builder.Build();
 
+app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseRouting();
 app.UseCors();
 app.UseAuthentication();

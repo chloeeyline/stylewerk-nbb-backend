@@ -39,10 +39,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             ?? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound);
 
         string hashedPassword = HashPassword(model.Password, user.PasswordSalt);
-        if (user.PasswordHash != hashedPassword)
-            throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound);
-
-        return user;
+        return user.PasswordHash != hashedPassword ? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound) : user;
     }
 
     public User_Login GetUser(Model_RefreshToken? model, string userAgent)
