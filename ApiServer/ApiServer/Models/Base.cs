@@ -5,6 +5,7 @@ namespace StyleWerk.NBB.Models;
 public record PagingList<T>(int Count, int Page, int MaxPage, int PerPage, List<T> Items);
 
 public record ShareTypes(bool Own, bool GroupShared, bool Public, bool DirectlyShared);
+public record Model_SharedItem(Guid ID, string SharedFrom, bool FromGroup, Guid? GroupID, string? GroupName, bool CanShare, bool CanEdit, bool CanDelete);
 
 /// <summary>
 /// The default Model to always wrap the results of a requests from the frontend
@@ -12,22 +13,31 @@ public record ShareTypes(bool Own, bool GroupShared, bool Public, bool DirectlyS
 /// <param name="Type"></param>
 /// <param name="ErrorCode"></param>
 /// <param name="Data"></param>
-public record Model_Result(ResultType Type, int? ErrorCode, object? Data)
+public record Model_Result(ResultType Type, string TypeText, int? ErrorCode, object? Data)
 {
-    public Model_Result() : this(ResultType.Success, null, null) { }
-    public Model_Result(object? data) : this(ResultType.SuccessReturnData, null, data) { }
-    public Model_Result(ResultType type) : this(type, null, null) { }
-    public Model_Result(ResultType type, int? errorCode) : this(type, errorCode, null) { }
-    public Model_Result(AuthenticationErrorCodes warning) : this(ResultType.Authentification, (int) warning, null) { }
+    public Model_Result() : this(ResultType.Success, ResultType.Success.ToString(), null, null) { }
+    public Model_Result(object? data) : this(ResultType.SuccessReturnData, ResultType.SuccessReturnData.ToString(), null, data) { }
+    public Model_Result(ResultType type) : this(type, type.ToString(), null, null) { }
+    public Model_Result(ResultType type, int? errorCode) : this(type, type.ToString(), errorCode, null) { }
+    public Model_Result(AuthenticationErrorCodes warning) : this(ResultType.Authentification, ResultType.Authentification.ToString(), (int) warning, warning.ToString()) { }
+}
+
+[Serializable]
+public class RequestException : Exception
+{
+    public ResultType ErrorCode { get; set; }
+    public RequestException(ResultType code) : base() => ErrorCode = code;
+    public RequestException(ResultType code, string message) : base(message) => ErrorCode = code;
+    public RequestException(ResultType code, string message, Exception inner) : base(message, inner) => ErrorCode = code;
 }
 
 public enum ResultType
 {
     Success,
     SuccessReturnData,
+    GeneralError,
     Authentification,
-    MissingRight,
     NoDataFound,
-    NoDataSend,
-    ParameterRequirements
+    MissingRight,
+    DataIsInvalid,
 }

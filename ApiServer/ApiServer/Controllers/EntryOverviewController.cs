@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Structure;
@@ -7,97 +8,92 @@ using StyleWerk.NBB.Queries;
 
 namespace StyleWerk.NBB.Controllers;
 
-[ApiController, Route("EntryOverview")]
-public class EntryOverviewController : BaseController
+[ApiController, Route("EntryOverview"), Authorize]
+public class EntryOverviewController(NbbContext db) : BaseController(db)
 {
-    private readonly EntryQueries _entryQueries;
+    public EntryQueries Query => new(DB, CurrentUser);
 
-    public EntryOverviewController(NbbContext db) : base(db)
-    {
-        _entryQueries = new EntryQueries(db, CurrentUser);
-    }
-
+    #region Folder
     [HttpGet(nameof(GetFolders))]
     public IActionResult GetFolders()
     {
-        List<Model_EntryFolders> entries = _entryQueries.LoadEntryFolders();
-        return Ok(new Model_Result(entries));
-    }
-
-    [HttpGet(nameof(GetEntriesFromFolder))]
-    public IActionResult GetEntriesFromFolder(Guid folderId)
-    {
-        List<Model_EntryItem> entries = _entryQueries.GetEntriesFromFolder(folderId);
-        return Ok(new Model_Result(entries));
-    }
-
-    //Filter by Tags isn't possible yet
-    [HttpPost(nameof(FilterEntries))]
-    public IActionResult FilterEntries([FromBody] Model_FilterEntry filter)
-    {
-        List<Model_EntryItem> entries = _entryQueries.LoadEntryItem(filter);
-        return Ok(new Model_Result(entries));
-    }
-
-    [HttpPost(nameof(AddEntry))]
-    public IActionResult AddEntry([FromBody] Model_AddEntry entry)
-    {
-        Structure_Entry newEntry = new()
+        try
         {
-            Name = entry.Name,
-            //UserID = CurrentUser.ID,
-            UserID = CurrentUser.ID,
-            TemplateID = entry.TemplateId,
-        };
+            List<Model_EntryFolders> entries = Query.GetFolders();
+            return Ok(new Model_Result(entries));
+        }
+        catch (RequestException ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+        catch (Exception ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ResultType.GeneralError));
+        }
+    }
 
-        if (entry.FolderId == null)
-            newEntry.FolderID = null;
-
-        DB.Structure_Entry.Add(newEntry);
-        DB.SaveChanges();
-
-        return Ok(new Model_Result());
+    [HttpGet(nameof(GetFolderContent))]
+    public IActionResult GetFolderContent(Guid? folderId)
+    {
+        try
+        {
+            List<Model_EntryItem> entries = Query.GetFolderContent(folderId);
+            return Ok(new Model_Result(entries));
+        }
+        catch (RequestException ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+        catch (Exception ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ResultType.GeneralError));
+        }
     }
 
     [HttpPost(nameof(AddFolder))]
-    public IActionResult AddFolder([FromBody] Model_AddFolder folder)
+    public IActionResult AddFolder(string? name)
     {
-        bool isFilled = DB.Structure_Entry_Folder.Any();
-        int sortOrder = isFilled ? (DB.Structure_Entry_Folder.Max(f => f.SortOrder) + 1) : 1;
-
-        Structure_Entry_Folder newFolder = new()
+        try
         {
-            Name = folder.Name,
-            SortOrder = sortOrder,
-            UserID = folder.UserId
-        };
+            if (string.IsNullOrWhiteSpace(name))
+                throw new RequestException(ResultType.DataIsInvalid);
 
-        DB.Structure_Entry_Folder.Add(newFolder);
-        DB.SaveChanges();
+            bool isFilled = DB.Structure_Entry_Folder.Any();
+            int sortOrder = isFilled ? (DB.Structure_Entry_Folder.Max(f => f.SortOrder) + 1) : 1;
 
-        return Ok(new Model_Result());
-    }
+            Structure_Entry_Folder newFolder = new()
+            {
+                ID = Guid.NewGuid(),
+                Name = name,
+                SortOrder = sortOrder,
+                UserID = CurrentUser.ID
+            };
 
-    [HttpPost(nameof(ChangeEntryName))]
-    public IActionResult ChangeEntryName(Model_ChangeEntryName entry)
-    {
-        Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == entry.EntryID);
-        if (item != null)
-            item.Name = entry.Name;
-        DB.SaveChanges();
+            DB.Structure_Entry_Folder.Add(newFolder);
+            DB.SaveChanges();
 
-        return Ok(new Model_Result());
-    }
-
-    [HttpPost(nameof(ChangeFolder))]
-    public IActionResult ChangeFolder([FromBody] Model_ChangeFolder folder)
-    {
-        Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == folder.EntryID);
-        if (item != null)
-            item.FolderID = folder.FolderID;
-        DB.SaveChanges();
-
-        return Ok(new Model_Result());
+            return Ok(new Model_Result(newFolder.ID));
+        }
+        catch (RequestException ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+        catch (Exception ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ResultType.GeneralError));
+        }
     }
 
     [HttpPost(nameof(DragAndDrop))]
@@ -106,4 +102,130 @@ public class EntryOverviewController : BaseController
 
         return Ok(new Model_Result());
     }
+    #endregion
+
+    #region Entries
+    [HttpPost(nameof(FilterEntries))]
+    public IActionResult FilterEntries([FromBody] Model_FilterEntry? model)
+    {
+        try
+        {
+            if (model is null)
+                throw new RequestException(ResultType.DataIsInvalid);
+
+            List<Model_EntryItem> entries = Query.LoadEntryItem(model);
+            return Ok(new Model_Result(entries));
+        }
+        catch (RequestException ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+        catch (Exception ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ResultType.GeneralError));
+        }
+    }
+
+    [HttpPost(nameof(AddEntry))]
+    public IActionResult AddEntry([FromBody] Model_AddEntry? model)
+    {
+        try
+        {
+            if (model is null || string.IsNullOrWhiteSpace(model.Name))
+                throw new RequestException(ResultType.DataIsInvalid);
+
+            Structure_Entry newEntry = new()
+            {
+                ID = Guid.NewGuid(),
+                Name = model.Name,
+                UserID = CurrentUser.ID,
+                TemplateID = model.TemplateId,
+                FolderID = model.FolderId
+            };
+
+            DB.Structure_Entry.Add(newEntry);
+            DB.SaveChanges();
+
+            return Ok(new Model_Result(newEntry.ID));
+        }
+        catch (RequestException ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+        catch (Exception ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ResultType.GeneralError));
+        }
+    }
+
+    [HttpPost(nameof(ChangeEntryName))]
+    public IActionResult ChangeEntryName([FromBody] Model_ChangeEntryName model)
+    {
+        try
+        {
+            if (model is null || string.IsNullOrWhiteSpace(model.Name))
+                throw new RequestException(ResultType.DataIsInvalid);
+
+            Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == model.EntryID)
+                ?? throw new RequestException(ResultType.NoDataFound);
+
+            item.Name = model.Name;
+            DB.SaveChanges();
+
+            return Ok(new Model_Result());
+        }
+        catch (RequestException ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+        catch (Exception ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ResultType.GeneralError));
+        }
+    }
+
+    [HttpPost(nameof(ChangeFolder))]
+    public IActionResult ChangeFolder([FromBody] Model_ChangeFolder? model)
+    {
+        try
+        {
+            if (model is null)
+                throw new RequestException(ResultType.DataIsInvalid);
+
+            Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == model.EntryID)
+                ?? throw new RequestException(ResultType.NoDataFound);
+
+            item.FolderID = model.FolderID;
+            DB.SaveChanges();
+
+            return Ok(new Model_Result());
+        }
+        catch (RequestException ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ex.ErrorCode));
+        }
+        catch (Exception ex)
+        {
+            if (!string.IsNullOrWhiteSpace(ex.Message))
+                Console.WriteLine(ex.Message);
+            return Ok(new Model_Result(ResultType.GeneralError));
+        }
+
+
+    }
+    #endregion
 }

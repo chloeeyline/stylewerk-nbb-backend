@@ -7,7 +7,6 @@ public record ApplicationUser
     public ApplicationUser()
     {
         Instantiated = false;
-        ID = new Guid("17626fdc-421a-4f5b-a391-6d171a9467b4");
         Login = new()
         {
             ID = Guid.Empty,
