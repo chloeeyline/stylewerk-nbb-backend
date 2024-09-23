@@ -60,6 +60,7 @@ public static class AmazonSecretsManager
                             "xxx",
                             "http://localhost:5115",
                             "http://localhost:5115",
+                            "",
                             "xxx"
                         ),
             _ => new SecretData(
@@ -71,6 +72,7 @@ public static class AmazonSecretsManager
                             "nwhRqucOl04Kgk7IUJ/J+oimkLA0eiqhVKFyayQscBA=",
                             "http://localhost:5115",
                             "http://localhost:5115",
+                            "",
                             "xxx"
                         ),
         };
@@ -115,7 +117,7 @@ public class AmazonSecretsManagerConfigurationSource() : IConfigurationSource
     public IConfigurationProvider Build(IConfigurationBuilder builder) => new AmazonSecretsManagerConfigurationProvider();
 }
 
-public record SecretData(string DbUser, string DbPassword, string DbHost, string DbPort, string DbDatabase, string JwtKey, string JwtIssuer, string JwtAudience, string PasswortPepper)
+public record SecretData(string DbUser, string DbPassword, string DbHost, string DbPort, string DbDatabase, string JwtKey, string JwtIssuer, string JwtAudience, string FrontendUrl, string PasswortPepper)
 {
-    public SecretData() : this("", "", "", "", "", "", "", "", "") { }
+    public SecretData() : this("", "", "", "", "", "", "", "", "", "") { }
 }

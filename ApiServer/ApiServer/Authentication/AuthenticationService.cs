@@ -1,4 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+
+using ChaosFox.AWS;
+
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StyleWerk.NBB.AWS;
@@ -170,9 +178,12 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             Birthday = new DateOnly(birthday.Year, birthday.Month, birthday.Day),
         };
 
+
         DB.User_Login.Add(user);
         DB.User_Information.Add(userInformation);
         DB.SaveChanges();
+
+        SendMail_EmailVeification(email, user.StatusToken);
     }
 
     public void VerifyEmail(Guid? token)
@@ -211,6 +222,8 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         user.StatusToken = GetStatusToken();
         user.StatusTokenExpireTime = StatusTokenDuration;
         DB.SaveChanges();
+
+        SendMail_EmailVeification(email, user.StatusToken);
     }
 
     public void ResetPassword(Model_ResetPassword? model)
@@ -266,6 +279,8 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         user.EmailChangeCode = new Random().Next(100001).ToString("D6");
         user.StatusTokenExpireTime = StatusTokenDuration;
         DB.SaveChanges();
+
+        SendMail_EmailChange(email, user.EmailChangeCode);
     }
 
     public void VerifyUpdatedEmail(string? code, User_Login user, string userAgent)
@@ -396,7 +411,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             throw new AuthenticationException(AuthenticationErrorCodes.UnToShort);
         if (!OnlyUsernameValidChars().IsMatch(username))
             throw new AuthenticationException(AuthenticationErrorCodes.UnUsesInvalidChars);
-        if (DB.User_Login.Any(s => s.Username == username))
+        if (DB.User_Login.Any(s => s.UsernameNormalized == username))
             throw new AuthenticationException(AuthenticationErrorCodes.UsernameAlreadyExists);
         return username;
     }
@@ -429,5 +444,30 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     [GeneratedRegex(@"\s")] private static partial Regex ContainsWhitespace();
     [GeneratedRegex(@"[a-zA-Z\d!#$%&'*+\-./?@\\_|^\s]")] private static partial Regex OnlyPasswordValidChars();
     [GeneratedRegex(@"[a-zA-Z\d&'*+\-./\\_|^\s]")] private static partial Regex OnlyUsernameValidChars();
+    #endregion
+
+    #region Email
+    private bool SendMail_EmailVeification(string email, Guid? token)
+    {
+        string content = SimpleEmailService.AccessEmailTemplate("EmailVerification.html");
+        string url = $"{SecretData.Value.FrontendUrl}/User/EmailVerification?id={token}";
+        content = content.Replace("YOUR_VERIFICATION_LINK_HERE", url);
+        return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
+    }
+
+    private bool SendMail_PasswordReset(string email, Guid? token)
+    {
+        string content = SimpleEmailService.AccessEmailTemplate("ResetPassword.html");
+        string url = $"{SecretData.Value.FrontendUrl}/User/EmailVerification?id={token}";
+        content = content.Replace("YOUR_VERIFICATION_LINK_HERE", url);
+        return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
+    }
+
+    private bool SendMail_EmailChange(string email, string code)
+    {
+        string content = SimpleEmailService.AccessEmailTemplate("EmailChange.html");
+        content = content.Replace("YOUR_VERIFICATION_LINK_HERE", code);
+        return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
+    }
     #endregion
 }
