@@ -28,6 +28,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser User)
 
     public List<Model_TemplatePreviewItems> LoadPreview(Guid templateId)
     {
+        //Sollte so nicht funktionieren duerfen, du laedst hier mehr oder wenioger alle Cells des Tempalte und nicht nur einer Zeile du must das nach am besten mit nem foreach loesen weil die Row sollte ja nur die Cells haben die zur jeweiligen Row gehoeren
         Model_TemplateCell[] cells =
         [
             .. DB.Structure_Template_Cell
@@ -63,6 +64,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser User)
         List<Model_Templates> result = [];
         filter = filter with { Username = filter.Username?.Normalize().ToLower() };
 
+        //Schau mal bei EntryOverview habe dir dafuer generic Code geschrieben
         if (filter.Share.Own && string.IsNullOrEmpty(filter.Username))
             result.AddRange(LoadUserTemplates(filter));
         if (filter.Share.GroupShared || !string.IsNullOrEmpty(filter.Username))
@@ -117,6 +119,8 @@ public class TemplateQueries(NbbContext DB, ApplicationUser User)
                     .Where(t => t.ID == item.ID)
                     .Include(t => t.O_User);
 
+                //Lagere diese Filter am besten in ne extra Methode wie in EntryOverviewQuery ist einfach das er immer gleich ist und es passieren weniger fehler
+                //Zudem sollte der Filter DirectUser auf den UserNamen und nicht den TemplateNamen verwendet werden
                 if (!string.IsNullOrEmpty(filter.Name) && !filter.DirectUser)
                     list = list.Where(t => t.Name.Contains(filter.Name));
                 if (!string.IsNullOrEmpty(filter.Name) && filter.DirectUser)
