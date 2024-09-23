@@ -45,6 +45,7 @@ namespace StyleWerk.NBB.Controllers
             Structure_Entry newEntry = new()
             {
                 Name = entry.Name,
+                //UserID = CurrentUser.ID,
                 UserID = CurrentUser.ID,
                 TemplateID = entry.TemplateId,
             };

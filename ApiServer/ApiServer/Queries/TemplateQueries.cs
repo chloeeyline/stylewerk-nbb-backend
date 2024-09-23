@@ -22,12 +22,36 @@ namespace StyleWerk.NBB.Queries
         public List<Model_Templates> LoadTemplates()
         {
             List<Model_Templates> templates = _context.Structure_Template
+                .Include(t => t.O_User)
                 .Where(t => t.UserID == _user.ID)
                 .Select(t => new Model_Templates(t, new ShareTypes(true, false, false, false)))
                 .ToList();
             //.OrderBy(t=> t.IsCopied);
 
             return templates;
+        }
+
+        public List<Model_TemplatePreviewItems> LoadPreview(Guid templateId)
+        {
+            Model_TemplateCell[] cells = _context.Structure_Template_Cell
+                .Include(c => c.O_Row)
+                .Where(c => c.RowID == c.O_Row.ID && c.O_Row.TemplateID == templateId)
+                .Select(c => new Model_TemplateCell(c.ID, c.RowID, c.SortOrder, c.HideOnEmpty, c.IsRequiered, c.Text, c.MetaData))
+                .ToArray();
+
+            Model_TemplateRow[] rows = _context.Structure_Template_Row
+                .Include(r => r.O_Cells)
+                .Include(r => r.O_Template)
+                .Where(r => r.TemplateID == templateId)
+                .Select(r => new Model_TemplateRow(r.ID, r.O_Template.ID, r.SortOrder, r.CanWrapCells, cells)).ToArray();
+
+            List<Model_TemplatePreviewItems> preview = _context.Structure_Template
+                .Where(t => t.ID == templateId)
+                .Select(t => new Model_TemplatePreviewItems(t.ID, t.Name, rows))
+                .ToList();
+
+            return preview;
+
         }
 
         public List<Model_Templates> LoadFilterTemplates(Model_FilterTemplate filter)

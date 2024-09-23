@@ -18,12 +18,13 @@ namespace StyleWerk.NBB.Controllers
         }
 
         [HttpPost(nameof(FilterTemplates))]
-        public IActionResult FilterTemplates(Model_FilterTemplate filters)
+        public IActionResult FilterTemplates([FromBody] Model_FilterTemplate filters)
         {
             List<Model_Templates> templates = _templateQueries.LoadFilterTemplates(filters);
             return Ok(new Model_Result(templates));
         }
 
+        [HttpGet(nameof(GetTemplates))]
         public IActionResult GetTemplates()
         {
             List<Model_Templates> templates = _templateQueries.LoadTemplates();
@@ -41,8 +42,7 @@ namespace StyleWerk.NBB.Controllers
             {
                 foreach (Structure_Template_Row row in removeTemplateRow)
                 {
-                    IQueryable<Structure_Template_Cell> templateCells = DB.Structure_Template_Cell.Where(t => t.RowID == row.ID);
-                    removeTemplateCell.AddRange(templateCells);
+                    removeTemplateCell.AddRange(DB.Structure_Template_Cell.Where(t => t.RowID == row.ID));
                 }
 
                 DB.Structure_Template_Cell.RemoveRange(removeTemplateCell);
@@ -52,13 +52,16 @@ namespace StyleWerk.NBB.Controllers
             if (removeTemplate != null)
                 DB.Structure_Template.Remove(removeTemplate);
 
+            DB.SaveChanges();
+
             return Ok(new Model_Result());
         }
 
         [HttpPost(nameof(GetTemplatePreview))]
         public IActionResult GetTemplatePreview(Guid TemplateId)
         {
-            return Ok(new Model_Result());
+            List<Model_TemplatePreviewItems> preview = _templateQueries.LoadPreview(TemplateId);
+            return Ok(new Model_Result(preview));
         }
 
         [HttpPost(nameof(AddTemplate))]
@@ -78,7 +81,6 @@ namespace StyleWerk.NBB.Controllers
             return Ok(new Model_Result());
         }
 
-        //not finished
         [HttpPost(nameof(CopyTemplate))]
         public IActionResult CopyTemplate(Guid TemplateId)
         {
@@ -87,26 +89,49 @@ namespace StyleWerk.NBB.Controllers
 
             if (copyTemplate != null)
             {
-                List<Structure_Template_Row> copyRows = DB.Structure_Template_Row.Where(t => t.TemplateID == TemplateId).ToList();
-                if (copyRows != null)
-                {
-                    foreach (Structure_Template_Row row in copyRows)
-                    {
-                        IQueryable<Structure_Template_Cell> cells = DB.Structure_Template_Cell.Where(c => c.RowID == row.ID);
-                        copyCells.AddRange(cells);
-                    }
-                }
-
                 Structure_Template template = new()
                 {
-                    Name = $"{copyTemplate.Name} kopiert",
+                    ID = Guid.NewGuid(),
+                    Name = $"{copyTemplate.Name} kopie",
                     Description = copyTemplate.Description,
                     UserID = CurrentUser.ID
                 };
-                DB.Structure_Template.Add(template);
-                DB.SaveChanges();
 
+                DB.Structure_Template.Add(template);
+
+                foreach (Structure_Template_Row row in DB.Structure_Template_Row.Where(t => t.TemplateID == TemplateId).ToList())
+                {
+                    Structure_Template_Row newRow = new()
+                    {
+                        ID = Guid.NewGuid(),
+                        TemplateID = template.ID,
+                        SortOrder = row.SortOrder,
+                        CanWrapCells = row.CanWrapCells
+                    };
+
+                    DB.Structure_Template_Row.Add(newRow);
+
+                    foreach (Structure_Template_Cell cell in DB.Structure_Template_Cell.Where(c => c.RowID == row.ID).ToList())
+                    {
+                        Structure_Template_Cell newCell = new()
+                        {
+                            ID = Guid.NewGuid(),
+                            RowID = newRow.ID,
+                            SortOrder = cell.SortOrder,
+                            InputHelper = cell.InputHelper,
+                            HideOnEmpty = cell.HideOnEmpty,
+                            IsRequiered = cell.IsRequiered,
+                            Text = cell.Text,
+                            MetaData = cell.MetaData
+                        };
+
+                        DB.Structure_Template_Cell.Add(newCell);
+                    }
+                }
+
+                DB.SaveChanges();
             }
+
             return Ok(new Model_Result());
         }
 
