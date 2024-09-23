@@ -7,7 +7,7 @@ public record Model_EntryFolders(Guid? ID, string? FolderTitle, int SortOrder, M
 
 public record Model_EntryItem(Guid ID, string Name, string? FolderName, string UserName, string TemplateName, long CreatedAt, long LastUpdatedAt, ShareTypes Share)
 {
-    public Model_EntryItem(Structure_Entry item, ShareTypes share) : this(item.ID, item.Name, item.O_Folder?.Name, item.O_User.Username, item.OTemplate.Name, item.CreatedAt.ToUnixTimeMilliseconds(), item.LastUpdatedAt.ToUnixTimeMilliseconds(), share) { }
+    public Model_EntryItem(Structure_Entry item, ShareTypes share) : this(item.ID, item.Name, item.O_Folder?.Name, item.O_User.Username, item.O_Template.Name, item.CreatedAt.ToUnixTimeMilliseconds(), item.LastUpdatedAt.ToUnixTimeMilliseconds(), share) { }
 }
 
 /// <summary>

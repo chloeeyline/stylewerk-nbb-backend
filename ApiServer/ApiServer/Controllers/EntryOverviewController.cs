@@ -32,8 +32,8 @@ namespace StyleWerk.NBB.Controllers
         }
 
         //Filter by Tags isn't possible yet
-        [HttpPost(nameof(GetEntries))]
-        public IActionResult GetEntries([FromBody] Model_FilterEntry filter)
+        [HttpPost(nameof(FilterEntries))]
+        public IActionResult FilterEntries([FromBody] Model_FilterEntry filter)
         {
             List<Model_EntryItem> entries = _entryQueries.LoadEntryItem(filter);
             return Ok(new Model_Result(entries));
@@ -81,7 +81,8 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult ChangeEntryName(Model_ChangeEntryName entry)
         {
             Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == entry.EntryID);
-            if (item != null) item.Name = entry.Name;
+            if (item != null)
+                item.Name = entry.Name;
             DB.SaveChanges();
 
             return Ok(new Model_Result());

@@ -13,11 +13,10 @@ namespace StyleWerk.NBB.Models
     public record Model_TemplatePreviewItems(Guid Id, string TemplateTitle, Model_TemplateRow[] TemplateRows);
 
 
-    public record Model_FilterTemplate(string? Name, string? Username, string? TemplateName, string[]? Tags, ShareTypes Share, bool DirectUser);
+    public record Model_FilterTemplate(string? Name, string? Username, string[]? Tags, ShareTypes Share, bool directUser);
+    public record Model_ChangeTemplateDescription(string Description, Guid TemplateId);
     public record Model_ChangeTemplateName(string Name, Guid TemplateId);
-    public record Model_AddTemplate(string Name, string Description);
-    //Not quite sure if that function should be in a separate Controller
+    public record Model_AddTemplate(string Name, string? Description, string[]? Tags);
     //ShareId the id that the template gets shared. We can derive that info from the object sharetypes
     public record Model_ShareTemplate(Guid TemplateId, ShareTypes Share, Guid? ShareId);
-    public record Model_CopyTemplate(Guid TemplateId);
 }
