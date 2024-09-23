@@ -11,6 +11,7 @@ SecretData secretData = builder.AddAmazonSecretsManager();
 
 builder.Services.AddDbContext<NbbContext>(options => options.UseNpgsql(secretData.GetConnectionString()));
 builder.Services.AddControllers(options => options.UseDateOnlyTimeOnlyStringConverters());
+builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 
 builder.AddJWT(secretData);
 
