@@ -41,7 +41,7 @@ public class Structure_Template : IConnectedEntity<Structure_Template>, IEntity_
     {
         b.HasOne(s => s.O_User).WithMany().HasForeignKey(o => o.UserID);
 
-        b.HasMany(s => s.O_EntryList).WithOne(s => s.OTemplate).HasForeignKey(s => s.TemplateID);
+        b.HasMany(s => s.O_EntryList).WithOne(s => s.O_Template).HasForeignKey(s => s.TemplateID);
         b.HasMany(s => s.O_Rows).WithOne(s => s.O_Template).HasForeignKey(s => s.TemplateID);
     }
 }

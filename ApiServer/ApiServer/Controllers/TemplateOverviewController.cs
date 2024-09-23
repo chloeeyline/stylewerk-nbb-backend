@@ -2,7 +2,6 @@
 
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Structure;
-using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
@@ -132,7 +131,5 @@ namespace StyleWerk.NBB.Controllers
 
             return Ok(new Model_Result());
         }
-
-        protected override bool MissingRight(UserRight right) => throw new NotImplementedException();
     }
 }
