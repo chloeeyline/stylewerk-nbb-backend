@@ -4,6 +4,8 @@ namespace StyleWerk.NBB.Models;
 
 public record PagingList<T>(int Count, int Page, int MaxPage, int PerPage, List<T> Items);
 
+public record ShareTypes(bool Own, bool GroupShared, bool Public, bool DirectlyShared);
+
 /// <summary>
 /// The default Model to always wrap the results of a requests from the frontend
 /// </summary>
