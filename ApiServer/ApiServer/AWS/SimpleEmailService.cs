@@ -4,7 +4,7 @@ using Amazon;
 using Amazon.SimpleEmail;
 using Amazon.SimpleEmail.Model;
 
-namespace ChaosFox.AWS;
+namespace StyleWerk.NBB.AWS;
 
 public class SimpleEmailService
 {
