@@ -97,8 +97,8 @@ public partial class NbbContext : DbContext
         foreach (Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry? entry in entries)
         {
             IEntity_EditDate temp = ((IEntity_EditDate) entry.Entity);
-            if (entry.State == EntityState.Added) temp.CreatedAt = DateTime.UtcNow;
-            if (entry.State == EntityState.Modified) temp.LastUpdatedAt = DateTime.UtcNow;
+            if (entry.State == EntityState.Added) temp.CreatedAt = new DateTimeOffset(DateTime.UtcNow);
+            if (entry.State == EntityState.Modified) temp.LastUpdatedAt = new DateTimeOffset(DateTime.UtcNow);
         }
 
         return base.SaveChanges();
