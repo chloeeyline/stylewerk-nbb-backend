@@ -34,8 +34,11 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
         if (string.IsNullOrWhiteSpace(name))
             throw new RequestException(ResultType.DataIsInvalid);
 
-        bool isFilled = DB.Structure_Entry_Folder.Any();
-        int sortOrder = isFilled ? (DB.Structure_Entry_Folder.Max(f => f.SortOrder) + 1) : 1;
+        bool isEmpty = !DB.Structure_Entry_Folder.Any();
+        int sortOrder = isEmpty ? 1 :
+            (DB.Structure_Entry_Folder.Where(s => s.UserID == CurrentUser.ID).Max(f => f.SortOrder) + 1);
+        if (DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID && s.Name == name))
+            throw new RequestException(ResultType.DataIsInvalid, "You already have a Folder with the same Name");
 
         Structure_Entry_Folder newFolder = new()
         {

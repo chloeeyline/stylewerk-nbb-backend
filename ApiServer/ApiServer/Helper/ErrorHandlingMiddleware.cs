@@ -74,7 +74,7 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
         }
         else if (exception is RequestException requestException)
         {
-            response = new Model_Result(requestException.ErrorCode);
+            response = new Model_Result(requestException.ErrorCode, null, requestException.Message);
         }
 
         // Serialize the response to JSON
