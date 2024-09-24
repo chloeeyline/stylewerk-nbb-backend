@@ -33,6 +33,23 @@ public class TemplateOverviewController : BaseController
     {
         List<Model_Templates> templates = _templateQueries.LoadTemplates();
         return Ok(new Model_Result(templates));
+    private void Share(Model_ShareTemplate shareTemplate, Guid toWhom, bool type)
+    {
+        Share_Item newShareItem = new()
+        {
+            ID = Guid.NewGuid(),
+            WhoShared = CurrentUser.ID,
+            Group = type,
+            ItemType = 2,
+            ItemID = shareTemplate.TemplateId,
+            ToWhom = toWhom,
+            CanShare = shareTemplate.Rights.CanShare,
+            CanDelete = shareTemplate.Rights.CanDelete,
+            CanEdit = shareTemplate.Rights.CanEdit
+        };
+
+        DB.Share_Item.Add(newShareItem);
+        DB.SaveChanges();
     }
 
     [HttpPost(nameof(RemoveTemplate))]

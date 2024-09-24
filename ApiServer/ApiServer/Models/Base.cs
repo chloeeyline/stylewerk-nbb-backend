@@ -5,6 +5,7 @@ namespace StyleWerk.NBB.Models;
 public record PagingList<T>(int Count, int Page, int MaxPage, int PerPage, List<T> Items);
 
 public record ShareTypes(bool Own, bool GroupShared, bool Public, bool DirectlyShared);
+public record ShareRights(bool CanShare, bool CanEdit, bool CanDelete);
 public record Model_SharedItem(Guid ID, string SharedFrom, bool FromGroup, Guid? GroupID, string? GroupName, bool CanShare, bool CanEdit, bool CanDelete);
 
 /// <summary>
@@ -19,7 +20,7 @@ public record Model_Result(ResultType Type, string TypeText, int? ErrorCode, str
     public Model_Result(object? data) : this(ResultType.SuccessReturnData, ResultType.SuccessReturnData.ToString(), null, null, data) { }
     public Model_Result(ResultType type) : this(type, type.ToString(), null, null, null) { }
     public Model_Result(ResultType type, int? errorCode, string? errorMessage) : this(type, type.ToString(), errorCode, errorMessage, null) { }
-    public Model_Result(AuthenticationErrorCodes warning) : this(ResultType.Authentification, ResultType.Authentification.ToString(), (int) warning, warning.ToString(), null) { }
+    public Model_Result(AuthenticationErrorCodes warning) : this(ResultType.Authentification, ResultType.Authentification.ToString(), (int)warning, warning.ToString(), null) { }
 }
 
 [Serializable]

@@ -18,5 +18,4 @@ public record Model_FilterTemplate(string? Name, string? Username, string[]? Tag
 public record Model_ChangeTemplateDescription(string Description, Guid TemplateId);
 public record Model_ChangeTemplateName(string Name, Guid TemplateId);
 public record Model_AddTemplate(string Name, string? Description, string[]? Tags);
-//ShareId the id that the template gets shared. We can derive that info from the object sharetypes
-public record Model_ShareTemplate(Guid TemplateId, ShareTypes Share, Guid? ShareId);
+public record Model_ShareTemplate(Guid TemplateId, ShareTypes Share, Guid? ShareId, ShareRights Rights);
