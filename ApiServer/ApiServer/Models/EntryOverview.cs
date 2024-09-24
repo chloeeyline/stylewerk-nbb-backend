@@ -23,7 +23,7 @@ public record Model_ChangeFolder(Guid EntryID, Guid? FolderID);
 public record Model_ChangeEntryName(Guid EntryID, string Name);
 
 /// <summary>
-/// The filters send from the Frontend to get the resulting Folders & Entrys that match the Filter
+/// The filters send from the Frontend to get the resulting Folders and Entrys that match the Filter
 /// </summary>
 /// <param name="Name"></param>
 /// <param name="Username"></param>

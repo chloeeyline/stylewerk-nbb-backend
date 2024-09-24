@@ -18,14 +18,14 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
     public IActionResult GetFolders()
     {
         List<Model_EntryFolders> entries = Query.GetFolders();
-        return Ok(new Model_Result(entries));
+        return Ok(new Model_Result<List<Model_EntryFolders>>(entries));
     }
 
     [HttpGet(nameof(GetFolderContent))]
     public IActionResult GetFolderContent(Guid? folderId)
     {
         List<Model_EntryItem> entries = Query.GetFolderContent(folderId);
-        return Ok(new Model_Result(entries));
+        return Ok(new Model_Result<List<Model_EntryItem>>(entries));
     }
 
     [HttpPost(nameof(AddFolder))]
@@ -51,14 +51,14 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
         DB.Structure_Entry_Folder.Add(newFolder);
         DB.SaveChanges();
 
-        return Ok(new Model_Result(newFolder.ID));
+        return Ok(new Model_Result<Guid>(newFolder.ID));
     }
 
     [HttpPost(nameof(DragAndDrop))]
     public IActionResult DragAndDrop([FromBody] Model_ListFolderSortOrder listFolder)
     {
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<object>());
     }
     #endregion
 
@@ -70,7 +70,7 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
             throw new RequestException(ResultType.DataIsInvalid);
 
         List<Model_EntryItem> entries = Query.LoadEntryItem(model);
-        return Ok(new Model_Result(entries));
+        return Ok(new Model_Result<List<Model_EntryItem>>(entries));
     }
 
     [HttpPost(nameof(AddEntry))]
@@ -91,7 +91,7 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
         DB.Structure_Entry.Add(newEntry);
         DB.SaveChanges();
 
-        return Ok(new Model_Result(newEntry.ID));
+        return Ok(new Model_Result<Guid>(newEntry.ID));
     }
 
     [HttpPost(nameof(ChangeEntryName))]
@@ -106,7 +106,7 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
         item.Name = model.Name;
         DB.SaveChanges();
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<object>());
     }
 
     [HttpPost(nameof(ChangeFolder))]
@@ -121,7 +121,7 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
         item.FolderID = model.FolderID;
         DB.SaveChanges();
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<object>());
     }
     #endregion
 }
