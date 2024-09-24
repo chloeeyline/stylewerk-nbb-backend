@@ -11,7 +11,9 @@ public record Model_SharedItem(Guid ID, string SharedFrom, bool FromGroup, Guid?
 /// The default Model to always wrap the results of a requests from the frontend
 /// </summary>
 /// <param name="Type"></param>
+/// <param name="TypeText"></param>
 /// <param name="ErrorCode"></param>
+/// <param name="ErrorMessage"></param>
 /// <param name="Data"></param>
 public record Model_Result(ResultType Type, string TypeText, int? ErrorCode, string? ErrorMessage, object? Data)
 {

@@ -16,6 +16,8 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Login
     [ApiExplorerSettings(GroupName = "Login")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result))] // Success Response
     [HttpPost(nameof(Login))]
     public IActionResult Login([FromBody] Model_Login? model)
     {
