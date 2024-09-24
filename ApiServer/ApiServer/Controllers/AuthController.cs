@@ -15,6 +15,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     private string UserAgent => Request.Headers.UserAgent.ToString();
 
     #region Login
+    [ApiExplorerSettings(GroupName = "Login")]
     [HttpPost(nameof(Login))]
     public IActionResult Login([FromBody] Model_Login? model)
     {
@@ -26,6 +27,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
         return Ok(new Model_Result(result));
     }
 
+    [ApiExplorerSettings(GroupName = "Login")]
     [HttpPost(nameof(RefreshToken))]
     public IActionResult RefreshToken([FromBody] Model_RefreshToken? model)
     {
@@ -39,6 +41,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     #endregion
 
     #region Registration
+    [ApiExplorerSettings(GroupName = "Registration")]
     [HttpPost(nameof(Registration))]
     public IActionResult Registration([FromBody] Model_Registration? model)
     {
@@ -46,6 +49,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
         return Ok(new Model_Result());
     }
 
+    [ApiExplorerSettings(GroupName = "Registration")]
     [HttpPost(nameof(VerifyEmail))]
     public IActionResult VerifyEmail(Guid? token)
     {
@@ -55,6 +59,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     #endregion
 
     #region Forgot Password
+    [ApiExplorerSettings(GroupName = "Forgot Password")]
     [HttpPost(nameof(RequestPasswordReset))]
     public IActionResult RequestPasswordReset([FromBody] string email)
     {
@@ -62,6 +67,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
         return Ok(new Model_Result());
     }
 
+    [ApiExplorerSettings(GroupName = "Forgot Password")]
     [HttpPost(nameof(ResetPassword))]
     public IActionResult ResetPassword([FromBody] Model_ResetPassword? model)
     {
@@ -71,6 +77,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     #endregion
 
     #region Session
+    [ApiExplorerSettings(GroupName = "Session")]
     [HttpPost(nameof(RemoveSessions)), Authorize]
     public IActionResult RemoveSessions()
     {
@@ -78,6 +85,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
         return Ok(new Model_Result());
     }
 
+    [ApiExplorerSettings(GroupName = "Session")]
     [HttpPost(nameof(Logout)), Authorize]
     public IActionResult Logout()
     {
@@ -87,6 +95,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     #endregion
 
     #region Change Email
+    [ApiExplorerSettings(GroupName = "Change Email")]
     [HttpPost(nameof(UpdateEmail)), Authorize]
     public IActionResult UpdateEmail(string? email)
     {
@@ -94,7 +103,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
         return Ok(new Model_Result());
     }
 
-    //Muss angemeldet sein
+    [ApiExplorerSettings(GroupName = "Change Email")]
     [HttpPost(nameof(VerifyUpdatedEmail)), Authorize]
     public IActionResult VerifyUpdatedEmail(string? code)
     {
@@ -104,7 +113,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     #endregion
 
     #region Userdata
-    //Muss angemeldet sein
+    [ApiExplorerSettings(GroupName = "Userdata")]
     [HttpPost(nameof(GetUserData)), Authorize]
     public IActionResult GetUserData()
     {
@@ -112,7 +121,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
         return Ok(new Model_Result(user));
     }
 
-    //Muss angemeldet sein
+    [ApiExplorerSettings(GroupName = "Userdata")]
     [HttpPost(nameof(UpdateUserData)), Authorize]
     public IActionResult UpdateUserData([FromBody] Model_UpdateUserData model)
     {
@@ -122,6 +131,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     #endregion
 
     #region Validation
+    [ApiExplorerSettings(GroupName = "Validation")]
     [HttpPost(nameof(ValidatePassword))]
     public IActionResult ValidatePassword([FromBody] Model_ValidateIdentification model)
     {
@@ -129,6 +139,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
         return Ok(new Model_Result());
     }
 
+    [ApiExplorerSettings(GroupName = "Validation")]
     [HttpPost(nameof(ValidateEmail))]
     public IActionResult ValidateEmail([FromBody] Model_ValidateIdentification? model)
     {
@@ -136,6 +147,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
         return Ok(new Model_Result());
     }
 
+    [ApiExplorerSettings(GroupName = "Validation")]
     [HttpPost(nameof(ValidateUsername))]
     public IActionResult ValidateUsername([FromBody] Model_ValidateIdentification? model)
     {

@@ -9,11 +9,12 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 SecretData secretData = builder.AddAmazonSecretsManager();
 
-builder.Services.AddDbContext<NbbContext>(options => options.UseNpgsql(secretData.GetConnectionString()));
 builder.Services.AddControllers(options => options.UseDateOnlyTimeOnlyStringConverters());
+builder.Services.AddDbContext<NbbContext>(options => options.UseNpgsql(secretData.GetConnectionString()));
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 
 builder.AddJWT(secretData);
+builder.AddSwagger();
 
 builder.Services.AddCors(options =>
 {
@@ -36,5 +37,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.Run();
+
