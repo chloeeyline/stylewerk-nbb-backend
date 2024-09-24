@@ -64,7 +64,6 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQue
         if (filter.Share.DirectlyShared || !string.IsNullOrWhiteSpace(filter.Username)) result.AddRange(LoadDirectlySharedEntryItems(filter));
         if (filter.Share.Public || !string.IsNullOrWhiteSpace(filter.Username)) result.AddRange(LoadPublicEntryItems(filter));
 
-        //Dont think that it is neccacery because that should already be all unique items
         List<Model_EntryItem> entries = result.DistinctBy(s => s.ID).ToList();
         return entries;
     }

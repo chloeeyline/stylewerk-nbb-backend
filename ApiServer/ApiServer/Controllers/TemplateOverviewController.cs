@@ -1,38 +1,71 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
 namespace StyleWerk.NBB.Controllers;
 
-//Authorize Attribute einfuegen entweder bei Controller oder jeder Methode wo er angemeldet sein muss
-[ApiController, Route("TemplateOverview")]
-public class TemplateOverviewController : BaseController
+[ApiController, Route("TemplateOverview"), Authorize]
+public class TemplateOverviewController(NbbContext db) : BaseController(db)
 {
-    private readonly TemplateQueries _templateQueries;
+    public TemplateQueries Query => new(DB, CurrentUser);
 
-    //Zusaetzlich erstelle region um die funktionen zu gruppieren dann kann man den code besser einklappen und ist leichter zu bearbeiten wenn man nicht alles offen haben muss und co siehe wieder Overview von den Entrys
-    public TemplateOverviewController(NbbContext db) : base(db)
-    {
-        //Siehe EntryOverviewController musst anders machen weil User erst nach Constructor authentifieziert wird
-        _templateQueries = new TemplateQueries(db, CurrentUser);
-    }
+    #region Load Templates
 
     [HttpPost(nameof(FilterTemplates))]
     public IActionResult FilterTemplates([FromBody] Model_FilterTemplate filters)
     {
-        List<Model_Templates> templates = _templateQueries.LoadFilterTemplates(filters);
+        List<Model_Templates> templates = Query.LoadFilterTemplates(filters);
         return Ok(new Model_Result(templates));
     }
 
-    //brauchst eigentlich keine eigene methode weil du einfach die FilterTemplate hernehmen kannst mit filter own sollte eigentlich aufs gleiche laufen
-    [HttpGet(nameof(GetTemplates))]
-    public IActionResult GetTemplates()
+    [HttpGet(nameof(GetTemplatePreview))]
+    public IActionResult GetTemplatePreview(Guid TemplateId)
     {
-        List<Model_Templates> templates = _templateQueries.LoadTemplates();
-        return Ok(new Model_Result(templates));
+        List<Model_TemplatePreviewItems> preview = Query.LoadPreview(TemplateId);
+        return Ok(new Model_Result(preview));
+    }
+    #endregion
+
+    #region Actions
+
+    //Idk if thats correct
+    [HttpPost(nameof(ShareTemplate))]
+    public IActionResult ShareTemplate([FromBody] Model_ShareTemplate shareTemplate)
+    {
+        if (shareTemplate is null)
+            throw new RequestException(ResultType.DataIsInvalid);
+
+        if (shareTemplate.Share.GroupShared)
+        {
+            //check if Group exists
+            Share_Group group = DB.Share_Group.FirstOrDefault(g => g.ID == shareTemplate.ShareId)
+                ?? throw new RequestException(ResultType.NoDataFound);
+
+            //check if User is in Group
+            bool isInGroup = DB.Share_GroupUser.Any(g => g.GroupID == group.ID && g.UserID == CurrentUser.ID);
+            if (!isInGroup)
+                throw new RequestException(ResultType.MissingRight);
+
+            Share(shareTemplate, group.ID, shareTemplate.Share.GroupShared);
+        }
+
+        if (shareTemplate.Share.DirectlyShared)
+        {
+            //check if User exists
+            Database.User.User_Information userExists = DB.User_Information.FirstOrDefault(u => u.ID == shareTemplate.ShareId)
+                ?? throw new RequestException(ResultType.GeneralError);
+
+            Share(shareTemplate, userExists.ID, shareTemplate.Share.GroupShared);
+        }
+
+        return Ok(new Model_Result());
+    }
+
     private void Share(Model_ShareTemplate shareTemplate, Guid toWhom, bool type)
     {
         Share_Item newShareItem = new()
@@ -53,9 +86,33 @@ public class TemplateOverviewController : BaseController
     }
 
     [HttpPost(nameof(RemoveTemplate))]
-    public IActionResult RemoveTemplate(Guid TemplateId)
+    public IActionResult RemoveTemplate(Guid? TemplateId)
     {
-        //Du musst hier auch alle Entries loeschen die das Template nutzen
+        if (TemplateId is null)
+            throw new RequestException(ResultType.DataIsInvalid);
+
+        //get Entries with that templateId 
+        IQueryable<Structure_Entry> entries = DB.Structure_Entry.Where(e => e.TemplateID == TemplateId);
+
+        if (entries.Any())
+        {
+            foreach (Structure_Entry? entry in entries)
+            {
+                IQueryable<Structure_Entry_Cell> entryCells = DB.Structure_Entry_Cell.Where(c => c.EntryID == entry.ID);
+                if (entryCells.Any())
+                    DB.Structure_Entry_Cell.RemoveRange(entryCells);
+
+                //checking if Entry with that Template exists in a Folder
+                IQueryable<Structure_Entry_Folder> inFolder = DB.Structure_Entry_Folder.Where(e => e.ID == entry.ID);
+                if (inFolder.Any())
+                    DB.Structure_Entry_Folder.RemoveRange(inFolder);
+            }
+
+            //delete Entries with that TemplateId
+            DB.Structure_Entry.RemoveRange(entries);
+        }
+
+        //Remove Template 
         Structure_Template? removeTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == TemplateId);
         List<Structure_Template_Row> removeTemplateRow = [.. DB.Structure_Template_Row.Where(t => t.TemplateID == TemplateId)];
         List<Structure_Template_Cell> removeTemplateCell = [];
@@ -78,13 +135,6 @@ public class TemplateOverviewController : BaseController
         return Ok(new Model_Result());
     }
 
-    [HttpPost(nameof(GetTemplatePreview))]
-    public IActionResult GetTemplatePreview(Guid TemplateId)
-    {
-        List<Model_TemplatePreviewItems> preview = _templateQueries.LoadPreview(TemplateId);
-        return Ok(new Model_Result(preview));
-    }
-
     [HttpPost(nameof(AddTemplate))]
     public IActionResult AddTemplate(Model_AddTemplate newTemplate)
     {
@@ -102,10 +152,12 @@ public class TemplateOverviewController : BaseController
         return Ok(new Model_Result());
     }
 
-    //Parameter bestenfalls immer nullable und testen ob null oder nicht gueltig hier zum beispiel obs ne leere id ist oder was halt geprueft werden muss sonst fehler schmeisen siehe EntryOverview einfach um bessere Controlle zu haben wie fehlerhafte Requests gehandelt werden
     [HttpPost(nameof(CopyTemplate))]
-    public IActionResult CopyTemplate(Guid TemplateId)
+    public IActionResult CopyTemplate(Guid? TemplateId)
     {
+        if (TemplateId is null)
+            throw new RequestException(ResultType.DataIsInvalid);
+
         Structure_Template? copyTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == TemplateId);
         List<Structure_Template_Cell> copyCells = [];
 
@@ -157,12 +209,15 @@ public class TemplateOverviewController : BaseController
         return Ok(new Model_Result());
     }
 
-    //Models bestenfalls immer nullable und testen ob null sonst fehler schmeisen siehe EntryOverview einfach um bessere Controlle zu haben wie fehlerhafte Requests gehandelt werden
     [HttpPost(nameof(ChangeTemplateName))]
-    public IActionResult ChangeTemplateName(Model_ChangeTemplateName template)
+    public IActionResult ChangeTemplateName(Model_ChangeTemplateName? template)
     {
-        //Fehler schmeissen wie bei EntryOverview das FrontEnd weiss das Template gibts nimma oder halt das was schief gelaufen ist
-        Structure_Template? changeTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == template.TemplateId);
+        if (template is null || string.IsNullOrWhiteSpace(template.Name))
+            throw new RequestException(ResultType.DataIsInvalid);
+
+        Structure_Template? changeTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == template.TemplateId)
+             ?? throw new RequestException(ResultType.NoDataFound);
+
         if (changeTemplate != null)
             changeTemplate.Name = template.Name;
         DB.SaveChanges();
@@ -173,12 +228,15 @@ public class TemplateOverviewController : BaseController
     [HttpPost(nameof(ChangeTemplateDescription))]
     public IActionResult ChangeTemplateDescription(Model_ChangeTemplateDescription template)
     {
-        //Fehler schmeissen wie bei EntryOverview das FrontEnd weiss das Template gibts nimma oder halt das was schief gelaufen ist
-        Structure_Template? changeTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == template.TemplateId);
+        Structure_Template? changeTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == template.TemplateId)
+            ?? throw new RequestException(ResultType.NoDataFound);
+
         if (changeTemplate != null)
             changeTemplate.Description = template.Description;
         DB.SaveChanges();
 
         return Ok(new Model_Result());
     }
+
+    #endregion
 }
