@@ -40,6 +40,10 @@ public class TemplateOverviewController(NbbContext db) : BaseController(db)
         if (shareTemplate is null)
             throw new RequestException(ResultType.DataIsInvalid);
 
+        //check if Template Exists
+        Structure_Template template = DB.Structure_Template.FirstOrDefault(t => t.ID == shareTemplate.TemplateId)
+            ?? throw new RequestException(ResultType.NoDataFound);
+
         if (shareTemplate.Share.GroupShared)
         {
             //check if Group exists
@@ -61,6 +65,13 @@ public class TemplateOverviewController(NbbContext db) : BaseController(db)
                 ?? throw new RequestException(ResultType.GeneralError);
 
             Share(shareTemplate, userExists.ID, shareTemplate.Share.GroupShared);
+        }
+
+        if (shareTemplate.Share.Public)
+        {
+            template.IsPublic = true;
+            DB.Structure_Template.Update(template);
+            DB.SaveChanges();
         }
 
         return Ok(new Model_Result());
