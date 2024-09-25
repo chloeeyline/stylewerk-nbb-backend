@@ -74,7 +74,6 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQue
             .ThenBy(s => s.Name)
             .ToList();
 
-        List<Model_EntryItem> entries = result.DistinctBy(s => s.ID).ToList();
         return entries;
     }
 
