@@ -8,12 +8,15 @@ using StyleWerk.NBB.Queries;
 
 namespace StyleWerk.NBB.Controllers;
 
-[ApiController, Route("EntryOverview"), Authorize]
-public class EntryOverviewController(NbbContext db) : BaseController(db)
+[ApiController, Route("Entry"), Authorize]
+public class EntryController(NbbContext db) : BaseController(db)
 {
     public EntryQueries Query => new(DB, CurrentUser);
 
     #region Folder
+    [ApiExplorerSettings(GroupName = "Folder")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
     [HttpGet(nameof(GetFolders))]
     public IActionResult GetFolders()
     {
@@ -21,6 +24,9 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<List<Model_EntryFolders>>(entries));
     }
 
+    [ApiExplorerSettings(GroupName = "Folder")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
     [HttpGet(nameof(GetFolderContent))]
     public IActionResult GetFolderContent(Guid? folderId)
     {
@@ -28,6 +34,9 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<List<Model_EntryItem>>(entries));
     }
 
+    [ApiExplorerSettings(GroupName = "Folder")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
     [HttpPost(nameof(AddFolder))]
     public IActionResult AddFolder(string? name)
     {
@@ -54,6 +63,9 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<Guid>(newFolder.ID));
     }
 
+    [ApiExplorerSettings(GroupName = "Folder")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(DragAndDrop))]
     public IActionResult DragAndDrop([FromBody] Model_ListFolderSortOrder listFolder)
     {
@@ -63,6 +75,9 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
     #endregion
 
     #region Entries
+    [ApiExplorerSettings(GroupName = "Entries")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryItem>>))]
     [HttpPost(nameof(FilterEntries))]
     public IActionResult FilterEntries([FromBody] Model_FilterEntry? model)
     {
@@ -73,6 +88,9 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<List<Model_EntryItem>>(entries));
     }
 
+    [ApiExplorerSettings(GroupName = "Entries")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
     [HttpPost(nameof(AddEntry))]
     public IActionResult AddEntry([FromBody] Model_AddEntry? model)
     {
@@ -94,6 +112,9 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<Guid>(newEntry.ID));
     }
 
+    [ApiExplorerSettings(GroupName = "Entries")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ChangeEntryName))]
     public IActionResult ChangeEntryName([FromBody] Model_ChangeEntryName model)
     {
@@ -109,6 +130,9 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<string>());
     }
 
+    [ApiExplorerSettings(GroupName = "Entries")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ChangeFolder))]
     public IActionResult ChangeFolder([FromBody] Model_ChangeFolder? model)
     {
