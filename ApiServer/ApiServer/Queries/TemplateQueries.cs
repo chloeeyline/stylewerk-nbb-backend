@@ -9,7 +9,7 @@ namespace StyleWerk.NBB.Queries;
 
 public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQueries(DB, CurrentUser)
 {
-    public List<Model_TemplatePreviewItems> LoadPreview(Guid templateId)
+    public List<Model_Template> LoadPreview(Guid templateId)
     {
         Model_TemplateRow[] rows =
         [
@@ -17,18 +17,15 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
                     .Include(r => r.O_Cells)
                     .Include(r => r.O_Template)
                     .Where(r => r.TemplateID == templateId)
-                    .Select(r => new Model_TemplateRow(r.ID, r.O_Template.ID, r.SortOrder, r.CanWrapCells,
-                    DB.Structure_Template_Cell
-                .Where(c => c.RowID == r.ID)
-                .Select(c => new Model_TemplateCell(c.ID, c.RowID, c.SortOrder, c.HideOnEmpty, c.IsRequiered, c.Text, c.MetaData)).ToArray())),
+                    .Select(r => new Model_TemplateRow(r.ID, r.O_Template.ID, r.SortOrder, r.CanWrapCells,r.O_Cells
+                    .Select(c => new Model_TemplateCell(c.ID, c.RowID, c.SortOrder, c.HideOnEmpty, c.IsRequiered, c.Text, c.MetaData)).ToArray())),
         ];
 
-        List<Model_TemplatePreviewItems> preview =
+        List<Model_Template> preview =
         [
             .. DB.Structure_Template
                     .Where(t => t.ID == templateId)
-                    .Select(t => new Model_TemplatePreviewItems(t.ID, t.Name, rows))
-,
+                    .Select(t => new Model_Template(t.ID, t.Name, t.Description, rows))
         ];
 
         return preview;
