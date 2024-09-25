@@ -59,10 +59,20 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQue
         List<Model_EntryItem> result = [];
         filter = filter with { Username = filter.Username?.Normalize().ToLower() };
 
-        if (filter.Share.Own && string.IsNullOrWhiteSpace(filter.Username)) result.AddRange(LoadUserEntryItems(filter));
-        if (filter.Share.GroupShared || !string.IsNullOrWhiteSpace(filter.Username)) result.AddRange(LoadGroupEntryItems(filter));
-        if (filter.Share.DirectlyShared || !string.IsNullOrWhiteSpace(filter.Username)) result.AddRange(LoadDirectlySharedEntryItems(filter));
-        if (filter.Share.Public || !string.IsNullOrWhiteSpace(filter.Username)) result.AddRange(LoadPublicEntryItems(filter));
+        if (filter.Share.Own && string.IsNullOrWhiteSpace(filter.Username))
+            result.AddRange(LoadUserEntryItems(filter));
+        if (filter.Share.GroupShared || !string.IsNullOrWhiteSpace(filter.Username))
+            result.AddRange(LoadGroupEntryItems(filter));
+        if (filter.Share.DirectlyShared || !string.IsNullOrWhiteSpace(filter.Username))
+            result.AddRange(LoadDirectlySharedEntryItems(filter));
+        if (filter.Share.Public || !string.IsNullOrWhiteSpace(filter.Username))
+            result.AddRange(LoadPublicEntryItems(filter));
+
+        List<Model_EntryItem> entries = result
+            .DistinctBy(s => s.ID)
+            .OrderBy(s => s.LastUpdatedAt)
+            .ThenBy(s => s.Name)
+            .ToList();
 
         List<Model_EntryItem> entries = result.DistinctBy(s => s.ID).ToList();
         return entries;
