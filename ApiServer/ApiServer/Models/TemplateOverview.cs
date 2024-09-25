@@ -6,8 +6,14 @@ public record Model_Templates(Guid Id, string TemplateTitle, string? Description
 {
     public Model_Templates(Structure_Template item, ShareTypes share) : this(item.ID, item.Name, item.Description, item.O_User.Username, item.CreatedAt.ToUnixTimeMilliseconds(), item.LastUpdatedAt.ToUnixTimeMilliseconds(), item.Tags is null ? [] : item.Tags, share) { }
 }
-public record Model_TemplateRow(Guid RowId, Guid TemplateId, int SortOrder, bool CanWrapCells, Model_TemplateCell[] Cells);
-public record Model_TemplateCell(Guid CellId, Guid RowId, int SortOrder, bool HideOnEmpty, bool IsRequired, string? Text, string? MetaData);
+public record Model_TemplateRow(Guid RowId, Guid TemplateId, int SortOrder, bool CanWrapCells, Model_TemplateCell[] Cells)
+{
+    public Model_TemplateRow(Structure_Template_Row item) : this(item.ID, item.TemplateID, item.SortOrder, item.CanWrapCells, [.. item.O_Cells.Select(s => new Model_TemplateCell(s))]) { }
+}
+public record Model_TemplateCell(Guid CellId, Guid RowId, int SortOrder, bool HideOnEmpty, bool IsRequired, string? Text, string? MetaData)
+{
+    public Model_TemplateCell(Structure_Template_Cell item) : this(item.ID, item.RowID, item.SortOrder, item.HideOnEmpty, item.IsRequiered, item.Text, item.MetaData) { }
+}
 //auch zum speichern und laden von editor und preview 
 public record Model_Template(Guid Id, string TemplateTitle, string? Description, Model_TemplateRow[] TemplateRows);
 public record Model_FilterTemplate(string? Name, string? Username, string[] Tags, ShareTypes Share, bool DirectUser);

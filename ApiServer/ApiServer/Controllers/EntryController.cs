@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Structure;
@@ -67,8 +68,15 @@ public class EntryController(NbbContext db) : BaseController(db)
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(DragAndDrop))]
-    public IActionResult DragAndDrop([FromBody] Model_ListFolderSortOrder listFolder)
+    public IActionResult DragAndDrop([FromBody] Model_ListFolderSortOrder model)
     {
+        foreach (Model_FolderSortOrder item in model.FolderSortOrders)
+        {
+            Structure_Entry_Folder? temp = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == item.FolderID);
+            if (temp is not null)
+                temp.SortOrder = item.SortOrder;
+        }
+        DB.SaveChanges();
 
         return Ok(new Model_Result<string>());
     }
@@ -147,5 +155,39 @@ public class EntryController(NbbContext db) : BaseController(db)
 
         return Ok(new Model_Result<string>());
     }
+
+    [ApiExplorerSettings(GroupName = "Entries")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedEntry>))]
+    [HttpGet(nameof(GetEntry))]
+    public IActionResult GetEntry(Guid? id)
+    {
+        if (id is null || id == Guid.Empty)
+            throw new RequestException(ResultType.DataIsInvalid);
+
+        Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == id) ?? throw new RequestException(ResultType.NoDataFound);
+        List<Structure_Entry_Row> itemRows = [.. DB.Structure_Entry_Row.Where(s => s.EntryID == item.ID).Include(s => s.TemplateID).OrderBy(s => s.O_Template.SortOrder).ThenBy(s => s.SortOrder)];
+
+        List<Model_EntryRow> rows = [];
+        foreach (Structure_Entry_Row row in item.O_Rows)
+        {
+            List<Model_EntryCell> cells = [];
+            List<Structure_Entry_Cell> itemCells = [.. DB.Structure_Entry_Cell.Where(s => s.RowID == row.ID).Include(s => s.O_Template).OrderBy(s => s.O_Template.SortOrder)];
+            foreach (Structure_Entry_Cell cell in row.O_Cells)
+            {
+                Model_EntryCell cellModel = new(new Model_TemplateCell(cell.O_Template), cell.ID, cell.Data);
+                cells.Add(cellModel);
+            }
+            Model_EntryRow rowModel = new(new Model_TemplateRow(row.O_Template), row.SortOrder, cells);
+            rows.Add(rowModel);
+        }
+        Model_DetailedEntry entryModel = new(item.ID, item.Name, item.Tags is null ? [] : item.Tags, rows);
+
+        return Ok(new Model_Result<Model_DetailedEntry>());
+    }
     #endregion
 }
+
+public record Model_DetailedEntry(Guid ID, string Name, string[] Tags, List<Model_EntryRow> Rows);
+public record Model_EntryRow(Model_TemplateRow Info, int SortOrder, List<Model_EntryCell> Cells);
+public record Model_EntryCell(Model_TemplateCell Info, Guid ID, string Data);

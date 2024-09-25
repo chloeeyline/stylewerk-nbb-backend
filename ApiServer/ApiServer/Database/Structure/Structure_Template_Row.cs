@@ -11,6 +11,9 @@ public class Structure_Template_Row : IConnectedEntity<Structure_Template_Row>, 
     public required Guid TemplateID { get; set; }
     public required int SortOrder { get; set; }
     public required bool CanWrapCells { get; set; }
+    public required bool CanRepeat { get; set; }
+    public required bool HideOnNoInput { get; set; }
+
 
 #pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
     public virtual Structure_Template O_Template { get; set; }

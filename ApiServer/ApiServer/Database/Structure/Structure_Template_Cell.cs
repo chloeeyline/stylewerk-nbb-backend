@@ -18,7 +18,6 @@ public class Structure_Template_Cell : IConnectedEntity<Structure_Template_Cell>
 
 #pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
     public virtual Structure_Template_Row O_Row { get; set; }
-    public virtual List<Structure_Entry_Cell> O_EntryCells { get; set; }
 #pragma warning restore CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
 
     public static void Build(EntityTypeBuilder<Structure_Template_Cell> b)
@@ -41,7 +40,5 @@ public class Structure_Template_Cell : IConnectedEntity<Structure_Template_Cell>
     public static void Connect(EntityTypeBuilder<Structure_Template_Cell> b)
     {
         b.HasOne(s => s.O_Row).WithMany(s => s.O_Cells).HasForeignKey(s => s.RowID);
-
-        b.HasMany(s => s.O_EntryCells).WithOne(s => s.O_Cell).HasForeignKey(s => s.CellID);
     }
 }

@@ -54,14 +54,14 @@ public class TemplateController(NbbContext db) : BaseController(db)
         {
             foreach (Structure_Entry? entry in entries)
             {
-                IQueryable<Structure_Entry_Cell> entryCells = DB.Structure_Entry_Cell.Where(c => c.EntryID == entry.ID);
-                if (entryCells.Any())
-                    DB.Structure_Entry_Cell.RemoveRange(entryCells);
+                //IQueryable<Structure_Entry_Cell> entryCells = DB.Structure_Entry_Cell.Where(c => c.EntryID == entry.ID);
+                //if (entryCells.Any())
+                //    DB.Structure_Entry_Cell.RemoveRange(entryCells);
 
-                //checking if Entry with that Template exists in a Folder
-                IQueryable<Structure_Entry_Folder> inFolder = DB.Structure_Entry_Folder.Where(e => e.ID == entry.ID);
-                if (inFolder.Any())
-                    DB.Structure_Entry_Folder.RemoveRange(inFolder);
+                ////checking if Entry with that Template exists in a Folder
+                //IQueryable<Structure_Entry_Folder> inFolder = DB.Structure_Entry_Folder.Where(e => e.ID == entry.ID);
+                //if (inFolder.Any())
+                //    DB.Structure_Entry_Folder.RemoveRange(inFolder);
             }
 
             //delete Entries with that TemplateId
@@ -138,12 +138,15 @@ public class TemplateController(NbbContext db) : BaseController(db)
 
             foreach (Structure_Template_Row row in DB.Structure_Template_Row.Where(t => t.TemplateID == TemplateId).ToList())
             {
+                //TODO new PARAMATER
                 Structure_Template_Row newRow = new()
                 {
                     ID = Guid.NewGuid(),
                     TemplateID = template.ID,
                     SortOrder = row.SortOrder,
-                    CanWrapCells = row.CanWrapCells
+                    CanWrapCells = row.CanWrapCells,
+                    CanRepeat = false,
+                    HideOnNoInput = false,
                 };
 
                 DB.Structure_Template_Row.Add(newRow);

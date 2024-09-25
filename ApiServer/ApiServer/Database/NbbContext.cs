@@ -44,6 +44,7 @@ public partial class NbbContext : DbContext
     public virtual DbSet<Structure_Template_Cell> Structure_Template_Cell { get; set; }
 
     public virtual DbSet<Structure_Entry> Structure_Entry { get; set; }
+    public virtual DbSet<Structure_Entry_Row> Structure_Entry_Row { get; set; }
     public virtual DbSet<Structure_Entry_Cell> Structure_Entry_Cell { get; set; }
     public virtual DbSet<Structure_Entry_Folder> Structure_Entry_Folder { get; set; }
 
@@ -66,6 +67,7 @@ public partial class NbbContext : DbContext
         _ = modelBuilder.Entity<Structure_Template_Cell>(Structure.Structure_Template_Cell.Build);
 
         _ = modelBuilder.Entity<Structure_Entry>(Structure.Structure_Entry.Build);
+        _ = modelBuilder.Entity<Structure_Entry_Row>(Structure.Structure_Entry_Row.Build);
         _ = modelBuilder.Entity<Structure_Entry_Cell>(Structure.Structure_Entry_Cell.Build);
         _ = modelBuilder.Entity<Structure_Entry_Folder>(Structure.Structure_Entry_Folder.Build);
 
@@ -83,6 +85,7 @@ public partial class NbbContext : DbContext
         _ = modelBuilder.Entity<Structure_Template_Cell>(Structure.Structure_Template_Cell.Connect);
 
         _ = modelBuilder.Entity<Structure_Entry>(Structure.Structure_Entry.Connect);
+        _ = modelBuilder.Entity<Structure_Entry_Row>(Structure.Structure_Entry_Row.Connect);
         _ = modelBuilder.Entity<Structure_Entry_Cell>(Structure.Structure_Entry_Cell.Connect);
         _ = modelBuilder.Entity<Structure_Entry_Folder>(Structure.Structure_Entry_Folder.Connect);
     }
