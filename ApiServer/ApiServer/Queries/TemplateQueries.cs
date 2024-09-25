@@ -31,7 +31,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
         return preview;
     }
 
-    public List<Model_Templates> LoadFilterTemplates(Model_FilterTemplate filter)
+    public Model_TemplatePaging LoadFilterTemplates(Model_FilterTemplate filter)
     {
         List<Model_Templates> result = [];
         filter = filter with { Username = filter.Username?.Normalize().ToLower() };
@@ -45,8 +45,17 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
         if (filter.Share.Public || !string.IsNullOrEmpty(filter.Username))
             result.AddRange(LoadPublicTemplates(filter));
 
-        List<Model_Templates> templates = result.DistinctBy(s => s.Id).ToList();
-        return templates;
+        List<Model_Template> templates = result.DistinctBy(s => s.Id).ToList();
+
+        int tCount = templates.Count;
+        int maxPages = tCount / filter.PerPage;
+        if (filter.Page > maxPages)
+            filter = filter with { Page = 1 };
+        templates = templates.Skip(filter.Page * filter.PerPage).Take(filter.PerPage).ToList();
+
+        Model_TemplatePaging paging = new(tCount, filter.Page, maxPages, filter.PerPage, templates);
+
+        return paging;
     }
 
     private List<Model_Templates> LoadUserTemplates(Model_FilterTemplate filter)

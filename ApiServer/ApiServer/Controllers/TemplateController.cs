@@ -17,12 +17,12 @@ public class TemplateController(NbbContext db) : BaseController(db)
 
     [ApiExplorerSettings(GroupName = "Templates")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Templates>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_TemplatePaging>))]
     [HttpPost(nameof(FilterTemplates))]
     public IActionResult FilterTemplates([FromBody] Model_FilterTemplate filters)
     {
-        List<Model_Templates> templates = Query.LoadFilterTemplates(filters);
-        return Ok(new Model_Result<List<Model_Templates>>(templates));
+        Model_TemplatePaging templates = Query.LoadFilterTemplates(filters);
+        return Ok(new Model_Result<Model_TemplatePaging>(templates));
     }
 
     [ApiExplorerSettings(GroupName = "Templates")]

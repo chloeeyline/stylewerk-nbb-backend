@@ -6,6 +6,8 @@ public record Model_Templates(Guid Id, string TemplateTitle, string? Description
 {
     public Model_Templates(Structure_Template item, ShareTypes share) : this(item.ID, item.Name, item.Description, item.O_User.Username, item.CreatedAt.ToUnixTimeMilliseconds(), item.LastUpdatedAt.ToUnixTimeMilliseconds(), item.Tags is null ? [] : item.Tags, share) { }
 }
+
+public record Model_TemplatePaging(int Count, int Page, int MaxPage, int PerPage, List<Model_Template> Items);
 public record Model_TemplateRow(Guid RowId, Guid TemplateId, int SortOrder, bool CanWrapCells, Model_TemplateCell[] Cells);
 public record Model_TemplateCell(Guid CellId, Guid RowId, int SortOrder, bool HideOnEmpty, bool IsRequired, string? Text, string? MetaData);
 //auch zum speichern und laden von editor und preview 
