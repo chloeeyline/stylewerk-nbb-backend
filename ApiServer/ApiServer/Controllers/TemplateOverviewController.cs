@@ -19,7 +19,7 @@ public class TemplateOverviewController(NbbContext db) : BaseController(db)
     [HttpPost(nameof(FilterTemplates))]
     public IActionResult FilterTemplates([FromBody] Model_FilterTemplate filters)
     {
-        List<Model_Templates> templates = _templateQueries.LoadFilterTemplates(filters);
+        List<Model_Templates> templates = Query.LoadFilterTemplates(filters);
         return Ok(new Model_Result<List<Model_Templates>>(templates));
     }
 
@@ -27,7 +27,7 @@ public class TemplateOverviewController(NbbContext db) : BaseController(db)
     public IActionResult GetTemplatePreview(Guid TemplateId)
     {
         List<Model_TemplatePreviewItems> preview = Query.LoadPreview(TemplateId);
-        return Ok(new Model_Result(preview));
+        return Ok(new Model_Result<List<Model_TemplatePreviewItems>>(preview));
     }
     #endregion
 
@@ -74,7 +74,7 @@ public class TemplateOverviewController(NbbContext db) : BaseController(db)
             DB.SaveChanges();
         }
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     private void Share(Model_ShareTemplate shareTemplate, Guid toWhom, bool type)
@@ -144,13 +144,6 @@ public class TemplateOverviewController(NbbContext db) : BaseController(db)
         DB.SaveChanges();
 
         return Ok(new Model_Result<string>());
-    }
-
-    [HttpPost(nameof(GetTemplatePreview))]
-    public IActionResult GetTemplatePreview(Guid TemplateId)
-    {
-        List<Model_TemplatePreviewItems> preview = _templateQueries.LoadPreview(TemplateId);
-        return Ok(new Model_Result<List<Model_TemplatePreviewItems>>(preview));
     }
 
     [HttpPost(nameof(AddTemplate))]
