@@ -67,6 +67,51 @@ public class EntryController(NbbContext db) : BaseController(db)
     [ApiExplorerSettings(GroupName = "Folder")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [HttpPost(nameof(DeleteFolder))]
+    public IActionResult DeleteFolder(Guid? folderId)
+    {
+        if (folderId is null)
+            throw new RequestException(ResultType.DataIsInvalid);
+
+        Structure_Entry_Folder? folder = DB.Structure_Entry_Folder.FirstOrDefault(f => f.ID == folderId)
+           ?? throw new RequestException(ResultType.NoDataFound);
+
+        IQueryable<Structure_Entry> entries = DB.Structure_Entry.Where(e => e.FolderID == folderId);
+        if (entries.Any())
+        {
+            foreach (Structure_Entry? entry in entries)
+            {
+                entry.FolderID = null;
+            }
+        }
+
+        DB.Structure_Entry_Folder.Remove(folder);
+        DB.SaveChanges();
+
+        return Ok(new Model_Result<string>());
+    }
+
+    [ApiExplorerSettings(GroupName = "Folder")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [HttpPost(nameof(DeleteEntryFromFolder))]
+    public IActionResult DeleteEntryFromFolder(Model_DeleteFromFolder model)
+    {
+        if (model is null)
+            throw new RequestException(ResultType.DataIsInvalid);
+
+        Structure_Entry entry = DB.Structure_Entry.FirstOrDefault(e => e.FolderID == model.FolderId && e.ID == model.EntryId)
+            ?? throw new RequestException(ResultType.NoDataFound);
+
+        entry.FolderID = null;
+        DB.SaveChanges();
+
+        return Ok(new Model_Result<string>());
+    }
+
+    [ApiExplorerSettings(GroupName = "Folder")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(DragAndDrop))]
     public IActionResult DragAndDrop([FromBody] Model_ListFolderSortOrder model)
     {

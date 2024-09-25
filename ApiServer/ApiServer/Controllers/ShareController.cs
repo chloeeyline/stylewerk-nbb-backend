@@ -49,7 +49,6 @@ namespace StyleWerk.NBB.Controllers
             if (shareTemplate.Share.Public)
             {
                 template.IsPublic = true;
-                DB.Structure_Template.Update(template);
                 DB.SaveChanges();
             }
 

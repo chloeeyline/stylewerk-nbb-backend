@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
@@ -17,22 +16,22 @@ public class TemplateController(NbbContext db) : BaseController(db)
 
     [ApiExplorerSettings(GroupName = "Templates")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Templates>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_TemplatePaging>))]
     [HttpPost(nameof(FilterTemplates))]
     public IActionResult FilterTemplates([FromBody] Model_FilterTemplate filters)
     {
-        List<Model_Templates> templates = Query.LoadFilterTemplates(filters);
-        return Ok(new Model_Result<List<Model_Templates>>(templates));
+        Model_TemplatePaging templates = Query.LoadFilterTemplates(filters);
+        return Ok(new Model_Result<Model_TemplatePaging>(templates));
     }
 
     [ApiExplorerSettings(GroupName = "Templates")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Template>))]
-    [HttpGet(nameof(GetTemplatePreview))]
-    public IActionResult GetTemplatePreview(Guid TemplateId)
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedTemplate>))]
+    [HttpGet(nameof(LoadTemplate))]
+    public IActionResult LoadTemplate(Guid TemplateId)
     {
-        List<Model_Template> preview = Query.LoadPreview(TemplateId);
-        return Ok(new Model_Result<List<Model_Template>>(preview));
+        List<Model_DetailedTemplate> preview = Query.LoadPreview(TemplateId);
+        return Ok(new Model_Result<List<Model_DetailedTemplate>>(preview));
     }
     #endregion
 
@@ -191,6 +190,84 @@ public class TemplateController(NbbContext db) : BaseController(db)
         DB.SaveChanges();
 
         return Ok(new Model_Result<Guid>(template.TemplateId));
+    }
+
+    [ApiExplorerSettings(GroupName = "Editor Actions")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
+    [HttpPost(nameof(SaveTemplate))]
+    public IActionResult SaveTemplate(Model_DetailedTemplate model)
+    {
+        if (model is null)
+            throw new RequestException(ResultType.DataIsInvalid);
+
+        foreach (Model_TemplateRow row in model.TemplateRows)
+        {
+            Structure_Template_Row? rowExists = DB.Structure_Template_Row.SingleOrDefault(t => row.RowId == t.ID);
+
+            if (rowExists is null)
+            {
+                Structure_Template_Row newRow = new()
+                {
+                    ID = Guid.NewGuid(),
+                    TemplateID = model.Id,
+                    SortOrder = row.SortOrder,
+                    CanWrapCells = row.CanWrapCells
+                };
+
+                DB.Structure_Template_Row.Add(newRow);
+
+                foreach (Model_TemplateCell cell in row.Cells)
+                {
+                    CreateCell(row, cell);
+                }
+            }
+            else
+            {
+                foreach (Model_TemplateCell cell in row.Cells)
+                {
+                    Structure_Template_Cell? cellExists = DB.Structure_Template_Cell.SingleOrDefault(c => c.ID == cell.CellId);
+
+                    if (cellExists is null)
+                    {
+                        CreateCell(row, cell);
+                    }
+                    else
+                    {
+                        cellExists.SortOrder = cell.SortOrder;
+                        cellExists.InputHelper = cell.InputHelper;
+                        cellExists.HideOnEmpty = cell.HideOnEmpty;
+                        cellExists.IsRequiered = cell.IsRequired;
+                        cellExists.Text = cell.Text;
+                        cellExists.MetaData = cell.MetaData;
+                    }
+                }
+
+                rowExists.SortOrder = row.SortOrder;
+                rowExists.CanWrapCells = row.CanWrapCells;
+            }
+        }
+
+        DB.SaveChanges();
+
+        return Ok(new Model_Result<Guid>(model.Id));
+    }
+
+    private void CreateCell(Model_TemplateRow row, Model_TemplateCell cell)
+    {
+        Structure_Template_Cell newCell = new()
+        {
+            ID = Guid.NewGuid(),
+            RowID = row.RowId,
+            SortOrder = cell.SortOrder,
+            InputHelper = cell.InputHelper,
+            HideOnEmpty = cell.HideOnEmpty,
+            IsRequiered = cell.IsRequired,
+            Text = cell.Text,
+            MetaData = cell.Text
+        };
+
+        DB.Structure_Template_Cell.Add(newCell);
     }
     #endregion
 }
