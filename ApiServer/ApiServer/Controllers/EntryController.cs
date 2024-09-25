@@ -66,6 +66,29 @@ public class EntryController(NbbContext db) : BaseController(db)
     [ApiExplorerSettings(GroupName = "Folder")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [HttpPost(nameof(DeleteFolder))]
+    public IActionResult DeleteFolder(Guid? folderId)
+    {
+        if (folderId is null)
+            throw new RequestException(ResultType.DataIsInvalid);
+
+        Structure_Entry_Folder? folder = DB.Structure_Entry_Folder.FirstOrDefault(f => f.ID == folderId)
+           ?? throw new RequestException(ResultType.NoDataFound);
+
+        IQueryable<Structure_Entry> entries = DB.Structure_Entry.Where(e => e.FolderID == folderId);
+        if (entries.Any())
+        {
+            foreach (Structure_Entry? entry in entries)
+            {
+                entry.FolderID = null;
+            }
+        }
+
+        DB.Structure_Entry_Folder.Remove(folder);
+        DB.SaveChanges();
+
+        return Ok(new Model_Result<string>());
+    }
     [HttpPost(nameof(DragAndDrop))]
     public IActionResult DragAndDrop([FromBody] Model_ListFolderSortOrder listFolder)
     {
