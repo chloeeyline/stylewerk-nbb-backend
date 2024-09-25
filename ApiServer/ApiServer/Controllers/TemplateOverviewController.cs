@@ -21,14 +21,14 @@ public class TemplateOverviewController : BaseController
     public IActionResult FilterTemplates([FromBody] Model_FilterTemplate filters)
     {
         List<Model_Templates> templates = _templateQueries.LoadFilterTemplates(filters);
-        return Ok(new Model_Result(templates));
+        return Ok(new Model_Result<List<Model_Templates>>(templates));
     }
 
     [HttpGet(nameof(GetTemplates))]
     public IActionResult GetTemplates()
     {
         List<Model_Templates> templates = _templateQueries.LoadTemplates();
-        return Ok(new Model_Result(templates));
+        return Ok(new Model_Result<List<Model_Templates>>(templates));
     }
 
     [HttpPost(nameof(RemoveTemplate))]
@@ -53,14 +53,14 @@ public class TemplateOverviewController : BaseController
 
         DB.SaveChanges();
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     [HttpPost(nameof(GetTemplatePreview))]
     public IActionResult GetTemplatePreview(Guid TemplateId)
     {
         List<Model_TemplatePreviewItems> preview = _templateQueries.LoadPreview(TemplateId);
-        return Ok(new Model_Result(preview));
+        return Ok(new Model_Result<List<Model_TemplatePreviewItems>>(preview));
     }
 
     [HttpPost(nameof(AddTemplate))]
@@ -77,7 +77,7 @@ public class TemplateOverviewController : BaseController
         DB.Structure_Template.Add(template);
         DB.SaveChanges();
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     [HttpPost(nameof(CopyTemplate))]
@@ -131,7 +131,7 @@ public class TemplateOverviewController : BaseController
             DB.SaveChanges();
         }
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     [HttpPost(nameof(ChangeTemplateName))]
@@ -142,7 +142,7 @@ public class TemplateOverviewController : BaseController
             changeTemplate.Name = template.Name;
         DB.SaveChanges();
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     [HttpPost(nameof(ChangeTemplateDescription))]
@@ -153,6 +153,6 @@ public class TemplateOverviewController : BaseController
             changeTemplate.Description = template.Description;
         DB.SaveChanges();
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 }

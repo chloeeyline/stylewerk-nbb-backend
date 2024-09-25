@@ -15,13 +15,13 @@ public record Model_SharedItem(Guid ID, string SharedFrom, bool FromGroup, Guid?
 /// <param name="ErrorCode"></param>
 /// <param name="ErrorMessage"></param>
 /// <param name="Data"></param>
-public record Model_Result(ResultType Type, string TypeText, int? ErrorCode, string? ErrorMessage, object? Data)
+public record Model_Result<T>(ResultType Type, string TypeText, int? ErrorCode, string? ErrorMessage, T? Data)
 {
-    public Model_Result() : this(ResultType.Success, ResultType.Success.ToString(), null, null, null) { }
-    public Model_Result(object? data) : this(ResultType.SuccessReturnData, ResultType.SuccessReturnData.ToString(), null, null, data) { }
-    public Model_Result(ResultType type) : this(type, type.ToString(), null, null, null) { }
-    public Model_Result(ResultType type, int? errorCode, string? errorMessage) : this(type, type.ToString(), errorCode, errorMessage, null) { }
-    public Model_Result(AuthenticationErrorCodes warning) : this(ResultType.Authentification, ResultType.Authentification.ToString(), (int) warning, warning.ToString(), null) { }
+    public Model_Result() : this(ResultType.Success, ResultType.Success.ToString(), null, null, default) { }
+    public Model_Result(T? data) : this(ResultType.SuccessReturnData, ResultType.SuccessReturnData.ToString(), null, null, data) { }
+    public Model_Result(ResultType type) : this(type, type.ToString(), null, null, default) { }
+    public Model_Result(ResultType type, int? errorCode, string? errorMessage) : this(type, type.ToString(), errorCode, errorMessage, default) { }
+    public Model_Result(AuthenticationErrorCodes warning) : this(ResultType.Authentification, ResultType.Authentification.ToString(), (int) warning, warning.ToString(), default) { }
 }
 
 [Serializable]

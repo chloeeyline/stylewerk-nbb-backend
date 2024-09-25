@@ -17,7 +17,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     #region Login
     [ApiExplorerSettings(GroupName = "Login")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result))] // Success Response
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<AuthenticationResult>))] // Success Response
     [HttpPost(nameof(Login))]
     public IActionResult Login([FromBody] Model_Login? model)
     {
@@ -26,7 +26,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
         Model_Token refreshToken = Authentication.GetRefreshToken(user.ID, UserAgent, model?.ConsistOverSession);
         AuthenticationResult result = Authentication.GetAuthenticationResult(user.ID, accessToken, refreshToken, model?.ConsistOverSession);
 
-        return Ok(new Model_Result(result));
+        return Ok(new Model_Result<AuthenticationResult>(result));
     }
 
     [ApiExplorerSettings(GroupName = "Login")]
@@ -38,7 +38,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
         Model_Token refreshToken = Authentication.GetRefreshToken(user.ID, UserAgent, model?.ConsistOverSession);
         AuthenticationResult result = Authentication.GetAuthenticationResult(user.ID, accessToken, refreshToken, model?.ConsistOverSession);
 
-        return Ok(new Model_Result(result));
+        return Ok(new Model_Result<AuthenticationResult>(result));
     }
     #endregion
 
@@ -48,7 +48,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     public IActionResult Registration([FromBody] Model_Registration? model)
     {
         Authentication.Registration(model);
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     [ApiExplorerSettings(GroupName = "Registration")]
@@ -56,7 +56,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     public IActionResult VerifyEmail(Guid? token)
     {
         Authentication.VerifyEmail(token);
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
     #endregion
 
@@ -66,7 +66,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     public IActionResult RequestPasswordReset([FromBody] string email)
     {
         Authentication.RequestPasswordReset(email);
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     [ApiExplorerSettings(GroupName = "Forgot Password")]
@@ -74,7 +74,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     public IActionResult ResetPassword([FromBody] Model_ResetPassword? model)
     {
         Authentication.ResetPassword(model);
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
     #endregion
 
@@ -84,7 +84,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     public IActionResult RemoveSessions()
     {
         Authentication.RemoveSessions(CurrentUser.ID, UserAgent);
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     [ApiExplorerSettings(GroupName = "Session")]
@@ -92,7 +92,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     public IActionResult Logout()
     {
         Authentication.Logout(CurrentUser.ID, UserAgent);
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
     #endregion
 
@@ -102,7 +102,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     public IActionResult UpdateEmail(string? email)
     {
         Authentication.UpdateEmail(email, CurrentUser.Login);
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     [ApiExplorerSettings(GroupName = "Change Email")]
@@ -110,7 +110,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     public IActionResult VerifyUpdatedEmail(string? code)
     {
         Authentication.VerifyUpdatedEmail(code, CurrentUser.Login, UserAgent);
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
     #endregion
 
@@ -120,7 +120,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     public IActionResult GetUserData()
     {
         Model_UserData user = Authentication.GetUserData(CurrentUser);
-        return Ok(new Model_Result(user));
+        return Ok(new Model_Result<Model_UserData>(user));
     }
 
     [ApiExplorerSettings(GroupName = "Userdata")]
@@ -128,7 +128,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     public IActionResult UpdateUserData([FromBody] Model_UpdateUserData model)
     {
         Authentication.UpdateUserData(model, CurrentUser.ID);
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
     #endregion
 
@@ -138,7 +138,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     public IActionResult ValidatePassword([FromBody] Model_ValidateIdentification model)
     {
         Authentication.ValidatePassword(model?.ToValidate);
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     [ApiExplorerSettings(GroupName = "Validation")]
@@ -146,7 +146,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     public IActionResult ValidateEmail([FromBody] Model_ValidateIdentification? model)
     {
         Authentication.ValidateEmail(model?.ToValidate);
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     [ApiExplorerSettings(GroupName = "Validation")]
@@ -154,7 +154,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     public IActionResult ValidateUsername([FromBody] Model_ValidateIdentification? model)
     {
         Authentication.ValidateUsername(model?.ToValidate);
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
     #endregion
 }
