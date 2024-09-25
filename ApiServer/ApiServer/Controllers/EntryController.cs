@@ -89,6 +89,28 @@ public class EntryController(NbbContext db) : BaseController(db)
 
         return Ok(new Model_Result<string>());
     }
+
+    [ApiExplorerSettings(GroupName = "Folder")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [HttpPost(nameof(DeleteEntryFromFolder))]
+    public IActionResult DeleteEntryFromFolder(Model_DeleteFromFolder model)
+    {
+        if (model is null)
+            throw new RequestException(ResultType.DataIsInvalid);
+
+        Structure_Entry entry = DB.Structure_Entry.FirstOrDefault(e => e.FolderID == model.FolderId && e.ID == model.EntryId)
+            ?? throw new RequestException(ResultType.NoDataFound);
+
+        entry.FolderID = null;
+        DB.SaveChanges();
+
+        return Ok(new Model_Result<string>());
+    }
+
+    [ApiExplorerSettings(GroupName = "Folder")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(DragAndDrop))]
     public IActionResult DragAndDrop([FromBody] Model_ListFolderSortOrder listFolder)
     {
