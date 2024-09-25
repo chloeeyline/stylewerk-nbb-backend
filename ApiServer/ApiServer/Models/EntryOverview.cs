@@ -20,6 +20,7 @@ public record Model_EntryItem(Guid ID, string Name, string? FolderName, string U
 /// If null that means it should be placed out of Folders in general
 /// </param>
 public record Model_ChangeFolder(Guid EntryID, Guid? FolderID);
+public record Model_DeleteFromFolder(Guid? EntryId, Guid? FolderId);
 public record Model_ChangeEntryName(Guid EntryID, string Name);
 
 /// <summary>
