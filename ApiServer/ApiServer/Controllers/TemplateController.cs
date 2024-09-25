@@ -189,5 +189,83 @@ public class TemplateController(NbbContext db) : BaseController(db)
 
         return Ok(new Model_Result<Guid>(template.TemplateId));
     }
+
+    [ApiExplorerSettings(GroupName = "Editor Actions")]
+    [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
+    [HttpPost(nameof(SaveTemplate))]
+    public IActionResult SaveTemplate(Model_DetailedTemplate model)
+    {
+        if (model is null)
+            throw new RequestException(ResultType.DataIsInvalid);
+
+        foreach (Model_TemplateRow row in model.TemplateRows)
+        {
+            Structure_Template_Row? rowExists = DB.Structure_Template_Row.SingleOrDefault(t => row.RowId == t.ID);
+
+            if (rowExists is null)
+            {
+                Structure_Template_Row newRow = new()
+                {
+                    ID = Guid.NewGuid(),
+                    TemplateID = model.Id,
+                    SortOrder = row.SortOrder,
+                    CanWrapCells = row.CanWrapCells
+                };
+
+                DB.Structure_Template_Row.Add(newRow);
+
+                foreach (Model_TemplateCell cell in row.Cells)
+                {
+                    CreateCell(row, cell);
+                }
+            }
+            else
+            {
+                foreach (Model_TemplateCell cell in row.Cells)
+                {
+                    Structure_Template_Cell? cellExists = DB.Structure_Template_Cell.SingleOrDefault(c => c.ID == cell.CellId);
+
+                    if (cellExists is null)
+                    {
+                        CreateCell(row, cell);
+                    }
+                    else
+                    {
+                        cellExists.SortOrder = cell.SortOrder;
+                        cellExists.InputHelper = cell.InputHelper;
+                        cellExists.HideOnEmpty = cell.HideOnEmpty;
+                        cellExists.IsRequiered = cell.IsRequired;
+                        cellExists.Text = cell.Text;
+                        cellExists.MetaData = cell.MetaData;
+                    }
+                }
+
+                rowExists.SortOrder = row.SortOrder;
+                rowExists.CanWrapCells = row.CanWrapCells;
+            }
+        }
+
+        DB.SaveChanges();
+
+        return Ok(new Model_Result<Guid>(model.Id));
+    }
+
+    private void CreateCell(Model_TemplateRow row, Model_TemplateCell cell)
+    {
+        Structure_Template_Cell newCell = new()
+        {
+            ID = Guid.NewGuid(),
+            RowID = row.RowId,
+            SortOrder = cell.SortOrder,
+            InputHelper = cell.InputHelper,
+            HideOnEmpty = cell.HideOnEmpty,
+            IsRequiered = cell.IsRequired,
+            Text = cell.Text,
+            MetaData = cell.Text
+        };
+
+        DB.Structure_Template_Cell.Add(newCell);
+    }
     #endregion
 }
