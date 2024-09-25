@@ -19,8 +19,8 @@ public class TemplateOverviewController(NbbContext db) : BaseController(db)
     [HttpPost(nameof(FilterTemplates))]
     public IActionResult FilterTemplates([FromBody] Model_FilterTemplate filters)
     {
-        List<Model_Templates> templates = Query.LoadFilterTemplates(filters);
-        return Ok(new Model_Result(templates));
+        List<Model_Templates> templates = _templateQueries.LoadFilterTemplates(filters);
+        return Ok(new Model_Result<List<Model_Templates>>(templates));
     }
 
     [HttpGet(nameof(GetTemplatePreview))]
@@ -143,7 +143,14 @@ public class TemplateOverviewController(NbbContext db) : BaseController(db)
 
         DB.SaveChanges();
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
+    }
+
+    [HttpPost(nameof(GetTemplatePreview))]
+    public IActionResult GetTemplatePreview(Guid TemplateId)
+    {
+        List<Model_TemplatePreviewItems> preview = _templateQueries.LoadPreview(TemplateId);
+        return Ok(new Model_Result<List<Model_TemplatePreviewItems>>(preview));
     }
 
     [HttpPost(nameof(AddTemplate))]
@@ -160,7 +167,7 @@ public class TemplateOverviewController(NbbContext db) : BaseController(db)
         DB.Structure_Template.Add(template);
         DB.SaveChanges();
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     [HttpPost(nameof(CopyTemplate))]
@@ -217,7 +224,7 @@ public class TemplateOverviewController(NbbContext db) : BaseController(db)
             DB.SaveChanges();
         }
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     [HttpPost(nameof(ChangeTemplateName))]
@@ -233,7 +240,7 @@ public class TemplateOverviewController(NbbContext db) : BaseController(db)
             changeTemplate.Name = template.Name;
         DB.SaveChanges();
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     [HttpPost(nameof(ChangeTemplateDescription))]
@@ -246,7 +253,7 @@ public class TemplateOverviewController(NbbContext db) : BaseController(db)
             changeTemplate.Description = template.Description;
         DB.SaveChanges();
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 
     #endregion

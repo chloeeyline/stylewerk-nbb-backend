@@ -67,14 +67,14 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
         // Set status code depending on the exception type
         context.Response.StatusCode = (int) HttpStatusCode.OK;
 
-        Model_Result response = new(ResultType.GeneralError);
+        Model_Result<string> response = new(ResultType.GeneralError);
         if (exception is AuthenticationException authenticationException)
         {
-            response = new Model_Result(authenticationException.ErrorCode);
+            response = new Model_Result<string>(authenticationException.ErrorCode);
         }
         else if (exception is RequestException requestException)
         {
-            response = new Model_Result(requestException.ErrorCode, null, requestException.Message);
+            response = new Model_Result<string>(requestException.ErrorCode, null, requestException.Message);
         }
 
         // Serialize the response to JSON

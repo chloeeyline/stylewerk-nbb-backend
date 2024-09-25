@@ -22,6 +22,6 @@ public class EntryEditorController : BaseController
         if (item != null) DB.Structure_Entry.Remove(item);
         DB.SaveChanges();
 
-        return Ok(new Model_Result());
+        return Ok(new Model_Result<string>());
     }
 }
