@@ -8,9 +8,9 @@ public record Model_Templates(Guid Id, string TemplateTitle, string? Description
 }
 public record Model_TemplateRow(Guid RowId, Guid TemplateId, int SortOrder, bool CanWrapCells, Model_TemplateCell[] Cells);
 public record Model_TemplateCell(Guid CellId, Guid RowId, int SortOrder, bool HideOnEmpty, bool IsRequired, string? Text, string? MetaData);
-public record Model_TemplatePreviewItems(Guid Id, string TemplateTitle, Model_TemplateRow[] TemplateRows);
+//auch zum speichern und laden von editor und preview 
+public record Model_Template(Guid Id, string TemplateTitle, string? Description, Model_TemplateRow[] TemplateRows);
 public record Model_FilterTemplate(string? Name, string? Username, string[] Tags, ShareTypes Share, bool DirectUser);
 public record Model_ChangeTemplateDescription(string Description, Guid TemplateId);
 public record Model_ChangeTemplateName(string Name, Guid TemplateId);
 public record Model_AddTemplate(string Name, string? Description, string[]? Tags);
-public record Model_ShareTemplate(Guid TemplateId, ShareTypes Share, Guid? ShareId, ShareRights Rights);

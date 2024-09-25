@@ -9,7 +9,7 @@ using StyleWerk.NBB.Queries;
 namespace StyleWerk.NBB.Controllers;
 
 [ApiController, Route("EntryOverview"), Authorize]
-public class EntryOverviewController(NbbContext db) : BaseController(db)
+public class EntryController(NbbContext db) : BaseController(db)
 {
     public EntryQueries Query => new(DB, CurrentUser);
 
@@ -119,6 +119,16 @@ public class EntryOverviewController(NbbContext db) : BaseController(db)
             ?? throw new RequestException(ResultType.NoDataFound);
 
         item.FolderID = model.FolderID;
+        DB.SaveChanges();
+
+        return Ok(new Model_Result<string>());
+    }
+
+    [HttpPost(nameof(DeleteEntry))]
+    public IActionResult DeleteEntry(Guid entryId)
+    {
+        Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == entryId);
+        if (item != null) DB.Structure_Entry.Remove(item);
         DB.SaveChanges();
 
         return Ok(new Model_Result<string>());
