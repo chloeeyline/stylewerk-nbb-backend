@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
@@ -27,12 +26,12 @@ public class TemplateController(NbbContext db) : BaseController(db)
 
     [ApiExplorerSettings(GroupName = "Templates")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Template>))]
-    [HttpGet(nameof(GetTemplatePreview))]
-    public IActionResult GetTemplatePreview(Guid TemplateId)
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedTemplate>))]
+    [HttpGet(nameof(LoadTemplate))]
+    public IActionResult LoadTemplate(Guid TemplateId)
     {
-        List<Model_Template> preview = Query.LoadPreview(TemplateId);
-        return Ok(new Model_Result<List<Model_Template>>(preview));
+        List<Model_DetailedTemplate> preview = Query.LoadPreview(TemplateId);
+        return Ok(new Model_Result<List<Model_DetailedTemplate>>(preview));
     }
     #endregion
 
