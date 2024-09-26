@@ -180,7 +180,7 @@ namespace StyleWerk.NBB.Migrations
                     Gender = table.Column<byte>(type: "smallint", nullable: false),
                     FirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Birthday = table.Column<DateOnly>(type: "date", nullable: false)
+                    Birthday = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {

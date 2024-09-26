@@ -136,7 +136,9 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         string email = ValidateEmail(model.Email);
         string username = ValidateUsername(model.Username);
         string salt = GetSalt();
-        DateTimeOffset birthday = DateTimeOffset.FromUnixTimeMilliseconds(model.Birthday);
+        long birthday = new DateTimeOffset(
+            DateTimeOffset.FromUnixTimeMilliseconds(model.Birthday)
+            .Date).ToUnixTimeMilliseconds();
         ValidatePassword(model.Password);
 
         Guid id = Guid.NewGuid();
@@ -164,7 +166,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             Gender = model.Gender,
             FirstName = model.FirstName,
             LastName = model.LastName,
-            Birthday = new DateOnly(birthday.Year, birthday.Month, birthday.Day),
+            Birthday = birthday,
         };
 
 
@@ -300,14 +302,13 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     #region Userdata
     public Model_UserData GetUserData(ApplicationUser user)
     {
-        DateTimeOffset birthday = new(user.Information.Birthday.ToDateTime(TimeOnly.MinValue));
         return new Model_UserData(
             user.Login.Username,
             user.Login.Email,
             user.Information.FirstName,
             user.Information.LastName,
             user.Information.Gender,
-            birthday.ToUnixTimeMilliseconds());
+            user.Information.Birthday);
     }
 
     public void UpdateUserData(Model_UpdateUserData? model, Guid userID)

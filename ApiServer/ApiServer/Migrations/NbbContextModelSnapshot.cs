@@ -424,8 +424,8 @@ namespace StyleWerk.NBB.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("ID");
 
-                    b.Property<DateOnly>("Birthday")
-                        .HasColumnType("date");
+                    b.Property<long>("Birthday")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("FirstName")
                         .IsRequired()

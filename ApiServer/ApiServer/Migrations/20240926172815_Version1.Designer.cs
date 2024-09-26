@@ -12,7 +12,7 @@ using StyleWerk.NBB.Database;
 namespace StyleWerk.NBB.Migrations
 {
     [DbContext(typeof(NbbContext))]
-    [Migration("20240926171506_Version1")]
+    [Migration("20240926172815_Version1")]
     partial class Version1
     {
         /// <inheritdoc />
@@ -427,8 +427,8 @@ namespace StyleWerk.NBB.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("ID");
 
-                    b.Property<DateOnly>("Birthday")
-                        .HasColumnType("date");
+                    b.Property<long>("Birthday")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("FirstName")
                         .IsRequired()

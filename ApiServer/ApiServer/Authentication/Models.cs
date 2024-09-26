@@ -26,7 +26,7 @@ public record ApplicationUser
             FirstName = string.Empty,
             LastName = string.Empty,
             Gender = UserGender.NotSpecified,
-            Birthday = new DateOnly(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day)
+            Birthday = new DateTimeOffset(new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day)).ToUnixTimeMilliseconds(),
         };
         Rights = [];
     }

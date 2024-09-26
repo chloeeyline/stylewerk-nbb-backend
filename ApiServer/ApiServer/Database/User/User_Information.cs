@@ -33,7 +33,7 @@ public class User_Information : IConnectedEntity<User_Information>, IEntity_Guid
     /// <summary>
     /// The birthday of the user.
     /// </summary>
-    public required DateOnly Birthday { get; set; }
+    public required long Birthday { get; set; }
 
 #pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
     /// <summary>
