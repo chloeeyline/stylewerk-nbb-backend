@@ -56,6 +56,7 @@ public class Share_Group : IConnectedEntity<Share_Group>, IEntity_GuidID, IEntit
         b.UseIEntity_GuidID();
         b.UseIEntity_User();
         b.UseIEntity_Name();
+
         b.Property(s => s.IsVisible).IsRequired(true);
         b.Property(s => s.CanSeeOthers).IsRequired(true);
     }

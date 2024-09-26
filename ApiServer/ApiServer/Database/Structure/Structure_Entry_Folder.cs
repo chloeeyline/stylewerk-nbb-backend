@@ -23,6 +23,7 @@ public class Structure_Entry_Folder : IConnectedEntity<Structure_Entry_Folder>, 
         b.UseIEntity_GuidID();
         b.UseIEntity_User(); ;
         b.UseIEntity_Name();
+
         b.UseIEntity_SortOrder();
     }
 

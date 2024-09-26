@@ -24,6 +24,7 @@ public class Admin_ColorTheme : IEntity<Admin_ColorTheme>, IEntity_GuidID, IEnti
         b.UseIEntity_GuidID();
         b.UseIEntity_User();
         b.UseIEntity_Name();
+
         b.Property(s => s.Base).IsRequired(true).HasMaxLength(50);
         b.Property(s => s.Data).HasColumnType("JSONB").IsRequired(true);
     }

@@ -28,20 +28,17 @@ public class Structure_Entry : IConnectedEntity<Structure_Entry>, IEntity_GuidID
     public static void Build(EntityTypeBuilder<Structure_Entry> b)
     {
         b.UseTemplates();
-
         b.UseIEntity_GuidID();
-        b.UseIEntity_Name();
         b.UseIEntity_User();
+        b.UseIEntity_Name();
 
-        b.Property(s => s.UserID).IsRequired(true);
         b.Property(s => s.TemplateID).IsRequired(true);
         b.Property(s => s.FolderID).IsRequired(false);
         b.Property(s => s.IsPublic).IsRequired(true);
         b.Property(s => s.IsEncrypted).IsRequired(true);
 
-        b.UseIEntity_EditDate();
-
         b.Property(s => s.Tags).IsRequired(false);
+        b.UseIEntity_EditDate();
     }
 
     public static void Connect(EntityTypeBuilder<Structure_Entry> b)

@@ -25,7 +25,7 @@ public class User_Token : IConnectedEntity<User_Token>, IEntity_GuidID
     /// <summary>
     /// The expiry date and time of the refresh token.
     /// </summary>
-    public required DateTimeOffset RefreshTokenExpiryTime { get; set; }
+    public required long RefreshTokenExpiryTime { get; set; }
 
     public required bool ConsistOverSession { get; set; }
 
@@ -43,7 +43,7 @@ public class User_Token : IConnectedEntity<User_Token>, IEntity_GuidID
     public static void Build(EntityTypeBuilder<User_Token> b)
     {
         b.UseTemplates();
-        b.UseIEntity_GuidID(false);
+        b.UseIEntity_GuidID();
         b.Property(s => s.Agent).IsRequired(true);
         b.HasKey(s => new { s.ID, s.Agent });
 

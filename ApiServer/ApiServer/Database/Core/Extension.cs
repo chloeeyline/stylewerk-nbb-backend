@@ -32,14 +32,12 @@ public static class Extension
     /// </summary>
     /// <typeparam name="T">The entity type being configured.</typeparam>
     /// <param name="b">The builder used for entity type configuration.</param>
-    /// <param name="defaultValue"></param>
-    public static void UseIEntity_GuidID<T>(this EntityTypeBuilder<T> b, bool defaultValue = true) where T : class, IEntity<T>, IEntity_GuidID
+    public static void UseIEntity_GuidID<T>(this EntityTypeBuilder<T> b) where T : class, IEntity<T>, IEntity_GuidID
     {
         b.HasKey(s => s.ID);
         PropertyBuilder<Guid> prop = b.Property(s => s.ID)
             .IsRequired(true)
             .HasColumnName("ID");
-        if (defaultValue) prop.HasDefaultValueSql("uuid_generate_v4()");
     }
 
     /// <summary>

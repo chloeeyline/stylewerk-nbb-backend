@@ -9,8 +9,8 @@ public class Structure_Template_Cell : IConnectedEntity<Structure_Template_Cell>
 {
     public required Guid ID { get; set; }
     public required Guid RowID { get; set; }
-    public required int SortOrder { get; set; }
     public required int InputHelper { get; set; }
+    public required int SortOrder { get; set; }
     public required bool HideOnEmpty { get; set; }
     public required bool IsRequired { get; set; }
     public string? Text { get; set; }
@@ -24,14 +24,11 @@ public class Structure_Template_Cell : IConnectedEntity<Structure_Template_Cell>
     public static void Build(EntityTypeBuilder<Structure_Template_Cell> b)
     {
         b.UseTemplates();
-
         b.UseIEntity_GuidID();
-
         b.Property(s => s.RowID).IsRequired(true);
+        b.Property(s => s.InputHelper).IsRequired(true);
 
         b.UseIEntity_SortOrder();
-
-        b.Property(s => s.InputHelper).IsRequired(true);
         b.Property(s => s.HideOnEmpty).IsRequired(true).HasDefaultValue(false);
         b.Property(s => s.IsRequired).IsRequired(true).HasDefaultValue(false);
         b.Property(s => s.Text).IsRequired(false);

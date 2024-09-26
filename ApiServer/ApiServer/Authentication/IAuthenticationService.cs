@@ -12,7 +12,7 @@ public interface IAuthenticationService
     AuthenticationResult GetAuthenticationResult(Guid id, Model_Token accessToken, Model_Token refreshToken, bool? consistOverSession);
 
     void Registration(Model_Registration? model);
-    void VerifyEmail(Guid? token);
+    void VerifyEmail(string? token);
 
     void RemoveSessions(Guid userID, string userAgent);
     void Logout(Guid userID, string userAgent);

@@ -61,11 +61,14 @@ public class Share_GroupUser : IConnectedEntity<Share_GroupUser>, IEntity_User
         b.UseTemplates();
         b.UseIEntity_User();
         b.Property(s => s.GroupID).IsRequired(true);
-        b.HasKey(s => new { s.GroupID, s.UserID });
+
         b.Property(s => s.WhoAdded).IsRequired(true);
+
         b.Property(s => s.CanSeeUsers).IsRequired(true);
         b.Property(s => s.CanAddUsers).IsRequired(true);
         b.Property(s => s.CanRemoveUsers).IsRequired(true);
+
+        b.HasKey(s => new { s.GroupID, s.UserID });
     }
 
     /// <summary>

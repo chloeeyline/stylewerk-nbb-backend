@@ -59,7 +59,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(VerifyEmail))]
-    public IActionResult VerifyEmail(Guid? token)
+    public IActionResult VerifyEmail(string? token)
     {
         Authentication.VerifyEmail(token);
         return Ok(new Model_Result<string>());

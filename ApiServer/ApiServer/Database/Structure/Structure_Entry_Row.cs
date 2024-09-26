@@ -23,6 +23,7 @@ public class Structure_Entry_Row : IConnectedEntity<Structure_Entry_Row>, IEntit
         b.UseIEntity_GuidID();
         b.Property(s => s.EntryID).IsRequired(true);
         b.Property(s => s.TemplateID).IsRequired(true);
+
         b.UseIEntity_SortOrder();
     }
     public static void Connect(EntityTypeBuilder<Structure_Entry_Row> b)

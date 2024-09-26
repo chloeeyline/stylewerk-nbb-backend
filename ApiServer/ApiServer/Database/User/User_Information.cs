@@ -49,7 +49,8 @@ public class User_Information : IConnectedEntity<User_Information>, IEntity_Guid
     public static void Build(EntityTypeBuilder<User_Information> b)
     {
         b.UseTemplates();
-        b.UseIEntity_GuidID(false);
+        b.UseIEntity_GuidID();
+
         b.Property(s => s.Gender).IsRequired(true);
         b.Property(s => s.FirstName).IsRequired(true).HasMaxLength(50);
         b.Property(s => s.LastName).IsRequired(true).HasMaxLength(50);

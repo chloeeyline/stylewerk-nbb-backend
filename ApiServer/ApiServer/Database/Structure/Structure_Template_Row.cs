@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using StyleWerk.NBB.Database.Core;
 
@@ -22,11 +21,13 @@ public class Structure_Template_Row : IConnectedEntity<Structure_Template_Row>, 
     public static void Build(EntityTypeBuilder<Structure_Template_Row> b)
     {
         b.UseTemplates();
-
         b.UseIEntity_GuidID();
-        b.UseIEntity_SortOrder();
+        b.Property(s => s.TemplateID).IsRequired(true);
 
-        b.Property(s => s.CanWrapCells).IsRequired(true).HasDefaultValue(true);
+        b.UseIEntity_SortOrder();
+        b.Property(s => s.CanWrapCells).IsRequired(true);
+        b.Property(s => s.CanRepeat).IsRequired(true);
+        b.Property(s => s.HideOnNoInput).IsRequired(true);
     }
 
     public static void Connect(EntityTypeBuilder<Structure_Template_Row> b)

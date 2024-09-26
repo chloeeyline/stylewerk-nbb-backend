@@ -12,8 +12,8 @@ using StyleWerk.NBB.Database;
 namespace StyleWerk.NBB.Migrations
 {
     [DbContext(typeof(NbbContext))]
-    [Migration("20240925122325_AddedEntryRows")]
-    partial class AddedEntryRows
+    [Migration("20240926171506_Version1")]
+    partial class Version1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,13 +26,68 @@ namespace StyleWerk.NBB.Migrations
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "uuid-ossp");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("StyleWerk.NBB.Database.Admin.Admin_ColorTheme", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Base")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .HasColumnType("JSONB");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("UserID")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("Admin_ColorTheme", (string)null);
+                });
+
+            modelBuilder.Entity("StyleWerk.NBB.Database.Admin.Admin_Language", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .HasColumnType("JSONB");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("UserID")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Code");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("Admin_Language", (string)null);
+                });
+
             modelBuilder.Entity("StyleWerk.NBB.Database.Share.Share_Group", b =>
                 {
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("ID")
-                        .HasDefaultValueSql("uuid_generate_v4()");
+                        .HasColumnName("ID");
 
                     b.Property<bool>("CanSeeOthers")
                         .HasColumnType("boolean");
@@ -42,8 +97,8 @@ namespace StyleWerk.NBB.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<Guid>("UserID")
                         .HasColumnType("uuid");
@@ -87,8 +142,7 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("ID")
-                        .HasDefaultValueSql("uuid_generate_v4()");
+                        .HasColumnName("ID");
 
                     b.Property<bool>("CanDelete")
                         .ValueGeneratedOnAdd()
@@ -130,32 +184,30 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("ID")
-                        .HasDefaultValueSql("uuid_generate_v4()");
+                        .HasColumnName("ID");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<long>("CreatedAt")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid?>("FolderID")
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("IsEncrypted")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsPublic")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset>("LastUpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<long>("LastUpdatedAt")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-                    b.Property<string[]>("Tags")
-                        .HasColumnType("text[]");
+                    b.Property<string>("Tags")
+                        .HasColumnType("text");
 
                     b.Property<Guid>("TemplateID")
                         .HasColumnType("uuid");
@@ -179,8 +231,7 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("ID")
-                        .HasDefaultValueSql("uuid_generate_v4()");
+                        .HasColumnName("ID");
 
                     b.Property<string>("Data")
                         .IsRequired()
@@ -206,13 +257,12 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("ID")
-                        .HasDefaultValueSql("uuid_generate_v4()");
+                        .HasColumnName("ID");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
@@ -232,8 +282,7 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("ID")
-                        .HasDefaultValueSql("uuid_generate_v4()");
+                        .HasColumnName("ID");
 
                     b.Property<Guid>("EntryID")
                         .HasColumnType("uuid");
@@ -258,34 +307,28 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("ID")
-                        .HasDefaultValueSql("uuid_generate_v4()");
+                        .HasColumnName("ID");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<long>("CreatedAt")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<bool>("IsPublic")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
+                        .HasColumnType("boolean");
 
-                    b.Property<DateTimeOffset>("LastUpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
+                    b.Property<long>("LastUpdatedAt")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-                    b.Property<string[]>("Tags")
-                        .HasColumnType("text[]");
+                    b.Property<string>("Tags")
+                        .HasColumnType("text");
 
                     b.Property<Guid>("UserID")
                         .HasColumnType("uuid");
@@ -302,8 +345,10 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("ID")
-                        .HasDefaultValueSql("uuid_generate_v4()");
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
 
                     b.Property<bool>("HideOnEmpty")
                         .ValueGeneratedOnAdd()
@@ -313,7 +358,7 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<int>("InputHelper")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsRequiered")
+                    b.Property<bool>("IsRequired")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
@@ -342,16 +387,13 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("ID")
-                        .HasDefaultValueSql("uuid_generate_v4()");
+                        .HasColumnName("ID");
 
                     b.Property<bool>("CanRepeat")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("CanWrapCells")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("HideOnNoInput")
                         .HasColumnType("boolean");
@@ -411,8 +453,7 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<Guid>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("ID")
-                        .HasDefaultValueSql("uuid_generate_v4()");
+                        .HasColumnName("ID");
 
                     b.Property<bool>("Admin")
                         .HasColumnType("boolean");
@@ -421,9 +462,6 @@ namespace StyleWerk.NBB.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
-
-                    b.Property<string>("EmailChangeCode")
-                        .HasColumnType("text");
 
                     b.Property<string>("EmailNormalized")
                         .IsRequired()
@@ -444,11 +482,11 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<int?>("StatusCode")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("StatusToken")
-                        .HasColumnType("uuid");
+                    b.Property<string>("StatusToken")
+                        .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("StatusTokenExpireTime")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<long?>("StatusTokenExpireTime")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -487,8 +525,8 @@ namespace StyleWerk.NBB.Migrations
                         .HasColumnName("ID");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("ID", "Name");
 
@@ -513,12 +551,34 @@ namespace StyleWerk.NBB.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset>("RefreshTokenExpiryTime")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<long>("RefreshTokenExpiryTime")
+                        .HasColumnType("bigint");
 
                     b.HasKey("ID", "Agent");
 
                     b.ToTable("User_Token", (string)null);
+                });
+
+            modelBuilder.Entity("StyleWerk.NBB.Database.Admin.Admin_ColorTheme", b =>
+                {
+                    b.HasOne("StyleWerk.NBB.Database.User.User_Login", "O_User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("O_User");
+                });
+
+            modelBuilder.Entity("StyleWerk.NBB.Database.Admin.Admin_Language", b =>
+                {
+                    b.HasOne("StyleWerk.NBB.Database.User.User_Login", "O_User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("O_User");
                 });
 
             modelBuilder.Entity("StyleWerk.NBB.Database.Share.Share_Group", b =>

@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using StyleWerk.NBB.Database.Core;
 using StyleWerk.NBB.Database.User;
@@ -29,9 +28,11 @@ public class Structure_Template : IConnectedEntity<Structure_Template>, IEntity_
         b.UseIEntity_GuidID();
         b.UseIEntity_User();
         b.UseIEntity_Name();
-        b.Property(s => s.Description).IsRequired(false).HasMaxLength(500);
-        b.Property(s => s.IsPublic).IsRequired(true).HasDefaultValue(false);
 
+        b.Property(s => s.IsPublic).IsRequired(true);
+
+        b.Property(s => s.Description).IsRequired(false).HasMaxLength(500);
+        b.Property(s => s.Tags).IsRequired(false);
         b.UseIEntity_EditDate();
     }
 

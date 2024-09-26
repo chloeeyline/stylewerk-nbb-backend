@@ -21,9 +21,11 @@ public class Admin_Language : IEntity<Admin_Language>, IEntity_User, IEntity_Nam
     {
         b.UseTemplates();
         b.Property(s => s.Code).IsRequired().HasMaxLength(5);
-        b.HasKey(s => s.Code);
         b.UseIEntity_User();
         b.UseIEntity_Name();
+
         b.Property(s => s.Data).HasColumnType("JSONB").IsRequired(true);
+
+        b.HasKey(s => s.Code);
     }
 }
