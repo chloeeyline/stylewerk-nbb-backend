@@ -68,11 +68,10 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQue
         if (filter.Share.Public || !string.IsNullOrWhiteSpace(filter.Username))
             result.AddRange(LoadPublicEntryItems(filter));
 
-        List<Model_EntryItem> entries = result
+        List<Model_EntryItem> entries = [.. result
             .DistinctBy(s => s.ID)
             .OrderBy(s => s.LastUpdatedAt)
-            .ThenBy(s => s.Name)
-            .ToList();
+            .ThenBy(s => s.Name)];
 
         return entries;
     }
@@ -161,8 +160,8 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQue
             list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
         if (!string.IsNullOrWhiteSpace(filter.Username) && filter.DirectUser)
             list = list.Where(s => s.O_User.UsernameNormalized == filter.Username);
-        if (filter.Tags.Length > 0)
-            list = list.Where(s => s.Tags != null && s.Tags.Any(tag => filter.Tags.Contains(tag)));
+        if (!string.IsNullOrWhiteSpace(filter.Tags))
+            list = list.Where(s => !string.IsNullOrWhiteSpace(s.Tags) && filter.Tags.Contains(s.Tags));
         return list.Distinct().OrderBy(s => s.LastUpdatedAt).ThenBy(s => s.Name);
     }
     #endregion

@@ -8,12 +8,12 @@ namespace StyleWerk.NBB.Database.Share;
 /// <summary>
 /// Represents a group of users with shared access to items.
 /// </summary>
-public class Share_Group : IConnectedEntity<Share_Group>, IEntity_GuidID, IEntity_Name
+public class Share_Group : IConnectedEntity<Share_Group>, IEntity_GuidID, IEntity_Name, IEntity_User
 {
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public Guid ID { get; set; }
+    public required Guid ID { get; set; }
     /// <summary>
     /// User ID of the group creator
     /// </summary>
@@ -54,7 +54,7 @@ public class Share_Group : IConnectedEntity<Share_Group>, IEntity_GuidID, IEntit
     {
         b.UseTemplates();
         b.UseIEntity_GuidID();
-        b.Property(s => s.UserID).IsRequired(true);
+        b.UseIEntity_User();
         b.UseIEntity_Name();
         b.Property(s => s.IsVisible).IsRequired(true);
         b.Property(s => s.CanSeeOthers).IsRequired(true);
@@ -66,10 +66,6 @@ public class Share_Group : IConnectedEntity<Share_Group>, IEntity_GuidID, IEntit
     /// <param name="b"><inheritdoc/></param>
     public static void Connect(EntityTypeBuilder<Share_Group> b)
     {
-        b.HasOne(s => s.O_User)
-            .WithMany()
-            .HasForeignKey(s => s.UserID)
-            .IsRequired(true);
         b.HasMany(s => s.O_GroupUser)
             .WithOne(s => s.O_Group)
             .HasForeignKey(s => s.UserID)

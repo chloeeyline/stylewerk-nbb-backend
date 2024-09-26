@@ -58,8 +58,8 @@ public class AuthorizeCheckOperationFilter : IOperationFilter
         if (hasAuthorize)
         {
             // Add the security requirement to Swagger UI for this endpoint
-            operation.Security = new List<OpenApiSecurityRequirement>
-            {
+            operation.Security =
+            [
                 new() {
                     {
                         new OpenApiSecurityScheme
@@ -73,7 +73,7 @@ public class AuthorizeCheckOperationFilter : IOperationFilter
                         Array.Empty<string>()
                     }
                 }
-            };
+            ];
         }
     }
 }

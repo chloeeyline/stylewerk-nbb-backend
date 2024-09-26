@@ -9,26 +9,21 @@ namespace StyleWerk.NBB.Queries;
 
 public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQueries(DB, CurrentUser)
 {
-    public List<Model_DetailedTemplate> LoadPreview(Guid templateId)
+    public Model_DetailedTemplate LoadTemplate(Guid templateId)
     {
+        Structure_Template? item = DB.Structure_Template.FirstOrDefault(t => t.ID == templateId) ?? throw new RequestException(ResultType.NoDataFound);
+
         Model_TemplateRow[] rows =
         [
             .. DB.Structure_Template_Row
                     .Include(r => r.O_Cells)
-                    .Include(r => r.O_Template)
                     .Where(r => r.TemplateID == templateId)
-                    .Select(r => new Model_TemplateRow(r.ID, r.O_Template.ID, r.SortOrder, r.CanWrapCells,r.O_Cells
-                    .Select(c => new Model_TemplateCell(c.ID, c.RowID, c.SortOrder, c.HideOnEmpty, c.InputHelper, c.IsRequiered, c.Text, c.MetaData)).ToArray())),
+                    .Select(r => new Model_TemplateRow(r))
         ];
 
-        List<Model_DetailedTemplate> preview =
-        [
-            .. DB.Structure_Template
-                    .Where(t => t.ID == templateId)
-                    .Select(t => new Model_DetailedTemplate(t.ID, t.Name, t.Description, rows))
-        ];
+        Model_DetailedTemplate model = new(item.ID, item.Name, item.Description, rows);
 
-        return preview;
+        return model;
     }
 
     public Model_TemplatePaging LoadFilterTemplates(Model_FilterTemplate filter)
@@ -130,8 +125,8 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
             list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
         if (!string.IsNullOrWhiteSpace(filter.Username) && filter.DirectUser)
             list = list.Where(s => s.O_User.UsernameNormalized == filter.Username);
-        if (filter.Tags.Length > 0)
-            list = list.Where(s => s.Tags != null && s.Tags.Any(tag => filter.Tags.Contains(tag)));
+        if (!string.IsNullOrWhiteSpace(filter.Tags))
+            list = list.Where(s => !string.IsNullOrWhiteSpace(s.Tags) && filter.Tags.Contains(s.Tags));
         return list.Distinct().OrderBy(s => s.LastUpdatedAt).ThenBy(s => s.Name);
     }
 }

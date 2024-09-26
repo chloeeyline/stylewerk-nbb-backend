@@ -215,7 +215,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         user.StatusTokenExpireTime = StatusTokenDuration;
         DB.SaveChanges();
 
-        SendMail_EmailVeification(email, user.StatusToken);
+        SendMail_PasswordReset(email, user.StatusToken);
     }
 
     public void ResetPassword(Model_ResetPassword? model)
@@ -387,25 +387,25 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     public string ValidateEmail(string? email)
     {
         email = email?.ToLower().Normalize();
-        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@') || !email.Contains('.'))
-            throw new AuthenticationException(AuthenticationErrorCodes.EmailInvalid);
-        if (DB.User_Login.Any(s => s.EmailNormalized == email))
-            throw new AuthenticationException(AuthenticationErrorCodes.EmailAlreadyExists);
-        return email;
+        return string.IsNullOrWhiteSpace(email) || !email.Contains('@') || !email.Contains('.')
+            ? throw new AuthenticationException(AuthenticationErrorCodes.EmailInvalid)
+            : DB.User_Login.Any(s => s.EmailNormalized == email)
+            ? throw new AuthenticationException(AuthenticationErrorCodes.EmailAlreadyExists)
+            : email;
     }
 
     public string ValidateUsername(string? username)
     {
         username = username?.ToLower().Normalize();
-        if (string.IsNullOrWhiteSpace(username) || username.Length < 5)
-            throw new AuthenticationException(AuthenticationErrorCodes.UnToShort);
-        if (username.Length > 50)
-            throw new AuthenticationException(AuthenticationErrorCodes.UnToShort);
-        if (!OnlyUsernameValidChars().IsMatch(username))
-            throw new AuthenticationException(AuthenticationErrorCodes.UnUsesInvalidChars);
-        if (DB.User_Login.Any(s => s.UsernameNormalized == username))
-            throw new AuthenticationException(AuthenticationErrorCodes.UsernameAlreadyExists);
-        return username;
+        return string.IsNullOrWhiteSpace(username) || username.Length < 5
+            ? throw new AuthenticationException(AuthenticationErrorCodes.UnToShort)
+            : username.Length > 50
+            ? throw new AuthenticationException(AuthenticationErrorCodes.UnToShort)
+            : !OnlyUsernameValidChars().IsMatch(username)
+            ? throw new AuthenticationException(AuthenticationErrorCodes.UnUsesInvalidChars)
+            : DB.User_Login.Any(s => s.UsernameNormalized == username)
+            ? throw new AuthenticationException(AuthenticationErrorCodes.UsernameAlreadyExists)
+            : username;
     }
 
     public void ValidatePassword(string? password)
@@ -455,7 +455,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
     }
 
-    private bool SendMail_EmailChange(string email, string code)
+    private static bool SendMail_EmailChange(string email, string code)
     {
         string content = SimpleEmailService.AccessEmailTemplate("EmailChange.html");
         content = content.Replace("YOUR_VERIFICATION_LINK_HERE", code);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
@@ -28,10 +29,10 @@ public class TemplateController(NbbContext db) : BaseController(db)
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedTemplate>))]
     [HttpGet(nameof(LoadTemplate))]
-    public IActionResult LoadTemplate(Guid TemplateId)
+    public IActionResult LoadTemplate(Guid id)
     {
-        List<Model_DetailedTemplate> preview = Query.LoadPreview(TemplateId);
-        return Ok(new Model_Result<List<Model_DetailedTemplate>>(preview));
+        Model_DetailedTemplate preview = Query.LoadTemplate(id);
+        return Ok(new Model_Result<Model_DetailedTemplate>(preview));
     }
     #endregion
 
@@ -102,7 +103,8 @@ public class TemplateController(NbbContext db) : BaseController(db)
             Description = newTemplate.Description,
             UserID = CurrentUser.ID,
             Name = newTemplate.Name,
-            Tags = newTemplate.Tags
+            Tags = newTemplate.Tags,
+            IsPublic = false
         };
 
         DB.Structure_Template.Add(template);
@@ -120,63 +122,61 @@ public class TemplateController(NbbContext db) : BaseController(db)
         if (TemplateId is null)
             throw new RequestException(ResultType.DataIsInvalid);
 
-        Structure_Template? copyTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == TemplateId);
+        Structure_Template? copyTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == TemplateId) ?? throw new RequestException(ResultType.NoDataFound);
         List<Structure_Template_Cell> copyCells = [];
 
-        if (copyTemplate != null)
+        Structure_Template template = new()
         {
-            Structure_Template template = new()
+            ID = Guid.NewGuid(),
+            Name = $"{copyTemplate.Name} kopie",
+            Description = copyTemplate.Description,
+            UserID = CurrentUser.ID,
+            IsPublic = false
+        };
+
+        DB.Structure_Template.Add(template);
+
+        foreach (Structure_Template_Row row in DB.Structure_Template_Row.Where(t => t.TemplateID == TemplateId).ToList())
+        {
+            //TODO new PARAMATER
+            Structure_Template_Row newRow = new()
             {
                 ID = Guid.NewGuid(),
-                Name = $"{copyTemplate.Name} kopie",
-                Description = copyTemplate.Description,
-                UserID = CurrentUser.ID
+                TemplateID = template.ID,
+                SortOrder = row.SortOrder,
+                CanWrapCells = row.CanWrapCells,
+                CanRepeat = false,
+                HideOnNoInput = false,
             };
 
-            DB.Structure_Template.Add(template);
+            DB.Structure_Template_Row.Add(newRow);
 
-            foreach (Structure_Template_Row row in DB.Structure_Template_Row.Where(t => t.TemplateID == TemplateId).ToList())
+            foreach (Structure_Template_Cell cell in DB.Structure_Template_Cell.Where(c => c.RowID == row.ID).ToList())
             {
-                //TODO new PARAMATER
-                Structure_Template_Row newRow = new()
+                Structure_Template_Cell newCell = new()
                 {
                     ID = Guid.NewGuid(),
-                    TemplateID = template.ID,
-                    SortOrder = row.SortOrder,
-                    CanWrapCells = row.CanWrapCells,
-                    CanRepeat = false,
-                    HideOnNoInput = false,
+                    RowID = newRow.ID,
+                    SortOrder = cell.SortOrder,
+                    InputHelper = cell.InputHelper,
+                    HideOnEmpty = cell.HideOnEmpty,
+                    IsRequired = cell.IsRequired,
+                    Text = cell.Text,
+                    MetaData = cell.MetaData
                 };
 
-                DB.Structure_Template_Row.Add(newRow);
-
-                foreach (Structure_Template_Cell cell in DB.Structure_Template_Cell.Where(c => c.RowID == row.ID).ToList())
-                {
-                    Structure_Template_Cell newCell = new()
-                    {
-                        ID = Guid.NewGuid(),
-                        RowID = newRow.ID,
-                        SortOrder = cell.SortOrder,
-                        InputHelper = cell.InputHelper,
-                        HideOnEmpty = cell.HideOnEmpty,
-                        IsRequiered = cell.IsRequiered,
-                        Text = cell.Text,
-                        MetaData = cell.MetaData
-                    };
-
-                    DB.Structure_Template_Cell.Add(newCell);
-                }
+                DB.Structure_Template_Cell.Add(newCell);
             }
-
-            DB.SaveChanges();
         }
 
-        return Ok(new Model_Result<Guid>(copyTemplate.ID));
+        DB.SaveChanges();
+
+        return Ok(new Model_Result<Guid>(template.ID));
     }
 
     [ApiExplorerSettings(GroupName = "Template Overview Actions")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ChangeTemplateName))]
     public IActionResult ChangeTemplateName(Model_ChangeTemplateName? template)
     {
@@ -189,7 +189,7 @@ public class TemplateController(NbbContext db) : BaseController(db)
         changeTemplate.Name = template.Name;
         DB.SaveChanges();
 
-        return Ok(new Model_Result<Guid>(template.TemplateId));
+        return Ok(new Model_Result<string>());
     }
 
     [ApiExplorerSettings(GroupName = "Editor Actions")]
@@ -212,39 +212,50 @@ public class TemplateController(NbbContext db) : BaseController(db)
                     ID = Guid.NewGuid(),
                     TemplateID = model.Id,
                     SortOrder = row.SortOrder,
-                    CanWrapCells = row.CanWrapCells
+                    CanWrapCells = row.CanWrapCells,
+                    CanRepeat = row.CanRepeat,
+                    HideOnNoInput = row.HideOnNoInput
                 };
 
                 DB.Structure_Template_Row.Add(newRow);
-
-                foreach (Model_TemplateCell cell in row.Cells)
-                {
-                    CreateCell(row, cell);
-                }
             }
             else
             {
-                foreach (Model_TemplateCell cell in row.Cells)
-                {
-                    Structure_Template_Cell? cellExists = DB.Structure_Template_Cell.SingleOrDefault(c => c.ID == cell.CellId);
 
-                    if (cellExists is null)
-                    {
-                        CreateCell(row, cell);
-                    }
-                    else
-                    {
-                        cellExists.SortOrder = cell.SortOrder;
-                        cellExists.InputHelper = cell.InputHelper;
-                        cellExists.HideOnEmpty = cell.HideOnEmpty;
-                        cellExists.IsRequiered = cell.IsRequired;
-                        cellExists.Text = cell.Text;
-                        cellExists.MetaData = cell.MetaData;
-                    }
-                }
 
                 rowExists.SortOrder = row.SortOrder;
                 rowExists.CanWrapCells = row.CanWrapCells;
+            }
+
+            foreach (Model_TemplateCell cell in row.Cells)
+            {
+                Structure_Template_Cell? cellExists = DB.Structure_Template_Cell.SingleOrDefault(c => c.ID == cell.CellId);
+
+                if (cellExists is null)
+                {
+                    Structure_Template_Cell newCell = new()
+                    {
+                        ID = Guid.NewGuid(),
+                        RowID = row.RowId,
+                        SortOrder = cell.SortOrder,
+                        InputHelper = cell.InputHelper,
+                        HideOnEmpty = cell.HideOnEmpty,
+                        IsRequired = cell.IsRequired,
+                        Text = cell.Text,
+                        MetaData = cell.Text
+                    };
+
+                    DB.Structure_Template_Cell.Add(newCell);
+                }
+                else
+                {
+                    cellExists.SortOrder = cell.SortOrder;
+                    cellExists.InputHelper = cell.InputHelper;
+                    cellExists.HideOnEmpty = cell.HideOnEmpty;
+                    cellExists.IsRequired = cell.IsRequired;
+                    cellExists.Text = cell.Text;
+                    cellExists.MetaData = cell.MetaData;
+                }
             }
         }
 
@@ -253,21 +264,5 @@ public class TemplateController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<Guid>(model.Id));
     }
 
-    private void CreateCell(Model_TemplateRow row, Model_TemplateCell cell)
-    {
-        Structure_Template_Cell newCell = new()
-        {
-            ID = Guid.NewGuid(),
-            RowID = row.RowId,
-            SortOrder = cell.SortOrder,
-            InputHelper = cell.InputHelper,
-            HideOnEmpty = cell.HideOnEmpty,
-            IsRequiered = cell.IsRequired,
-            Text = cell.Text,
-            MetaData = cell.Text
-        };
-
-        DB.Structure_Template_Cell.Add(newCell);
-    }
     #endregion
 }

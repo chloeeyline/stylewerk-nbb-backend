@@ -13,7 +13,7 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public Guid ID { get; set; }
+    public required Guid ID { get; set; }
 
     /// <summary>
     /// The email address associated with the user account.

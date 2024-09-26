@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StyleWerk.NBB.Database;
@@ -11,9 +12,11 @@ using StyleWerk.NBB.Database;
 namespace StyleWerk.NBB.Migrations
 {
     [DbContext(typeof(NbbContext))]
-    partial class NbbContextModelSnapshot : ModelSnapshot
+    [Migration("20240925143253_ChangeDateType")]
+    partial class ChangeDateType
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,63 +25,6 @@ namespace StyleWerk.NBB.Migrations
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "uuid-ossp");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("StyleWerk.NBB.Database.Admin.Admin_ColorTheme", b =>
-                {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("ID")
-                        .HasDefaultValueSql("uuid_generate_v4()");
-
-                    b.Property<string>("Base")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasColumnType("JSONB");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<Guid>("UserID")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("UserID");
-
-                    b.ToTable("Admin_ColorTheme", (string)null);
-                });
-
-            modelBuilder.Entity("StyleWerk.NBB.Database.Admin.Admin_Language", b =>
-                {
-                    b.Property<string>("Code")
-                        .HasMaxLength(5)
-                        .HasColumnType("character varying(5)");
-
-                    b.Property<string>("Data")
-                        .IsRequired()
-                        .HasColumnType("JSONB");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<Guid>("UserID")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Code");
-
-                    b.HasIndex("UserID");
-
-                    b.ToTable("Admin_Language", (string)null);
-                });
 
             modelBuilder.Entity("StyleWerk.NBB.Database.Share.Share_Group", b =>
                 {
@@ -571,28 +517,6 @@ namespace StyleWerk.NBB.Migrations
                     b.HasKey("ID", "Agent");
 
                     b.ToTable("User_Token", (string)null);
-                });
-
-            modelBuilder.Entity("StyleWerk.NBB.Database.Admin.Admin_ColorTheme", b =>
-                {
-                    b.HasOne("StyleWerk.NBB.Database.User.User_Login", "O_User")
-                        .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("O_User");
-                });
-
-            modelBuilder.Entity("StyleWerk.NBB.Database.Admin.Admin_Language", b =>
-                {
-                    b.HasOne("StyleWerk.NBB.Database.User.User_Login", "O_User")
-                        .WithMany()
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("O_User");
                 });
 
             modelBuilder.Entity("StyleWerk.NBB.Database.Share.Share_Group", b =>

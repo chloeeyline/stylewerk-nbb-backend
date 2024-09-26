@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+using StyleWerk.NBB.Database.User;
+
 namespace StyleWerk.NBB.Database.Core;
 
 /// <summary>
@@ -60,12 +62,12 @@ public interface IEntity_EditDate
     /// <summary>
     /// The date and time when the entity was created.
     /// </summary>
-    DateTimeOffset CreatedAt { get; set; }
+    long CreatedAt { get; set; }
 
     /// <summary>
     /// The date and time when the entity was last updated.
     /// </summary>
-    DateTimeOffset LastUpdatedAt { get; set; }
+    long LastUpdatedAt { get; set; }
 }
 
 /// <summary>
@@ -77,4 +79,10 @@ public interface IEntity_SortOrder
     /// The sort order of the entity within a list or collection.
     /// </summary>
     int SortOrder { get; set; }
+}
+
+public interface IEntity_User
+{
+    Guid UserID { get; set; }
+    User_Login O_User { get; set; }
 }

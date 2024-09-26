@@ -5,9 +5,9 @@ using StyleWerk.NBB.Database.User;
 
 namespace StyleWerk.NBB.Database.Structure;
 
-public class Structure_Entry_Folder : IConnectedEntity<Structure_Entry_Folder>, IEntity_GuidID, IEntity_Name, IEntity_SortOrder
+public class Structure_Entry_Folder : IConnectedEntity<Structure_Entry_Folder>, IEntity_GuidID, IEntity_Name, IEntity_SortOrder, IEntity_User
 {
-    public Guid ID { get; set; }
+    public required Guid ID { get; set; }
     public required Guid UserID { get; set; }
     public required string Name { get; set; }
     public required int SortOrder { get; set; }
@@ -21,14 +21,13 @@ public class Structure_Entry_Folder : IConnectedEntity<Structure_Entry_Folder>, 
     {
         b.UseTemplates();
         b.UseIEntity_GuidID();
-        b.Property(s => s.UserID).IsRequired(true);
+        b.UseIEntity_User(); ;
         b.UseIEntity_Name();
         b.UseIEntity_SortOrder();
     }
 
     public static void Connect(EntityTypeBuilder<Structure_Entry_Folder> b)
     {
-        b.HasOne(s => s.O_User).WithMany().HasForeignKey(s => s.UserID);
         b.HasMany(s => s.O_EntryList).WithOne(s => s.O_Folder).HasForeignKey(s => s.FolderID);
     }
 }

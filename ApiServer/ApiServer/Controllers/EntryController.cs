@@ -156,7 +156,9 @@ public class EntryController(NbbContext db) : BaseController(db)
             Name = model.Name,
             UserID = CurrentUser.ID,
             TemplateID = model.TemplateId,
-            FolderID = model.FolderId
+            FolderID = model.FolderId,
+            IsEncrypted = false,
+            IsPublic = false,
         };
 
         DB.Structure_Entry.Add(newEntry);
@@ -226,13 +228,15 @@ public class EntryController(NbbContext db) : BaseController(db)
             Model_EntryRow rowModel = new(new Model_TemplateRow(row.O_Template), row.SortOrder, cells);
             rows.Add(rowModel);
         }
-        Model_DetailedEntry entryModel = new(item.ID, item.Name, item.Tags is null ? [] : item.Tags, rows);
+        Model_DetailedEntry entryModel = new(item.ID, item.Name, item.Tags, rows);
 
         return Ok(new Model_Result<Model_DetailedEntry>());
     }
     #endregion
 }
 
-public record Model_DetailedEntry(Guid ID, string Name, string[] Tags, List<Model_EntryRow> Rows);
+public record Model_DetailedEntry(Guid ID, string Name, string? Tags, List<Model_EntryRow> Rows);
 public record Model_EntryRow(Model_TemplateRow Info, int SortOrder, List<Model_EntryCell> Cells);
 public record Model_EntryCell(Model_TemplateCell Info, Guid ID, string Data);
+
+
