@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -58,7 +57,7 @@ namespace StyleWerk.NBB.Migrations
             migrationBuilder.AddPrimaryKey(
                 name: "PK_User_Right",
                 table: "User_Right",
-                columns: new[] { "ID", "Name" });
+                columns: ["ID", "Name"]);
         }
 
         /// <inheritdoc />

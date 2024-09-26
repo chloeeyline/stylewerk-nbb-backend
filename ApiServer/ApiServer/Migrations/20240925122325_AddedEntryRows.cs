@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -174,7 +173,7 @@ namespace StyleWerk.NBB.Migrations
             migrationBuilder.AddPrimaryKey(
                 name: "PK_Structure_Entry_Cell",
                 table: "Structure_Entry_Cell",
-                columns: new[] { "EntryID", "CellID" });
+                columns: ["EntryID", "CellID"]);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Structure_Entry_Cell_Structure_Entry_EntryID",
