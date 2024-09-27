@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.Structure;
@@ -29,7 +30,7 @@ namespace StyleWerk.NBB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_ShareItemRightsUser>))]
         [HttpGet(nameof(LoadGroupDetailsForShareItem))]
-        public IActionResult LoadGroupDetailsForShareItem(Model_GroupDetails model)
+        public IActionResult LoadGroupDetailsForShareItem([FromBody] Model_GroupDetails model)
         {
             if (model is null)
                 throw new RequestException(ResultType.DataIsInvalid);
@@ -54,7 +55,7 @@ namespace StyleWerk.NBB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
         [HttpPost(nameof(CreateGroup))]
-        public IActionResult CreateGroup(Model_CreateGroup model)
+        public IActionResult CreateGroup([FromBody] Model_CreateGroup model)
         {
             if (model is null)
                 throw new RequestException(ResultType.DataIsInvalid);
@@ -105,7 +106,7 @@ namespace StyleWerk.NBB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
         [HttpPost(nameof(ChangeGroupRights))]
-        public IActionResult ChangeGroupRights(Model_GroupRight model)
+        public IActionResult ChangeGroupRights([FromBody] Model_GroupRight model)
         {
             if (model is null)
                 throw new RequestException(ResultType.DataIsInvalid);
@@ -126,7 +127,7 @@ namespace StyleWerk.NBB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
         [HttpPost(nameof(ChangeGroupName))]
-        public IActionResult ChangeGroupName(Model_GroupName model)
+        public IActionResult ChangeGroupName([FromBody] Model_GroupName model)
         {
             if (model is null)
                 throw new RequestException(ResultType.DataIsInvalid);
@@ -145,7 +146,8 @@ namespace StyleWerk.NBB.Controllers
         [ApiExplorerSettings(GroupName = "Group Usermanagement")]
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
-        public IActionResult AddUser(Model_GroupUser model)
+        [HttpPost(nameof(AddUser))]
+        public IActionResult AddUser([FromBody] Model_GroupUser model)
         {
             if (model is null)
                 throw new RequestException(ResultType.DataIsInvalid);
@@ -186,7 +188,7 @@ namespace StyleWerk.NBB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
         [HttpPost(nameof(RemoveUser))]
-        public IActionResult RemoveUser(Model_RemoveUser model)
+        public IActionResult RemoveUser([FromBody] Model_RemoveUser model)
         {
             if (model is null)
                 throw new RequestException(ResultType.DataIsInvalid);
@@ -212,7 +214,7 @@ namespace StyleWerk.NBB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
         [HttpPost(nameof(ChangeUserRightsInGroup))]
-        public IActionResult ChangeUserRightsInGroup(Model_GroupUser model)
+        public IActionResult ChangeUserRightsInGroup([FromBody] Model_GroupUser model)
         {
             if (model is null)
                 throw new RequestException(ResultType.DataIsInvalid);
@@ -254,7 +256,7 @@ namespace StyleWerk.NBB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_ShareItemRightsUser>))]
         [HttpPost(nameof(LoadUserDetailsForShareItem))]
-        public IActionResult LoadUserDetailsForShareItem(Model_UserDetails model)
+        public IActionResult LoadUserDetailsForShareItem([FromBody] Model_UserDetails model)
         {
             if (model is null)
                 throw new RequestException(ResultType.DataIsInvalid);
@@ -269,7 +271,7 @@ namespace StyleWerk.NBB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
         [HttpPost(nameof(ChangeShareItemRights))]
-        public IActionResult ChangeShareItemRights(Model_ShareItemRightsUser model)
+        public IActionResult ChangeShareItemRights([FromBody] Model_ShareItemRightsUser model)
         {
             if (model is null)
                 throw new RequestException(ResultType.DataIsInvalid);
@@ -296,7 +298,7 @@ namespace StyleWerk.NBB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
         [HttpPost(nameof(ShareGroup))]
-        public IActionResult ShareGroup(Model_ShareGroup model)
+        public IActionResult ShareGroup([FromBody] Model_ShareGroup model)
         {
             if (model is null)
                 throw new RequestException(ResultType.DataIsInvalid);
@@ -374,7 +376,7 @@ namespace StyleWerk.NBB.Controllers
         [Produces("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
         [HttpPost(nameof(ShareDirectly))]
-        public IActionResult ShareDirectly(Model_ShareDirectly model)
+        public IActionResult ShareDirectly([FromBody] Model_ShareDirectly model)
         {
             if (model is null)
                 throw new RequestException(ResultType.DataIsInvalid);
