@@ -33,7 +33,7 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult LoadGroupDetailsForShareItem([FromBody] Model_GroupDetails model)
         {
             if (model is null)
-                throw new RequestException(ResultType.DataIsInvalid);
+                throw new RequestException(ResultCodes.DataIsInvalid);
 
             Share_Group group = GroupExists(model.GroupId);
             Model_ShareItemRightsGroup groupRights = Query.ShareItemGroupRights(group, model.ShareItem);
@@ -48,7 +48,7 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult GetGroups()
         {
             List<Model_Group> groups = Query.LoadGroups();
-            return Ok(new Model_Result<List<Model_Group>>());
+            return Ok(new Model_Result<List<Model_Group>>(groups));
         }
 
         [ApiExplorerSettings(GroupName = "Group Actions")]
@@ -58,10 +58,10 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult CreateGroup([FromBody] Model_CreateGroup model)
         {
             if (model is null)
-                throw new RequestException(ResultType.DataIsInvalid);
+                throw new RequestException(ResultCodes.DataIsInvalid);
 
             Share_Group groupExistsForUser = DB.Share_Group.FirstOrDefault(g => g.UserID == CurrentUser.ID && g.Name == model.Name)
-                ?? throw new RequestException(ResultType.DataIsInvalid, message: "Es existiert bereits eine Gruppe mit diesem Namen");
+                ?? throw new RequestException(ResultCodes.DataIsInvalid);
 
             Share_Group newGroup = new()
             {
@@ -85,10 +85,10 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult DeleteGroup(Guid? groupID)
         {
             if (groupID is null)
-                throw new RequestException(ResultType.DataIsInvalid);
+                throw new RequestException(ResultCodes.DataIsInvalid);
 
             Share_Group group = DB.Share_Group.FirstOrDefault(g => g.ID == groupID && g.UserID == CurrentUser.ID)
-                ?? throw new RequestException(ResultType.NoDataFound);
+                ?? throw new RequestException(ResultCodes.NoDataFound);
 
             List<Share_GroupUser> groupUsers = [.. DB.Share_GroupUser.Where(g => g.GroupID == groupID)];
             if (groupUsers.Count != 0)
@@ -109,11 +109,11 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult ChangeGroupRights([FromBody] Model_GroupRight model)
         {
             if (model is null)
-                throw new RequestException(ResultType.DataIsInvalid);
+                throw new RequestException(ResultCodes.DataIsInvalid);
 
             //Check if User is creator of group
             Share_Group group = DB.Share_Group.FirstOrDefault(g => g.UserID == CurrentUser.ID && g.ID == model.GroupId)
-                ?? throw new RequestException(ResultType.NoDataFound);
+                ?? throw new RequestException(ResultCodes.NoDataFound);
 
             group.CanSeeOthers = model.CanSeeOthers;
             group.IsVisible = model.IsVisible;
@@ -130,11 +130,11 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult ChangeGroupName([FromBody] Model_GroupName model)
         {
             if (model is null)
-                throw new RequestException(ResultType.DataIsInvalid);
+                throw new RequestException(ResultCodes.DataIsInvalid);
 
             //check if User is creator of group 
             Share_Group isCreator = DB.Share_Group.FirstOrDefault(g => g.ID == model.GroupId && g.UserID == CurrentUser.ID)
-                ?? throw new RequestException(ResultType.NoDataFound);
+                ?? throw new RequestException(ResultCodes.NoDataFound);
 
             isCreator.Name = model.GroupName;
 
@@ -150,17 +150,17 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult AddUser([FromBody] Model_GroupUser model)
         {
             if (model is null)
-                throw new RequestException(ResultType.DataIsInvalid);
+                throw new RequestException(ResultCodes.DataIsInvalid);
 
             User_Login user = UserExists(model.Username);
 
             //check if group exists
             Share_Group? group = DB.Share_Group.FirstOrDefault(g => g.ID == model.GroupId)
-                ?? throw new RequestException(ResultType.NoDataFound);
+                ?? throw new RequestException(ResultCodes.NoDataFound);
 
             //check if currentUser has the right to add User
             Share_GroupUser hasRight = DB.Share_GroupUser.FirstOrDefault(g => g.GroupID == group.ID && g.UserID == CurrentUser.ID && g.CanAddUsers == true)
-                ?? throw new RequestException(ResultType.MissingRight);
+                ?? throw new RequestException(ResultCodes.MissingRight);
 
             //check if user already in group
             bool inGroup = DB.Share_GroupUser.Any(g => g.UserID == user.ID && g.GroupID == group.ID);
@@ -191,13 +191,13 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult RemoveUser([FromBody] Model_RemoveUser model)
         {
             if (model is null)
-                throw new RequestException(ResultType.DataIsInvalid);
+                throw new RequestException(ResultCodes.DataIsInvalid);
 
             User_Login user = UserExists(model.Username);
             Share_Group group = GroupExists(model.GroupId);
 
             Share_GroupUser hasRight = DB.Share_GroupUser.FirstOrDefault(g => g.GroupID == group.ID && g.UserID == CurrentUser.ID && g.CanRemoveUsers == true)
-                ?? throw new RequestException(ResultType.MissingRight);
+                ?? throw new RequestException(ResultCodes.MissingRight);
 
             Share_GroupUser? userInGroup = DB.Share_GroupUser.FirstOrDefault(g => g.UserID == user.ID && g.GroupID == group.ID);
             if (userInGroup is not null)
@@ -217,17 +217,17 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult ChangeUserRightsInGroup([FromBody] Model_GroupUser model)
         {
             if (model is null)
-                throw new RequestException(ResultType.DataIsInvalid);
+                throw new RequestException(ResultCodes.DataIsInvalid);
 
             User_Login user = UserExists(model.Username);
             Share_Group group = GroupExists(model.GroupId);
 
             //why -> if you can add an user to the group, you might want to change his rights he might have
             Share_GroupUser hasRight = DB.Share_GroupUser.FirstOrDefault(g => g.GroupID == group.ID && g.CanAddUsers)
-                ?? throw new RequestException(ResultType.MissingRight);
+                ?? throw new RequestException(ResultCodes.MissingRight);
 
             Share_GroupUser userInGroup = DB.Share_GroupUser.FirstOrDefault(u => u.GroupID == group.ID && u.UserID == user.ID)
-                ?? throw new RequestException(ResultType.NoDataFound);
+                ?? throw new RequestException(ResultCodes.NoDataFound);
 
             userInGroup.CanSeeUsers = model.UserRights.CanSeeUsers;
             userInGroup.CanRemoveUsers = model.UserRights.CanRemoveUsers;
@@ -259,7 +259,7 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult LoadUserDetailsForShareItem([FromBody] Model_UserDetails model)
         {
             if (model is null)
-                throw new RequestException(ResultType.DataIsInvalid);
+                throw new RequestException(ResultCodes.DataIsInvalid);
 
             User_Login user = UserExists(model.Username);
             Model_ShareItemRightsUser userRights = Query.ShareItemUserRights(user, model.ShareItem);
@@ -274,12 +274,12 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult ChangeShareItemRights([FromBody] Model_ShareItemRightsUser model)
         {
             if (model is null)
-                throw new RequestException(ResultType.DataIsInvalid);
+                throw new RequestException(ResultCodes.DataIsInvalid);
 
             User_Login user = UserExists(model.Username);
 
             Share_Item exists = DB.Share_Item.FirstOrDefault(i => i.ID == model.ShareItem && i.ToWhom == user.ID && i.WhoShared == CurrentUser.ID)
-                ?? throw new RequestException(ResultType.NoDataFound);
+                ?? throw new RequestException(ResultCodes.NoDataFound);
 
             exists.CanDelete = model.Rights.CanDelete;
             exists.CanShare = model.Rights.CanShare;
@@ -301,23 +301,23 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult ShareGroup([FromBody] Model_ShareGroup model)
         {
             if (model is null)
-                throw new RequestException(ResultType.DataIsInvalid);
+                throw new RequestException(ResultCodes.DataIsInvalid);
 
             //check if group exists and if User is in group
             Share_Group groupExists = DB.Share_Group.FirstOrDefault(g => g.ID == model.GroupId && g.UserID == CurrentUser.ID)
-                ?? throw new RequestException(ResultType.NoDataFound);
+                ?? throw new RequestException(ResultCodes.NoDataFound);
 
             //Entry
             if (model.ItemType == 1)
             {
                 //Check if Entry exists
                 Structure_Entry? entry = DB.Structure_Entry.FirstOrDefault(e => e.ID == model.ShareItem)
-                    ?? throw new RequestException(ResultType.NoDataFound);
+                    ?? throw new RequestException(ResultCodes.NoDataFound);
 
                 //check if entry has already been shared with group
                 bool isShared = DB.Share_Item.Any(i => i.ItemID == model.ShareItem && i.ToWhom == model.GroupId && i.Group);
                 if (isShared)
-                    throw new RequestException(ResultType.GeneralError, message: "Der Eintrag wurde bereits in dieser Gruppe geteilt");
+                    throw new RequestException(ResultCodes.GeneralError);
 
                 //check if entry belongs to user
                 bool belongsUser = entry.UserID == CurrentUser.ID;
@@ -327,12 +327,12 @@ namespace StyleWerk.NBB.Controllers
                     IEnumerable<Model_Group> groups = Query.LoadGroups().Where(g => g.GroupId != model.GroupId);
                     bool shareRight = DB.Share_Item.Any(i => i.ItemID == entry.ID && groups.Any(g => g.GroupId == i.ToWhom) && i.CanShare);
                     if (!shareRight)
-                        throw new RequestException(ResultType.MissingRight);
+                        throw new RequestException(ResultCodes.MissingRight);
 
                     //check if entry was once shared directly
                     bool shareDirectly = DB.Share_Item.Any(i => i.ItemID == entry.ID && i.ToWhom == CurrentUser.ID && i.CanShare);
                     if (!shareDirectly)
-                        throw new RequestException(ResultType.MissingRight);
+                        throw new RequestException(ResultCodes.MissingRight);
                 }
 
                 ShareEntry(entry, model.GroupId, true, model.Rights);
@@ -343,12 +343,12 @@ namespace StyleWerk.NBB.Controllers
             {
                 //Check if Template exists
                 Structure_Template template = DB.Structure_Template.FirstOrDefault(t => t.ID == model.ShareItem)
-                    ?? throw new RequestException(ResultType.NoDataFound);
+                    ?? throw new RequestException(ResultCodes.NoDataFound);
 
                 //check if template has already been shared with group
                 bool isShared = DB.Share_Item.Any(i => i.ItemID == template.ID && i.ToWhom == model.GroupId);
                 if (isShared)
-                    throw new RequestException(ResultType.GeneralError, message: "Die Vorlage wurde bereits in dieser Gruppe geteilt");
+                    throw new RequestException(ResultCodes.GeneralError);
 
                 //check if template belongs to user
                 bool belongsUser = template.UserID == CurrentUser.ID;
@@ -359,12 +359,12 @@ namespace StyleWerk.NBB.Controllers
                     IEnumerable<Model_Group> groups = Query.LoadGroups().Where(g => g.GroupId != model.GroupId);
                     bool shareRight = DB.Share_Item.Any(i => i.ItemID == template.ID && groups.Any(g => g.GroupId == i.ToWhom) && i.CanShare);
                     if (!shareRight)
-                        throw new RequestException(ResultType.MissingRight);
+                        throw new RequestException(ResultCodes.MissingRight);
 
                     //check if entry was once shared directly
                     bool shareDirectly = DB.Share_Item.Any(i => i.ItemID == template.ID && i.ToWhom == CurrentUser.ID && i.CanShare);
                     if (!shareDirectly)
-                        throw new RequestException(ResultType.MissingRight);
+                        throw new RequestException(ResultCodes.MissingRight);
                 }
 
                 ShareTemplate(template, model.GroupId, true, model.Rights);
@@ -379,7 +379,7 @@ namespace StyleWerk.NBB.Controllers
         public IActionResult ShareDirectly([FromBody] Model_ShareDirectly model)
         {
             if (model is null)
-                throw new RequestException(ResultType.DataIsInvalid);
+                throw new RequestException(ResultCodes.DataIsInvalid);
 
             User_Login user = UserExists(model.Username);
 
@@ -388,12 +388,12 @@ namespace StyleWerk.NBB.Controllers
             {
                 //Check if Entry exists
                 Structure_Entry? entry = DB.Structure_Entry.FirstOrDefault(e => e.ID == model.ShareItem)
-                    ?? throw new RequestException(ResultType.NoDataFound);
+                    ?? throw new RequestException(ResultCodes.NoDataFound);
 
                 //check if entry has already been shared with user
                 bool isShared = DB.Share_Item.Any(i => i.ItemID == entry.ID && i.ToWhom == user.ID);
                 if (isShared)
-                    throw new RequestException(ResultType.GeneralError, message: "Der Eintrag wurde bereits mit diesem User geteilt");
+                    throw new RequestException(ResultCodes.GeneralError);
 
                 //check if entry belongs to user
                 bool belongsUser = entry.UserID == CurrentUser.ID;
@@ -404,12 +404,12 @@ namespace StyleWerk.NBB.Controllers
                     List<Model_Group> groups = Query.LoadGroups();
                     bool shareRight = DB.Share_Item.Any(i => i.ItemID == entry.ID && groups.Any(g => g.GroupId == i.ToWhom) && i.CanShare);
                     if (!shareRight)
-                        throw new RequestException(ResultType.MissingRight);
+                        throw new RequestException(ResultCodes.MissingRight);
 
                     //check if entry was once shared directly
                     bool shareDirectly = DB.Share_Item.Any(i => i.ItemID == entry.ID && i.ToWhom == CurrentUser.ID && i.CanShare);
                     if (!shareDirectly)
-                        throw new RequestException(ResultType.MissingRight);
+                        throw new RequestException(ResultCodes.MissingRight);
                 }
 
                 ShareEntry(entry, user.ID, false, model.Rights);
@@ -420,12 +420,12 @@ namespace StyleWerk.NBB.Controllers
             {
                 //Check if Template exists
                 Structure_Template template = DB.Structure_Template.FirstOrDefault(t => t.ID == model.ShareItem)
-                    ?? throw new RequestException(ResultType.NoDataFound);
+                    ?? throw new RequestException(ResultCodes.NoDataFound);
 
                 //check if entry has already been shared with user
                 bool isShared = DB.Share_Item.Any(i => i.ItemID == template.ID && i.ToWhom == user.ID);
                 if (isShared)
-                    throw new RequestException(ResultType.GeneralError, message: "Der Eintrag wurde bereits mit diesem User geteilt");
+                    throw new RequestException(ResultCodes.GeneralError);
 
                 //check if template belongs to user
                 bool belongsUser = template.UserID == CurrentUser.ID;
@@ -436,12 +436,12 @@ namespace StyleWerk.NBB.Controllers
                     List<Model_Group> groups = Query.LoadGroups();
                     bool shareRight = DB.Share_Item.Any(i => i.ItemID == template.ID && groups.Any(g => g.GroupId == i.ToWhom) && i.CanShare);
                     if (!shareRight)
-                        throw new RequestException(ResultType.MissingRight);
+                        throw new RequestException(ResultCodes.MissingRight);
 
                     //check if template was once shared directly
                     bool shareDirectly = DB.Share_Item.Any(i => i.ItemID == template.ID && i.ToWhom == CurrentUser.ID && i.CanShare);
                     if (!shareDirectly)
-                        throw new RequestException(ResultType.MissingRight);
+                        throw new RequestException(ResultCodes.MissingRight);
                 }
 
                 ShareTemplate(template, user.ID, true, model.Rights);
@@ -492,14 +492,14 @@ namespace StyleWerk.NBB.Controllers
         private User_Login UserExists(string username)
         {
             User_Login user = DB.User_Login.FirstOrDefault(u => u.Username == username)
-                ?? throw new RequestException(ResultType.NoDataFound);
+                ?? throw new RequestException(ResultCodes.NoDataFound);
 
             return user;
         }
         private Share_Group GroupExists(Guid groupId)
         {
             Share_Group exists = DB.Share_Group.FirstOrDefault(g => g.ID == groupId)
-                ?? throw new RequestException(ResultType.NoDataFound);
+                ?? throw new RequestException(ResultCodes.NoDataFound);
 
             return exists;
         }

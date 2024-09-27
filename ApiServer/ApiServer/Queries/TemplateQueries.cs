@@ -11,7 +11,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
 {
     public Model_DetailedTemplate LoadTemplate(Guid templateId)
     {
-        Structure_Template? item = DB.Structure_Template.FirstOrDefault(t => t.ID == templateId) ?? throw new RequestException(ResultType.NoDataFound);
+        Structure_Template? item = DB.Structure_Template.FirstOrDefault(t => t.ID == templateId) ?? throw new RequestException(ResultCodes.NoDataFound);
 
         Model_TemplateRow[] rows =
         [

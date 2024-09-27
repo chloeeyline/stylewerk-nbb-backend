@@ -42,13 +42,13 @@ public class EntryController(NbbContext db) : BaseController(db)
     public IActionResult AddFolder(string? name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         bool isEmpty = !DB.Structure_Entry_Folder.Any();
         int sortOrder = isEmpty ? 1 :
             (DB.Structure_Entry_Folder.Where(s => s.UserID == CurrentUser.ID).Max(f => f.SortOrder) + 1);
         if (DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID && s.Name == name))
-            throw new RequestException(ResultType.DataIsInvalid, message: "You already have a Folder with the same Name");
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         Structure_Entry_Folder newFolder = new()
         {
@@ -71,10 +71,10 @@ public class EntryController(NbbContext db) : BaseController(db)
     public IActionResult DeleteFolder(Guid? id)
     {
         if (id is null)
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         Structure_Entry_Folder? folder = DB.Structure_Entry_Folder.FirstOrDefault(f => f.ID == id)
-           ?? throw new RequestException(ResultType.NoDataFound);
+           ?? throw new RequestException(ResultCodes.NoDataFound);
 
         IQueryable<Structure_Entry> entries = DB.Structure_Entry.Where(e => e.FolderID == id);
         if (entries.Any())
@@ -117,7 +117,7 @@ public class EntryController(NbbContext db) : BaseController(db)
     public IActionResult FilterEntries([FromBody] Model_FilterEntry? model)
     {
         if (model is null)
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         List<Model_EntryItem> entries = Query.LoadEntryItem(model);
         return Ok(new Model_Result<List<Model_EntryItem>>(entries));
@@ -130,7 +130,7 @@ public class EntryController(NbbContext db) : BaseController(db)
     public IActionResult AddEntry([FromBody] Model_AddEntry? model)
     {
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         Structure_Entry newEntry = new()
         {
@@ -156,10 +156,10 @@ public class EntryController(NbbContext db) : BaseController(db)
     public IActionResult ChangeEntryName([FromBody] Model_ChangeEntryName model)
     {
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == model.ID)
-            ?? throw new RequestException(ResultType.NoDataFound);
+            ?? throw new RequestException(ResultCodes.NoDataFound);
 
         item.Name = model.Name;
         DB.SaveChanges();
@@ -174,10 +174,10 @@ public class EntryController(NbbContext db) : BaseController(db)
     public IActionResult ChangeFolder([FromBody] Model_ChangeFolder? model)
     {
         if (model is null)
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == model.ID)
-            ?? throw new RequestException(ResultType.NoDataFound);
+            ?? throw new RequestException(ResultCodes.NoDataFound);
         if (model.FolderID == Guid.Empty)
             model = model with { FolderID = null };
         item.FolderID = model.FolderID;
@@ -193,9 +193,9 @@ public class EntryController(NbbContext db) : BaseController(db)
     public IActionResult GetEntry(Guid? id)
     {
         if (id is null || id == Guid.Empty)
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
-        Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == id) ?? throw new RequestException(ResultType.NoDataFound);
+        Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == id) ?? throw new RequestException(ResultCodes.NoDataFound);
         List<Structure_Entry_Row> itemRows = [.. DB.Structure_Entry_Row.Where(s => s.EntryID == item.ID).Include(s => s.TemplateID).OrderBy(s => s.O_Template.SortOrder).ThenBy(s => s.SortOrder)];
 
         List<Model_EntryRow> rows = [];

@@ -37,7 +37,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQue
     public List<Model_EntryItem> GetFolderContent(Guid? folderId)
     {
         if (folderId is null || folderId == Guid.Empty)
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         List<Model_EntryItem> list =
         [
@@ -49,7 +49,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQue
                 .Select(e => new Model_EntryItem(e, new ShareTypes(true, false, false, false))),
         ];
 
-        return list.Count != 0 ? list : throw new RequestException(ResultType.NoDataFound);
+        return list.Count != 0 ? list : throw new RequestException(ResultCodes.NoDataFound);
     }
     #endregion
 

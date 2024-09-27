@@ -45,7 +45,7 @@ public class TemplateController(NbbContext db) : BaseController(db)
     public IActionResult RemoveTemplate(Guid? TemplateId)
     {
         if (TemplateId is null)
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         //get Entries with that templateId 
         IQueryable<Structure_Entry> entries = DB.Structure_Entry.Where(e => e.TemplateID == TemplateId);
@@ -120,9 +120,9 @@ public class TemplateController(NbbContext db) : BaseController(db)
     public IActionResult CopyTemplate(Guid? TemplateId)
     {
         if (TemplateId is null)
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
-        Structure_Template? copyTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == TemplateId) ?? throw new RequestException(ResultType.NoDataFound);
+        Structure_Template? copyTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == TemplateId) ?? throw new RequestException(ResultCodes.NoDataFound);
         List<Structure_Template_Cell> copyCells = [];
 
         Structure_Template template = new()
@@ -181,10 +181,10 @@ public class TemplateController(NbbContext db) : BaseController(db)
     public IActionResult ChangeTemplateName(Model_ChangeTemplateName? template)
     {
         if (template is null || string.IsNullOrWhiteSpace(template.Name))
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         Structure_Template? changeTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == template.ID)
-             ?? throw new RequestException(ResultType.NoDataFound);
+             ?? throw new RequestException(ResultCodes.NoDataFound);
 
         changeTemplate.Name = template.Name;
         DB.SaveChanges();
@@ -199,7 +199,7 @@ public class TemplateController(NbbContext db) : BaseController(db)
     public IActionResult SaveTemplate(Model_DetailedTemplate model)
     {
         if (model is null)
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         foreach (Model_TemplateRow row in model.Items)
         {

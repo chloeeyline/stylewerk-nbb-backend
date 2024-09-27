@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using StyleWerk.NBB.AWS;
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.User;
+using StyleWerk.NBB.Models;
 
 using UAParser;
 
@@ -33,14 +34,14 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         if (model is null ||
             string.IsNullOrWhiteSpace(model.Username) ||
             string.IsNullOrWhiteSpace(model.Password))
-            throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         string userName = model.Username.ToLower().Normalize();
         User_Login? user = DB.User_Login.FirstOrDefault(s => s.UsernameNormalized == userName)
-            ?? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound);
+            ?? throw new RequestException(ResultCodes.NoUserFound);
 
         string hashedPassword = HashPassword(model.Password, user.PasswordSalt);
-        return user.PasswordHash != hashedPassword ? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound) : user;
+        return user.PasswordHash != hashedPassword ? throw new RequestException(ResultCodes.NoUserFound) : user;
     }
 
     public User_Login GetUser(Model_RefreshToken? model, string userAgent)
@@ -48,17 +49,17 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         if (model is null ||
             string.IsNullOrWhiteSpace(model.Token) ||
             string.IsNullOrWhiteSpace(userAgent))
-            throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         string agent = GetUserAgentString(userAgent);
         User_Token? token = DB.User_Token.FirstOrDefault(s => s.Agent == agent && s.RefreshToken == model.Token)
-            ?? throw new AuthenticationException(AuthenticationErrorCodes.RefreshTokenNotFound);
+            ?? throw new RequestException(ResultCodes.RefreshTokenNotFound);
 
         if (Now >= token.RefreshTokenExpiryTime)
-            throw new AuthenticationException(AuthenticationErrorCodes.RefreshTokenExpired);
+            throw new RequestException(ResultCodes.RefreshTokenExpired);
 
         User_Login? user = DB.User_Login.FirstOrDefault(s => s.ID == token.ID)
-        ?? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound);
+        ?? throw new RequestException(ResultCodes.NoUserFound);
 
         return user;
     }
@@ -66,9 +67,9 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     public Model_Token GetAccessToken(User_Login user)
     {
         if (user.StatusCode is UserStatus.EmailVerification)
-            throw new AuthenticationException(AuthenticationErrorCodes.EmailIsNotVerified);
+            throw new RequestException(ResultCodes.EmailIsNotVerified);
         if (user.StatusCode == UserStatus.PasswordReset)
-            throw new AuthenticationException(AuthenticationErrorCodes.PasswordResetWasRequested);
+            throw new RequestException(ResultCodes.PasswordResetWasRequested);
 
         SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(SecretData.Value.JwtKey));
         SigningCredentials credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
@@ -116,7 +117,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     {
         User_Login? user = DB.User_Login.Include(s => s.O_Information)
             .FirstOrDefault(s => s.ID == id)
-            ?? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound);
+            ?? throw new RequestException(ResultCodes.NoUserFound);
 
         string[] rights = [.. DB.User_Right.Where(s => s.ID == id).Select(s => s.Name)];
 
@@ -131,7 +132,7 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             string.IsNullOrWhiteSpace(model.Username) ||
             string.IsNullOrWhiteSpace(model.Email) ||
             string.IsNullOrWhiteSpace(model.Password))
-            throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         string email = ValidateEmail(model.Email);
         string username = ValidateUsername(model.Username);
@@ -180,14 +181,14 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     public void VerifyEmail(string? token)
     {
         if (token is null)
-            throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         User_Login? user = DB.User_Login.FirstOrDefault(s => s.StatusToken == token)
-            ?? throw new AuthenticationException(AuthenticationErrorCodes.StatusTokenNotFound);
+            ?? throw new RequestException(ResultCodes.StatusTokenNotFound);
         if (user.StatusCode is not UserStatus.EmailVerification)
-            throw new AuthenticationException(AuthenticationErrorCodes.WrongStatusCode);
+            throw new RequestException(ResultCodes.WrongStatusCode);
         if (Now >= user.StatusTokenExpireTime)
-            throw new AuthenticationException(AuthenticationErrorCodes.StatusTokenExpired);
+            throw new RequestException(ResultCodes.StatusTokenExpired);
 
         user.StatusCode = null;
         user.StatusToken = null;
@@ -200,13 +201,13 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     public void RequestPasswordReset(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
-            throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         email = email.ToLower().Normalize();
         User_Login? user = DB.User_Login.Include(s => s.O_Token).FirstOrDefault(s => s.EmailNormalized == email && s.StatusCode != null)
-            ?? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound);
+            ?? throw new RequestException(ResultCodes.NoUserFound);
         if (user.StatusCode is UserStatus.EmailVerification)
-            throw new AuthenticationException(AuthenticationErrorCodes.EmailIsNotVerified);
+            throw new RequestException(ResultCodes.EmailIsNotVerified);
 
         DB.User_Token.RemoveRange(user.O_Token);
         user.StatusCode = UserStatus.PasswordReset;
@@ -221,17 +222,17 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     {
         if (model is null ||
             string.IsNullOrWhiteSpace(model.Password))
-            throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         User_Login? user = DB.User_Login.FirstOrDefault(s => s.StatusToken == model.Token);
 
         ValidatePassword(model.Password);
         if (user is null)
-            throw new AuthenticationException(AuthenticationErrorCodes.StatusTokenNotFound);
+            throw new RequestException(ResultCodes.StatusTokenNotFound);
         if (user.StatusCode is not UserStatus.PasswordReset)
-            throw new AuthenticationException(AuthenticationErrorCodes.WrongStatusCode);
+            throw new RequestException(ResultCodes.WrongStatusCode);
         if (Now >= user.StatusTokenExpireTime)
-            throw new AuthenticationException(AuthenticationErrorCodes.RefreshTokenExpired);
+            throw new RequestException(ResultCodes.RefreshTokenExpired);
 
         user.PasswordSalt = GetSalt();
         user.PasswordHash = HashPassword(model.Password, user.PasswordSalt);
@@ -259,10 +260,10 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     public void UpdateEmail(string? email, User_Login user)
     {
         if (string.IsNullOrWhiteSpace(email))
-            throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         if (user.StatusCode is UserStatus.PasswordReset)
-            throw new AuthenticationException(AuthenticationErrorCodes.PasswordResetWasRequested);
+            throw new RequestException(ResultCodes.PasswordResetWasRequested);
 
         user.NewEmail = email;
         user.StatusCode = UserStatus.EmailChange;
@@ -276,16 +277,16 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     public void VerifyUpdatedEmail(string? token, User_Login user, string userAgent)
     {
         if (string.IsNullOrWhiteSpace(token))
-            throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         if (string.IsNullOrEmpty(user.StatusToken) || !token.Equals(user.StatusToken))
-            throw new AuthenticationException(AuthenticationErrorCodes.EmailChangeCodeWrong);
+            throw new RequestException(ResultCodes.EmailChangeCodeWrong);
         if (user.StatusCode is not UserStatus.EmailChange)
-            throw new AuthenticationException(AuthenticationErrorCodes.WrongStatusCode);
+            throw new RequestException(ResultCodes.WrongStatusCode);
         if (string.IsNullOrWhiteSpace(user.NewEmail))
-            throw new AuthenticationException(AuthenticationErrorCodes.WrongStatusCode);
+            throw new RequestException(ResultCodes.WrongStatusCode);
         if (Now >= user.StatusTokenExpireTime)
-            throw new AuthenticationException(AuthenticationErrorCodes.StatusTokenExpired);
+            throw new RequestException(ResultCodes.StatusTokenExpired);
 
         DB.User_Token.RemoveRange(DB.User_Token.Where(s => s.ID == user.ID && s.Agent != userAgent));
         user.Email = user.NewEmail;
@@ -314,12 +315,12 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     public void UpdateUserData(Model_UpdateUserData? model, Guid userID)
     {
         if (model is null)
-            throw new AuthenticationException(AuthenticationErrorCodes.ModelIncorrect);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         User_Login? user = DB.User_Login.Include(s => s.O_Information).FirstOrDefault(s => s.ID == userID)
-            ?? throw new AuthenticationException(AuthenticationErrorCodes.NoUserFound);
+            ?? throw new RequestException(ResultCodes.NoUserFound);
         if (user.StatusCode is not null)
-            throw new AuthenticationException(AuthenticationErrorCodes.PendingChangeOpen);
+            throw new RequestException(ResultCodes.PendingChangeOpen);
 
         if (!string.IsNullOrWhiteSpace(model.Password))
         {
@@ -384,9 +385,9 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     {
         email = email?.ToLower().Normalize();
         return string.IsNullOrWhiteSpace(email) || !email.Contains('@') || !email.Contains('.')
-            ? throw new AuthenticationException(AuthenticationErrorCodes.EmailInvalid)
+            ? throw new RequestException(ResultCodes.EmailInvalid)
             : DB.User_Login.Any(s => s.EmailNormalized == email)
-            ? throw new AuthenticationException(AuthenticationErrorCodes.EmailAlreadyExists)
+            ? throw new RequestException(ResultCodes.EmailAlreadyExists)
             : email;
     }
 
@@ -394,34 +395,34 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     {
         username = username?.ToLower().Normalize();
         return string.IsNullOrWhiteSpace(username) || username.Length < 5
-            ? throw new AuthenticationException(AuthenticationErrorCodes.UnToShort)
+            ? throw new RequestException(ResultCodes.UnToShort)
             : username.Length > 50
-            ? throw new AuthenticationException(AuthenticationErrorCodes.UnToShort)
+            ? throw new RequestException(ResultCodes.UnToShort)
             : !OnlyUsernameValidChars().IsMatch(username)
-            ? throw new AuthenticationException(AuthenticationErrorCodes.UnUsesInvalidChars)
+            ? throw new RequestException(ResultCodes.UnUsesInvalidChars)
             : DB.User_Login.Any(s => s.UsernameNormalized == username)
-            ? throw new AuthenticationException(AuthenticationErrorCodes.UsernameAlreadyExists)
+            ? throw new RequestException(ResultCodes.UsernameAlreadyExists)
             : username;
     }
 
     public void ValidatePassword(string? password)
     {
         if (string.IsNullOrWhiteSpace(password))
-            throw new AuthenticationException(AuthenticationErrorCodes.PwTooShort);
+            throw new RequestException(ResultCodes.PwTooShort);
         if (password.Length < 10)
-            throw new AuthenticationException(AuthenticationErrorCodes.PwTooShort);
+            throw new RequestException(ResultCodes.PwTooShort);
         if (!ContainsLowercase().IsMatch(password))
-            throw new AuthenticationException(AuthenticationErrorCodes.PwHasNoLowercaseLetter);
+            throw new RequestException(ResultCodes.PwHasNoLowercaseLetter);
         if (!ContainsUppercase().IsMatch(password))
-            throw new AuthenticationException(AuthenticationErrorCodes.PwHasNoUppercaseLetter);
+            throw new RequestException(ResultCodes.PwHasNoUppercaseLetter);
         if (!ContainsDigit().IsMatch(password))
-            throw new AuthenticationException(AuthenticationErrorCodes.PwHasNoNumber);
+            throw new RequestException(ResultCodes.PwHasNoNumber);
         if (!ContainsPasswordSpecialChar().IsMatch(password))
-            throw new AuthenticationException(AuthenticationErrorCodes.PwHasNoSpecialChars);
+            throw new RequestException(ResultCodes.PwHasNoSpecialChars);
         if (ContainsWhitespace().IsMatch(password))
-            throw new AuthenticationException(AuthenticationErrorCodes.PwHasWhitespace);
+            throw new RequestException(ResultCodes.PwHasWhitespace);
         if (!OnlyPasswordValidChars().IsMatch(password))
-            throw new AuthenticationException(AuthenticationErrorCodes.PwUsesInvalidChars);
+            throw new RequestException(ResultCodes.PwUsesInvalidChars);
     }
 
 

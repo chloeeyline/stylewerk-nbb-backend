@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
 
-using StyleWerk.NBB.Authentication;
 using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Helper;
@@ -27,14 +26,6 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
         try
         {
             await next(context); // Proceed to the next middleware
-        }
-        catch (AuthenticationException ex)
-        {
-            if (!string.IsNullOrWhiteSpace(ex.Message)) Console.WriteLine(ex.Message);
-            // Log the exception details
-            logger.LogError(ex, "An unexpected error occurred.");
-            // Handle the exception
-            await HandleExceptionAsync(context, ex);
         }
         catch (RequestException ex)
         {
@@ -67,14 +58,10 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
         // Set status code depending on the exception type
         context.Response.StatusCode = (int) HttpStatusCode.OK;
 
-        Model_Result<string> response = new(ResultType.GeneralError);
-        if (exception is AuthenticationException authenticationException)
+        Model_Result<string> response = new(ResultCodes.GeneralError);
+        if (exception is RequestException requestException)
         {
-            response = new Model_Result<string>(authenticationException.ErrorCode);
-        }
-        else if (exception is RequestException requestException)
-        {
-            response = new Model_Result<string>(requestException.Type, requestException.Code, requestException.Message);
+            response = new Model_Result<string>(requestException.Code);
         }
 
         // Serialize the response to JSON

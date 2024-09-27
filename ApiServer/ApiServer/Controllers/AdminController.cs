@@ -29,8 +29,8 @@ public class AdminController(NbbContext db) : BaseController(db)
     public IActionResult GetLanguage(string? code)
     {
         if (string.IsNullOrWhiteSpace(code))
-            throw new RequestException(ResultType.DataIsInvalid);
-        Admin_Language item = DB.Admin_Language.FirstOrDefault(s => s.Code == code) ?? throw new RequestException(ResultType.NoDataFound);
+            throw new RequestException(ResultCodes.DataIsInvalid);
+        Admin_Language item = DB.Admin_Language.FirstOrDefault(s => s.Code == code) ?? throw new RequestException(ResultCodes.NoDataFound);
         return Ok(new Model_Result<string>(item.Data));
     }
 
@@ -41,8 +41,8 @@ public class AdminController(NbbContext db) : BaseController(db)
     public IActionResult GetLanguageDetails(string? code)
     {
         if (string.IsNullOrWhiteSpace(code))
-            throw new RequestException(ResultType.DataIsInvalid);
-        Admin_Language item = DB.Admin_Language.FirstOrDefault(s => s.Code == code) ?? throw new RequestException(ResultType.NoDataFound);
+            throw new RequestException(ResultCodes.DataIsInvalid);
+        Admin_Language item = DB.Admin_Language.FirstOrDefault(s => s.Code == code) ?? throw new RequestException(ResultCodes.NoDataFound);
         Model_LanguageDetails result = new(item.Code, item.Name, item.Data);
         return Ok(new Model_Result<Model_LanguageDetails>(result));
     }
@@ -54,7 +54,7 @@ public class AdminController(NbbContext db) : BaseController(db)
     public IActionResult SaveLanguage([FromBody] Model_LanguageDetails? model)
     {
         if (model is null)
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
         Admin_Language? item = DB.Admin_Language.FirstOrDefault(s => s.Code == model.Code);
 
         if (item is null)
@@ -97,8 +97,8 @@ public class AdminController(NbbContext db) : BaseController(db)
     public IActionResult GetTheme(Guid? id)
     {
         if (id is null || id == Guid.Empty)
-            throw new RequestException(ResultType.DataIsInvalid);
-        Admin_ColorTheme item = DB.Admin_ColorTheme.FirstOrDefault(s => s.ID == id) ?? throw new RequestException(ResultType.NoDataFound);
+            throw new RequestException(ResultCodes.DataIsInvalid);
+        Admin_ColorTheme item = DB.Admin_ColorTheme.FirstOrDefault(s => s.ID == id) ?? throw new RequestException(ResultCodes.NoDataFound);
         return Ok(new Model_Result<string>(item.Data));
     }
 
@@ -109,8 +109,8 @@ public class AdminController(NbbContext db) : BaseController(db)
     public IActionResult GetThemeDetails(Guid? id)
     {
         if (id is null || id == Guid.Empty)
-            throw new RequestException(ResultType.DataIsInvalid);
-        Admin_ColorTheme item = DB.Admin_ColorTheme.FirstOrDefault(s => s.ID == id) ?? throw new RequestException(ResultType.NoDataFound);
+            throw new RequestException(ResultCodes.DataIsInvalid);
+        Admin_ColorTheme item = DB.Admin_ColorTheme.FirstOrDefault(s => s.ID == id) ?? throw new RequestException(ResultCodes.NoDataFound);
         Model_ColorThemeDetails result = new(item.ID, item.Name, item.Base, item.Data);
         return Ok(new Model_Result<Model_ColorThemeDetails>(result));
     }
@@ -122,7 +122,7 @@ public class AdminController(NbbContext db) : BaseController(db)
     public IActionResult SaveTheme([FromBody] Model_ColorThemeDetails? model)
     {
         if (model is null)
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
         Admin_ColorTheme? item = DB.Admin_ColorTheme.FirstOrDefault(s => s.ID == model.ID);
 
         if (item is null)
