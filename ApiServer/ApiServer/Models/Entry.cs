@@ -13,14 +13,14 @@ public record Model_EntryItem(Guid ID, string Name, string? FolderName, string U
 /// <summary>
 /// When a Entry is moved into a new Folder
 /// </summary>
-/// <param name="EntryID">The Entry that is move</param>
+/// <param name="ID">The Entry that is move</param>
 /// <param name="FolderID">
 /// The Folder in which it should be placed
 /// <br/>
 /// If null that means it should be placed out of Folders in general
 /// </param>
-public record Model_ChangeFolder(Guid EntryID, Guid? FolderID);
-public record Model_ChangeEntryName(Guid EntryID, string Name);
+public record Model_ChangeFolder(Guid ID, Guid? FolderID);
+public record Model_ChangeEntryName(Guid ID, string Name);
 
 
 /// <summary>

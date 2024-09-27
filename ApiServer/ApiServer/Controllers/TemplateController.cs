@@ -201,9 +201,9 @@ public class TemplateController(NbbContext db) : BaseController(db)
         if (model is null)
             throw new RequestException(ResultType.DataIsInvalid);
 
-        foreach (Model_TemplateRow row in model.TemplateRows)
+        foreach (Model_TemplateRow row in model.Items)
         {
-            Structure_Template_Row? rowExists = DB.Structure_Template_Row.SingleOrDefault(t => row.RowId == t.ID);
+            Structure_Template_Row? rowExists = DB.Structure_Template_Row.SingleOrDefault(t => row.ID == t.ID);
 
             if (rowExists is null)
             {
@@ -227,16 +227,16 @@ public class TemplateController(NbbContext db) : BaseController(db)
                 rowExists.CanWrapCells = row.CanWrapCells;
             }
 
-            foreach (Model_TemplateCell cell in row.Cells)
+            foreach (Model_TemplateCell cell in row.Items)
             {
-                Structure_Template_Cell? cellExists = DB.Structure_Template_Cell.SingleOrDefault(c => c.ID == cell.CellId);
+                Structure_Template_Cell? cellExists = DB.Structure_Template_Cell.SingleOrDefault(c => c.ID == cell.ID);
 
                 if (cellExists is null)
                 {
                     Structure_Template_Cell newCell = new()
                     {
                         ID = Guid.NewGuid(),
-                        RowID = row.RowId,
+                        RowID = row.ID,
                         SortOrder = cell.SortOrder,
                         InputHelper = cell.InputHelper,
                         HideOnEmpty = cell.HideOnEmpty,

@@ -158,7 +158,7 @@ public class EntryController(NbbContext db) : BaseController(db)
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
             throw new RequestException(ResultType.DataIsInvalid);
 
-        Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == model.EntryID)
+        Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == model.ID)
             ?? throw new RequestException(ResultType.NoDataFound);
 
         item.Name = model.Name;
@@ -176,7 +176,7 @@ public class EntryController(NbbContext db) : BaseController(db)
         if (model is null)
             throw new RequestException(ResultType.DataIsInvalid);
 
-        Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == model.EntryID)
+        Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == model.ID)
             ?? throw new RequestException(ResultType.NoDataFound);
         if (model.FolderID == Guid.Empty)
             model = model with { FolderID = null };
@@ -218,8 +218,8 @@ public class EntryController(NbbContext db) : BaseController(db)
     #endregion
 }
 
-public record Model_DetailedEntry(Guid ID, string Name, string? Tags, List<Model_EntryRow> Rows);
-public record Model_EntryRow(Model_TemplateRow Info, int SortOrder, List<Model_EntryCell> Cells);
+public record Model_DetailedEntry(Guid ID, string Name, string? Tags, List<Model_EntryRow> Items);
+public record Model_EntryRow(Model_TemplateRow Info, int SortOrder, List<Model_EntryCell> Items);
 public record Model_EntryCell(Model_TemplateCell Info, Guid ID, string Data);
 
 
