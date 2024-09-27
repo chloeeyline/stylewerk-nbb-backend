@@ -40,7 +40,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
         if (filter.Share.Public || !string.IsNullOrEmpty(filter.Username))
             result.AddRange(LoadPublicTemplates(filter));
 
-        List<Model_Template> templates = result.DistinctBy(s => s.Id).ToList();
+        List<Model_Template> templates = result.DistinctBy(s => s.ID).ToList();
 
         int tCount = templates.Count;
         int maxPages = tCount / filter.PerPage;

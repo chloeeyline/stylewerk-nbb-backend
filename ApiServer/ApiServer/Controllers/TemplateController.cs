@@ -183,7 +183,7 @@ public class TemplateController(NbbContext db) : BaseController(db)
         if (template is null || string.IsNullOrWhiteSpace(template.Name))
             throw new RequestException(ResultType.DataIsInvalid);
 
-        Structure_Template? changeTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == template.TemplateId)
+        Structure_Template? changeTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == template.ID)
              ?? throw new RequestException(ResultType.NoDataFound);
 
         changeTemplate.Name = template.Name;
@@ -210,7 +210,7 @@ public class TemplateController(NbbContext db) : BaseController(db)
                 Structure_Template_Row newRow = new()
                 {
                     ID = Guid.NewGuid(),
-                    TemplateID = model.Id,
+                    TemplateID = model.ID,
                     SortOrder = row.SortOrder,
                     CanWrapCells = row.CanWrapCells,
                     CanRepeat = row.CanRepeat,
@@ -261,7 +261,7 @@ public class TemplateController(NbbContext db) : BaseController(db)
 
         DB.SaveChanges();
 
-        return Ok(new Model_Result<Guid>(model.Id));
+        return Ok(new Model_Result<Guid>(model.ID));
     }
 
     #endregion

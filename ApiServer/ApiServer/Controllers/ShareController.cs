@@ -61,7 +61,7 @@ namespace StyleWerk.NBB.Controllers
                 throw new RequestException(ResultType.DataIsInvalid);
 
             Share_Group groupExistsForUser = DB.Share_Group.FirstOrDefault(g => g.UserID == CurrentUser.ID && g.Name == model.Name)
-                ?? throw new RequestException(ResultType.DataIsInvalid, "Es existiert bereits eine Gruppe mit diesem Namen");
+                ?? throw new RequestException(ResultType.DataIsInvalid, message: "Es existiert bereits eine Gruppe mit diesem Namen");
 
             Share_Group newGroup = new()
             {
@@ -90,8 +90,8 @@ namespace StyleWerk.NBB.Controllers
             Share_Group group = DB.Share_Group.FirstOrDefault(g => g.ID == groupID && g.UserID == CurrentUser.ID)
                 ?? throw new RequestException(ResultType.NoDataFound);
 
-            List<Share_GroupUser> groupUsers = DB.Share_GroupUser.Where(g => g.GroupID == groupID).ToList();
-            if (groupUsers.Any())
+            List<Share_GroupUser> groupUsers = [.. DB.Share_GroupUser.Where(g => g.GroupID == groupID)];
+            if (groupUsers.Count != 0)
             {
                 DB.Share_GroupUser.RemoveRange(groupUsers);
             }
@@ -171,9 +171,9 @@ namespace StyleWerk.NBB.Controllers
                     GroupID = model.GroupId,
                     UserID = user.ID,
                     WhoAdded = CurrentUser.ID,
-                    CanSeeUsers = model.userRights.CanSeeUsers,
-                    CanAddUsers = model.userRights.CanAddUsers,
-                    CanRemoveUsers = model.userRights.CanRemoveUsers
+                    CanSeeUsers = model.UserRights.CanSeeUsers,
+                    CanAddUsers = model.UserRights.CanAddUsers,
+                    CanRemoveUsers = model.UserRights.CanRemoveUsers
                 };
 
                 DB.Share_GroupUser.Add(newUser);
@@ -229,9 +229,9 @@ namespace StyleWerk.NBB.Controllers
             Share_GroupUser userInGroup = DB.Share_GroupUser.FirstOrDefault(u => u.GroupID == group.ID && u.UserID == user.ID)
                 ?? throw new RequestException(ResultType.NoDataFound);
 
-            userInGroup.CanSeeUsers = model.userRights.CanSeeUsers;
-            userInGroup.CanRemoveUsers = model.userRights.CanRemoveUsers;
-            userInGroup.CanAddUsers = model.userRights.CanAddUsers;
+            userInGroup.CanSeeUsers = model.UserRights.CanSeeUsers;
+            userInGroup.CanRemoveUsers = model.UserRights.CanRemoveUsers;
+            userInGroup.CanAddUsers = model.UserRights.CanAddUsers;
 
             DB.SaveChanges();
 
@@ -317,10 +317,10 @@ namespace StyleWerk.NBB.Controllers
                 //check if entry has already been shared with group
                 bool isShared = DB.Share_Item.Any(i => i.ItemID == model.ShareItem && i.ToWhom == model.GroupId && i.Group);
                 if (isShared)
-                    throw new RequestException(ResultType.GeneralError, "Der Eintrag wurde bereits in dieser Gruppe geteilt");
+                    throw new RequestException(ResultType.GeneralError, message: "Der Eintrag wurde bereits in dieser Gruppe geteilt");
 
                 //check if entry belongs to user
-                bool belongsUser = entry.UserID == CurrentUser.ID ? true : false;
+                bool belongsUser = entry.UserID == CurrentUser.ID;
 
                 if (!belongsUser)
                 {
@@ -348,10 +348,10 @@ namespace StyleWerk.NBB.Controllers
                 //check if template has already been shared with group
                 bool isShared = DB.Share_Item.Any(i => i.ItemID == template.ID && i.ToWhom == model.GroupId);
                 if (isShared)
-                    throw new RequestException(ResultType.GeneralError, "Die Vorlage wurde bereits in dieser Gruppe geteilt");
+                    throw new RequestException(ResultType.GeneralError, message: "Die Vorlage wurde bereits in dieser Gruppe geteilt");
 
                 //check if template belongs to user
-                bool belongsUser = template.UserID == CurrentUser.ID ? true : false;
+                bool belongsUser = template.UserID == CurrentUser.ID;
 
                 if (!belongsUser)
                 {
@@ -393,10 +393,10 @@ namespace StyleWerk.NBB.Controllers
                 //check if entry has already been shared with user
                 bool isShared = DB.Share_Item.Any(i => i.ItemID == entry.ID && i.ToWhom == user.ID);
                 if (isShared)
-                    throw new RequestException(ResultType.GeneralError, "Der Eintrag wurde bereits mit diesem User geteilt");
+                    throw new RequestException(ResultType.GeneralError, message: "Der Eintrag wurde bereits mit diesem User geteilt");
 
                 //check if entry belongs to user
-                bool belongsUser = entry.UserID == CurrentUser.ID ? true : false;
+                bool belongsUser = entry.UserID == CurrentUser.ID;
 
                 if (!belongsUser)
                 {
@@ -425,10 +425,10 @@ namespace StyleWerk.NBB.Controllers
                 //check if entry has already been shared with user
                 bool isShared = DB.Share_Item.Any(i => i.ItemID == template.ID && i.ToWhom == user.ID);
                 if (isShared)
-                    throw new RequestException(ResultType.GeneralError, "Der Eintrag wurde bereits mit diesem User geteilt");
+                    throw new RequestException(ResultType.GeneralError, message: "Der Eintrag wurde bereits mit diesem User geteilt");
 
                 //check if template belongs to user
-                bool belongsUser = template.UserID == CurrentUser.ID ? true : false;
+                bool belongsUser = template.UserID == CurrentUser.ID;
 
                 if (!belongsUser)
                 {

@@ -29,9 +29,9 @@ public class EntryController(NbbContext db) : BaseController(db)
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
     [HttpGet(nameof(GetFolderContent))]
-    public IActionResult GetFolderContent(Guid? folderId)
+    public IActionResult GetFolderContent(Guid? id)
     {
-        List<Model_EntryItem> entries = Query.GetFolderContent(folderId);
+        List<Model_EntryItem> entries = Query.GetFolderContent(id);
         return Ok(new Model_Result<List<Model_EntryItem>>(entries));
     }
 
@@ -48,7 +48,7 @@ public class EntryController(NbbContext db) : BaseController(db)
         int sortOrder = isEmpty ? 1 :
             (DB.Structure_Entry_Folder.Where(s => s.UserID == CurrentUser.ID).Max(f => f.SortOrder) + 1);
         if (DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID && s.Name == name))
-            throw new RequestException(ResultType.DataIsInvalid, "You already have a Folder with the same Name");
+            throw new RequestException(ResultType.DataIsInvalid, message: "You already have a Folder with the same Name");
 
         Structure_Entry_Folder newFolder = new()
         {
@@ -68,15 +68,15 @@ public class EntryController(NbbContext db) : BaseController(db)
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(DeleteFolder))]
-    public IActionResult DeleteFolder(Guid? folderId)
+    public IActionResult DeleteFolder(Guid? id)
     {
-        if (folderId is null)
+        if (id is null)
             throw new RequestException(ResultType.DataIsInvalid);
 
-        Structure_Entry_Folder? folder = DB.Structure_Entry_Folder.FirstOrDefault(f => f.ID == folderId)
+        Structure_Entry_Folder? folder = DB.Structure_Entry_Folder.FirstOrDefault(f => f.ID == id)
            ?? throw new RequestException(ResultType.NoDataFound);
 
-        IQueryable<Structure_Entry> entries = DB.Structure_Entry.Where(e => e.FolderID == folderId);
+        IQueryable<Structure_Entry> entries = DB.Structure_Entry.Where(e => e.FolderID == id);
         if (entries.Any())
         {
             foreach (Structure_Entry? entry in entries)
@@ -94,30 +94,12 @@ public class EntryController(NbbContext db) : BaseController(db)
     [ApiExplorerSettings(GroupName = "Folder")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
-    [HttpPost(nameof(DeleteEntryFromFolder))]
-    public IActionResult DeleteEntryFromFolder(Model_DeleteFromFolder model)
-    {
-        if (model is null)
-            throw new RequestException(ResultType.DataIsInvalid);
-
-        Structure_Entry entry = DB.Structure_Entry.FirstOrDefault(e => e.FolderID == model.FolderId && e.ID == model.EntryId)
-            ?? throw new RequestException(ResultType.NoDataFound);
-
-        entry.FolderID = null;
-        DB.SaveChanges();
-
-        return Ok(new Model_Result<string>());
-    }
-
-    [ApiExplorerSettings(GroupName = "Folder")]
-    [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(DragAndDrop))]
     public IActionResult DragAndDrop([FromBody] Model_ListFolderSortOrder model)
     {
         foreach (Model_FolderSortOrder item in model.FolderSortOrders)
         {
-            Structure_Entry_Folder? temp = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == item.FolderID);
+            Structure_Entry_Folder? temp = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == item.ID);
             if (temp is not null)
                 temp.SortOrder = item.SortOrder;
         }
@@ -155,8 +137,8 @@ public class EntryController(NbbContext db) : BaseController(db)
             ID = Guid.NewGuid(),
             Name = model.Name,
             UserID = CurrentUser.ID,
-            TemplateID = model.TemplateId,
-            FolderID = model.FolderId,
+            TemplateID = model.TemplateID,
+            FolderID = model.FolderID,
             IsEncrypted = false,
             IsPublic = false,
         };
@@ -196,7 +178,8 @@ public class EntryController(NbbContext db) : BaseController(db)
 
         Structure_Entry? item = DB.Structure_Entry.FirstOrDefault(e => e.ID == model.EntryID)
             ?? throw new RequestException(ResultType.NoDataFound);
-
+        if (model.FolderID == Guid.Empty)
+            model = model with { FolderID = null };
         item.FolderID = model.FolderID;
         DB.SaveChanges();
 

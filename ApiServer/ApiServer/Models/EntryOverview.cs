@@ -3,7 +3,7 @@
 namespace StyleWerk.NBB.Models;
 
 ///OverView List Request
-public record Model_EntryFolders(Guid? ID, string? FolderTitle, int SortOrder, Model_EntryItem[] Items);
+public record Model_EntryFolders(Guid? ID, string? Name, int SortOrder, Model_EntryItem[] Items);
 
 public record Model_EntryItem(Guid ID, string Name, string? FolderName, string UserName, string TemplateName, string? Tags, long CreatedAt, long LastUpdatedAt, ShareTypes Share)
 {
@@ -20,7 +20,6 @@ public record Model_EntryItem(Guid ID, string Name, string? FolderName, string U
 /// If null that means it should be placed out of Folders in general
 /// </param>
 public record Model_ChangeFolder(Guid EntryID, Guid? FolderID);
-public record Model_DeleteFromFolder(Guid? EntryId, Guid? FolderId);
 public record Model_ChangeEntryName(Guid EntryID, string Name);
 
 
@@ -34,6 +33,6 @@ public record Model_ChangeEntryName(Guid EntryID, string Name);
 /// <param name="Share"></param>
 /// <param name="DirectUser"></param>
 public record Model_FilterEntry(string? Name, string? Username, string? TemplateName, string? Tags, ShareTypes Share, bool DirectUser);
-public record Model_AddEntry(string Name, Guid TemplateId, Guid? FolderId);
-public record Model_FolderSortOrder(Guid FolderID, int SortOrder);
+public record Model_AddEntry(string Name, Guid TemplateID, Guid? FolderID);
+public record Model_FolderSortOrder(Guid ID, int SortOrder);
 public record Model_ListFolderSortOrder(List<Model_FolderSortOrder> FolderSortOrders);
