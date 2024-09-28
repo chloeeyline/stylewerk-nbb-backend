@@ -100,5 +100,23 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     }
     #endregion
 
+    #region Share
+    [Produces("application/json"), ApiExplorerSettings(GroupName = "Share")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [HttpPost(nameof(UpdateShare))]
+    public IActionResult UpdateShare([FromBody] Model_Share? model)
+    {
+        Query.UpdateShare(model);
+        return Ok(new Model_Result<string>());
+    }
 
+    [Produces("application/json"), ApiExplorerSettings(GroupName = "Share")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [HttpPost(nameof(RemoveShare))]
+    public IActionResult RemoveShare(Guid? id)
+    {
+        Query.RemoveShare(id);
+        return Ok(new Model_Result<string>());
+    }
+    #endregion
 }

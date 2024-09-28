@@ -22,6 +22,7 @@ public class RequestException(ResultCodes Code, string? message = null, Exceptio
     public ResultCodes Code { get; set; } = Code;
 }
 
+
 public enum ResultCodes
 {
     Success = 1000,
@@ -67,6 +68,7 @@ public enum ResultCodes
 
     #region Share
     GroupNameAlreadyExists = 1301,
-    DontOwnGroup = 1302
+    DontOwnGroup = 1302,
+    OnlyOwnerCanSetPublic = 1303
     #endregion
 }

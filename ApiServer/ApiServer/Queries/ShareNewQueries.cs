@@ -2,6 +2,7 @@
 
 using StyleWerk.NBB.Authentication;
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Core;
 using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
@@ -90,6 +91,7 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
 
         DB.Share_Group.Remove(item);
         DB.Share_Item.RemoveRange(DB.Share_Item.Where(s => s.Visibility == ShareVisibility.Group && s.ToWhom == item.ID));
+        DB.SaveChanges();
     }
     #endregion
 
@@ -159,24 +161,161 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
             throw new RequestException(ResultCodes.MissingRight);
 
         DB.Share_GroupUser.Remove(item);
+        DB.SaveChanges();
     }
     #endregion
 
-    #region Directly Share
+    #region Share
     public void GetShare()
     {
     }
 
-    public void UpdateShare()
+    public void UpdateShare(Model_Share? model)
     {
+        if (model is null)
+            throw new RequestException(ResultCodes.DataIsInvalid);
+
+        Guid userID = Guid.Empty;
+        userID = model.Type == 1
+            ? Exist_SharedItem(DB.Structure_Entry, model.ItemID)
+            : model.Type == 2
+            ? Exist_SharedItem(DB.Structure_Template, model.ItemID)
+            : throw new RequestException(ResultCodes.DataIsInvalid);
+
+        bool canShare = userID == CurrentUser.ID;
+        if (canShare)
+        {
+            canShare = DB.Share_Item.FirstOrDefault(s => s.ToWhom == CurrentUser.ID &&
+                        s.Visibility == ShareVisibility.Directly &&
+                        s.ItemID == model.ItemID &&
+                        s.ItemType == model.Type)
+                        is not null;
+
+            if (!canShare)
+            {
+                List<Share_Group> groupsImPartOf = [..
+                    DB.Share_GroupUser.Where(s => s.UserID == CurrentUser.ID)
+                    .Include(s => s.O_Group)
+                    .Select(s => s.O_Group)];
+
+                foreach (Share_Group group in groupsImPartOf)
+                {
+                    canShare = DB.Share_Item.FirstOrDefault(s => s.ToWhom == group.ID &&
+                        s.Visibility == ShareVisibility.Group &&
+                        s.ItemID == model.ItemID &&
+                        s.ItemType == model.Type)?.CanShare is true;
+                    if (canShare)
+                        break;
+                }
+            }
+        }
+
+        if (!canShare)
+            throw new RequestException(ResultCodes.MissingRight);
+
+        Guid? toWhom = null;
+        Share_Item? item = null;
+
+        if (string.IsNullOrWhiteSpace(model.ToWhom) && model.Visibility is ShareVisibility.Public)
+        {
+            item = DB.Share_Item.FirstOrDefault(s => s.ToWhom == null &&
+                s.Visibility == ShareVisibility.Public &&
+                s.ItemID == model.ItemID &&
+                s.ItemType == model.Type);
+
+            if (userID != CurrentUser.ID)
+                throw new RequestException(ResultCodes.OnlyOwnerCanSetPublic);
+        }
+        else if (Guid.TryParse(model.ToWhom, out Guid groupID) && model.Visibility is ShareVisibility.Group)
+        {
+            Share_Group group = DB.Share_Group.FirstOrDefault(s => s.ID == groupID)
+                ?? throw new RequestException(ResultCodes.NoDataFound);
+
+            item = DB.Share_Item.FirstOrDefault(s => s.ToWhom == groupID &&
+                s.Visibility == ShareVisibility.Group &&
+                s.ItemID == model.ItemID &&
+                s.ItemType == model.Type);
+
+            toWhom = group.ID;
+        }
+        else if (!string.IsNullOrWhiteSpace(model.ToWhom) && model.Visibility is ShareVisibility.Directly)
+        {
+            string username = model.ToWhom.ToLower().Normalize();
+            User_Login user = DB.User_Login.FirstOrDefault(s => s.UsernameNormalized == username)
+                ?? throw new RequestException(ResultCodes.NoDataFound);
+
+            item = DB.Share_Item.FirstOrDefault(s => s.ToWhom == user.ID &&
+                s.Visibility == ShareVisibility.Directly &&
+                s.ItemID == model.ItemID &&
+                s.ItemType == model.Type);
+
+            toWhom = user.ID;
+        }
+        else
+        {
+            throw new RequestException(ResultCodes.DataIsInvalid);
+        }
+
+        if (item is null)
+        {
+            item = new()
+            {
+                ID = Guid.NewGuid(),
+                WhoShared = CurrentUser.ID,
+                Visibility = model.Visibility,
+                ItemType = model.Type,
+                ItemID = model.ItemID,
+                ToWhom = toWhom,
+                CanShare = model.Rights.CanShare,
+                CanDelete = model.Rights.CanDelete,
+                CanEdit = model.Rights.CanEdit
+            };
+
+            DB.Share_Item.Add(item);
+        }
+        else
+        {
+            item.CanShare = model.Rights.CanShare;
+            item.CanEdit = model.Rights.CanEdit;
+            item.CanDelete = model.Rights.CanDelete;
+        }
+        DB.SaveChanges();
     }
 
-    public void RemoveShare()
+    public void RemoveShare(Guid? id)
     {
+        if (id is null || id == Guid.Empty)
+            throw new RequestException(ResultCodes.DataIsInvalid);
+
+        Share_Item item = DB.Share_Item.FirstOrDefault(s => s.ID == id) ??
+            throw new RequestException(ResultCodes.NoDataFound);
+
+        if (item.Visibility is ShareVisibility.Public && item.WhoShared != CurrentUser.ID)
+            throw new RequestException(ResultCodes.OnlyOwnerCanSetPublic);
+        else if (item.WhoShared != CurrentUser.ID)
+        {
+            Guid userID = item.ItemType == 1
+                ? Exist_SharedItem(DB.Structure_Entry, item.ItemID)
+                : item.ItemType == 2
+                ? Exist_SharedItem(DB.Structure_Template, item.ItemID)
+                : throw new RequestException(ResultCodes.DataIsInvalid);
+            if (userID != CurrentUser.ID)
+                throw new RequestException(ResultCodes.DontOwnGroup);
+        }
+
+        DB.Share_Item.Remove(item);
+        DB.SaveChanges();
+    }
+
+    private Guid Exist_SharedItem<T>(DbSet<T> set, Guid id) where T : class, IEntity_GuidID, IEntity_User
+    {
+        T item = set.FirstOrDefault(s => s.ID == id) ?? throw new RequestException(ResultCodes.NoDataFound);
+        return item.UserID;
     }
     #endregion
 }
 
+public record Model_Share(Guid ItemID, string? ToWhom, ShareVisibility Visibility, byte Type, ShareRight Rights);
 public record Model_UserFromGroup2(string UserName, Guid GroupID, GroupRights2 Rights);
 public record Model_UpdateGroup2(Guid ID, GroupSettings Settings);
 
@@ -206,3 +345,5 @@ public record GroupRights2(bool CanSeeUsers, bool CanAddUsers, bool CanRemoveUse
         this(item.CanSeeUsers, item.CanAddUsers, item.CanRemoveUsers)
     { }
 }
+
+public record ShareRight(bool CanShare, bool CanEdit, bool CanDelete);
