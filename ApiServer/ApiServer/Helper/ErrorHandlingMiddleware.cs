@@ -56,7 +56,7 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
         context.Response.ContentType = "application/json";
 
         // Set status code depending on the exception type
-        context.Response.StatusCode = (int) HttpStatusCode.OK;
+        context.Response.StatusCode = (int)HttpStatusCode.OK;
 
         Model_Result<string> response = new(ResultCodes.GeneralError);
         if (exception is RequestException requestException)
