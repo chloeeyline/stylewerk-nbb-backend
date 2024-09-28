@@ -17,9 +17,8 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
         List<Model_Group2> list = [..
             DB.Share_Group
             .Where(s => s.UserID == CurrentUser.ID)
-            .Include(s => s.O_User)
             .Include(s => s.O_GroupUser)
-            .Select(s => new Model_Group2(s))];
+            .Select(s => new Model_Group2(s.ID, s.Name, s.IsVisible, s.CanSeeOthers, s.O_GroupUser.Count))];
         return list;
     }
 
@@ -32,12 +31,13 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
             DB.Share_GroupUser
             .Where(s => s.GroupID == id)
             .Include(s => s.O_User)
-            .Include(s => s.O_WhoShared)
-            .Select(s => new Model_GroupUser2(s))];
+            .Include(s => s.O_WhoAdded)
+            .Select(s => new Model_GroupUser2(s.O_User.Username, s.O_WhoAdded.Username,
+                new GroupRight2(s.CanSeeUsers, s.CanAddUsers, s.CanRemoveUsers)))];
         return list;
     }
 
-    public Model_UpdateGroup2 UpdateGroup(Model_UpdateGroup2? model)
+    public Model_Group2 UpdateGroup(Model_Group2? model)
     {
         if (model is null)
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -46,16 +46,16 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
 
         if (item is null)
         {
-            if (DB.Share_Group.Any(s => s.Name.Equals(model.Settings.Name, StringComparison.CurrentCultureIgnoreCase)))
+            if (DB.Share_Group.Any(s => s.Name.Equals(model.Name, StringComparison.CurrentCultureIgnoreCase)))
                 throw new RequestException(ResultCodes.GroupNameAlreadyExists);
 
             item = new Share_Group()
             {
                 ID = Guid.NewGuid(),
                 UserID = CurrentUser.ID,
-                Name = model.Settings.Name,
-                IsVisible = model.Settings.IsVisible,
-                CanSeeOthers = model.Settings.CanSeeOthers
+                Name = model.Name,
+                IsVisible = model.IsVisible,
+                CanSeeOthers = model.CanSeeOthers
             };
             DB.Share_Group.Add(item);
             model = model with { ID = model.ID };
@@ -65,13 +65,13 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
             if (item.UserID != CurrentUser.ID)
                 throw new RequestException(ResultCodes.DontOwnGroup);
 
-            if (!item.Name.Equals(model.Settings.Name, StringComparison.OrdinalIgnoreCase) &&
-                DB.Share_Group.Any(s => s.Name.Equals(model.Settings.Name, StringComparison.CurrentCultureIgnoreCase)))
+            if (!item.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) &&
+                DB.Share_Group.Any(s => s.Name.Equals(model.Name, StringComparison.CurrentCultureIgnoreCase)))
                 throw new RequestException(ResultCodes.GroupNameAlreadyExists);
 
-            item.Name = model.Settings.Name;
-            item.IsVisible = model.Settings.IsVisible;
-            item.CanSeeOthers = model.Settings.CanSeeOthers;
+            item.Name = model.Name;
+            item.IsVisible = model.IsVisible;
+            item.CanSeeOthers = model.CanSeeOthers;
         }
 
         DB.SaveChanges();
@@ -166,8 +166,20 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
     #endregion
 
     #region Share
-    public void GetShare()
+    public void GetShare(Guid? id, int? type)
     {
+        if (id is null || id == Guid.Empty || type is null)
+            throw new RequestException(ResultCodes.DataIsInvalid);
+
+        List<Share_Item> list = [.. DB.Share_Item.Where(s => s.ItemID == id && s.ItemType == type).Include(s => s.O_User)];
+        List<Model_ShareItem> result = [];
+
+        foreach (Share_Item item in list)
+        {
+            if (item.Visibility is ShareVisibility.Public)
+            {
+            }
+        }
     }
 
     public void UpdateShare(Model_Share? model)
@@ -177,9 +189,9 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
 
         Guid userID = Guid.Empty;
         userID = model.Type == 1
-            ? Exist_SharedItem(DB.Structure_Entry, model.ItemID)
+            ? Exist_SharedItem(DB.Structure_Entry, model.ID)
             : model.Type == 2
-            ? Exist_SharedItem(DB.Structure_Template, model.ItemID)
+            ? Exist_SharedItem(DB.Structure_Template, model.ID)
             : throw new RequestException(ResultCodes.DataIsInvalid);
 
         bool canShare = userID == CurrentUser.ID;
@@ -187,7 +199,7 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
         {
             canShare = DB.Share_Item.FirstOrDefault(s => s.ToWhom == CurrentUser.ID &&
                         s.Visibility == ShareVisibility.Directly &&
-                        s.ItemID == model.ItemID &&
+                        s.ItemID == model.ID &&
                         s.ItemType == model.Type)
                         is not null;
 
@@ -202,7 +214,7 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
                 {
                     canShare = DB.Share_Item.FirstOrDefault(s => s.ToWhom == group.ID &&
                         s.Visibility == ShareVisibility.Group &&
-                        s.ItemID == model.ItemID &&
+                        s.ItemID == model.ID &&
                         s.ItemType == model.Type)?.CanShare is true;
                     if (canShare)
                         break;
@@ -214,57 +226,42 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
             throw new RequestException(ResultCodes.MissingRight);
 
         Guid? toWhom = null;
-        Share_Item? item = null;
 
-        if (string.IsNullOrWhiteSpace(model.ToWhom) && model.Visibility is ShareVisibility.Public)
+        if (model.Visibility is ShareVisibility.Public && string.IsNullOrWhiteSpace(model.ToWhom))
         {
-            item = DB.Share_Item.FirstOrDefault(s => s.ToWhom == null &&
-                s.Visibility == ShareVisibility.Public &&
-                s.ItemID == model.ItemID &&
-                s.ItemType == model.Type);
-
             if (userID != CurrentUser.ID)
                 throw new RequestException(ResultCodes.OnlyOwnerCanChangePublicity);
         }
-        else if (Guid.TryParse(model.ToWhom, out Guid groupID) && model.Visibility is ShareVisibility.Group)
+        else if (model.Visibility is ShareVisibility.Group && !string.IsNullOrWhiteSpace(model.ToWhom) && Guid.TryParse(model.ToWhom, out Guid groupID))
         {
             Share_Group group = DB.Share_Group.FirstOrDefault(s => s.ID == groupID)
                 ?? throw new RequestException(ResultCodes.NoDataFound);
-
-            item = DB.Share_Item.FirstOrDefault(s => s.ToWhom == groupID &&
-                s.Visibility == ShareVisibility.Group &&
-                s.ItemID == model.ItemID &&
-                s.ItemType == model.Type);
-
             toWhom = group.ID;
         }
-        else if (!string.IsNullOrWhiteSpace(model.ToWhom) && model.Visibility is ShareVisibility.Directly)
+        else if (model.Visibility is ShareVisibility.Directly && !string.IsNullOrWhiteSpace(model.ToWhom))
         {
             string username = model.ToWhom.ToLower().Normalize();
             User_Login user = DB.User_Login.FirstOrDefault(s => s.UsernameNormalized == username)
                 ?? throw new RequestException(ResultCodes.NoDataFound);
-
-            item = DB.Share_Item.FirstOrDefault(s => s.ToWhom == user.ID &&
-                s.Visibility == ShareVisibility.Directly &&
-                s.ItemID == model.ItemID &&
-                s.ItemType == model.Type);
-
             toWhom = user.ID;
         }
         else
-        {
             throw new RequestException(ResultCodes.DataIsInvalid);
-        }
+
+        Share_Item? item = DB.Share_Item.FirstOrDefault(s => s.ToWhom == null &&
+            s.Visibility == model.Visibility &&
+            s.ItemID == model.ID &&
+            s.ItemType == model.Type);
 
         if (item is null)
         {
             item = new()
             {
                 ID = Guid.NewGuid(),
-                WhoShared = CurrentUser.ID,
+                UserID = CurrentUser.ID,
                 Visibility = model.Visibility,
                 ItemType = model.Type,
-                ItemID = model.ItemID,
+                ItemID = model.ID,
                 ToWhom = toWhom,
                 CanShare = model.Rights.CanShare,
                 CanDelete = model.Rights.CanDelete,
@@ -290,9 +287,9 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
         Share_Item item = DB.Share_Item.FirstOrDefault(s => s.ID == id) ??
             throw new RequestException(ResultCodes.NoDataFound);
 
-        if (item.Visibility is ShareVisibility.Public && item.WhoShared != CurrentUser.ID)
+        if (item.Visibility is ShareVisibility.Public && item.UserID != CurrentUser.ID)
             throw new RequestException(ResultCodes.OnlyOwnerCanChangePublicity);
-        else if (item.WhoShared != CurrentUser.ID)
+        else if (item.UserID != CurrentUser.ID)
         {
             Guid userID = item.ItemType == 1
                 ? Exist_SharedItem(DB.Structure_Entry, item.ItemID)
@@ -314,36 +311,3 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
     }
     #endregion
 }
-
-public record Model_Share(Guid ItemID, string? ToWhom, ShareVisibility Visibility, byte Type, ShareRight Rights);
-public record Model_UserFromGroup2(string UserName, Guid GroupID, GroupRights2 Rights);
-public record Model_UpdateGroup2(Guid ID, GroupSettings Settings);
-
-public record Model_Group2(Guid ID, GroupSettings Settings, string Username, int UserCount)
-{
-    public Model_Group2(Share_Group item) :
-        this(item.ID, new GroupSettings(item), item.O_User.Username, item.O_GroupUser.Count)
-    { }
-}
-
-public record Model_GroupUser2(string Username, string WhoAdded, GroupRights2 Rights)
-{
-    public Model_GroupUser2(Share_GroupUser item) :
-        this(item.O_User.Username, item.O_WhoShared.Username, new GroupRights2(item))
-    { }
-}
-
-public record GroupSettings(string Name, bool IsVisible, bool CanSeeOthers)
-{
-    public GroupSettings(Share_Group item) :
-        this(item.Name, item.IsVisible, item.CanSeeOthers)
-    { }
-}
-public record GroupRights2(bool CanSeeUsers, bool CanAddUsers, bool CanRemoveUsers)
-{
-    public GroupRights2(Share_GroupUser item) :
-        this(item.CanSeeUsers, item.CanAddUsers, item.CanRemoveUsers)
-    { }
-}
-
-public record ShareRight(bool CanShare, bool CanEdit, bool CanDelete);

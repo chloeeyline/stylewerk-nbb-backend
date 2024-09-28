@@ -47,13 +47,13 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     /// <param name="model"></param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Groups")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_UpdateGroup2>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Group2>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.GroupNameAlreadyExists, ResultCodes.DontOwnGroup)]
     [HttpPost(nameof(UpdateGroup))]
-    public IActionResult UpdateGroup([FromBody] Model_UpdateGroup2? model)
+    public IActionResult UpdateGroup([FromBody] Model_Group2? model)
     {
         model = Query.UpdateGroup(model);
-        return Ok(new Model_Result<Model_UpdateGroup2>(model));
+        return Ok(new Model_Result<Model_Group2>(model));
     }
 
     /// <summary>

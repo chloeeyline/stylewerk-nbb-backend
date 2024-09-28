@@ -1,8 +1,8 @@
 ﻿namespace StyleWerk.NBB.Models;
 
-public record GroupUserRights(bool CanSeeUsers, bool CanAddUsers, bool CanRemoveUsers);
+
 public record ShareTypes(bool Own, bool GroupShared, bool Public, bool DirectlyShared);
-public record ShareRights(bool CanShare, bool CanEdit, bool CanDelete);
+
 public record Model_SharedItem(Guid ID, string SharedFrom, bool FromGroup, Guid? GroupID, string? GroupName, bool CanShare, bool CanEdit, bool CanDelete);
 
 /// <summary>

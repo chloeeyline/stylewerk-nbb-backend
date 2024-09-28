@@ -46,7 +46,7 @@ public class Share_GroupUser : IConnectedEntity<Share_GroupUser>, IEntity_User
     /// </summary>
     public virtual Share_Group O_Group { get; set; }
 
-    public virtual User_Login O_WhoShared { get; set; }
+    public virtual User_Login O_WhoAdded { get; set; }
 
     /// <summary>
     /// Navigation property for the user.
@@ -82,6 +82,10 @@ public class Share_GroupUser : IConnectedEntity<Share_GroupUser>, IEntity_User
         b.HasOne(s => s.O_Group)
             .WithMany(s => s.O_GroupUser)
             .HasForeignKey(s => s.GroupID)
+            .IsRequired(true);
+        b.HasOne(s => s.O_WhoAdded)
+            .WithMany()
+            .HasForeignKey(s => s.WhoAdded)
             .IsRequired(true);
     }
 }

@@ -16,7 +16,7 @@ public class SharedItemQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
         List<Model_SharedItem> result = [];
         foreach (Share_Item item in sharedItems)
         {
-            User_Login? userWhoShared = DB.User_Login.FirstOrDefault(s => s.ID == item.WhoShared);
+            User_Login? userWhoShared = DB.User_Login.FirstOrDefault(s => s.ID == item.UserID);
             if (userWhoShared is not null)
             {
                 Model_SharedItem model = new(
@@ -51,7 +51,7 @@ public class SharedItemQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
 
             foreach (Share_Item? item in shareItem)
             {
-                User_Login? userWhoShared = DB.User_Login.FirstOrDefault(s => s.ID == item.WhoShared);
+                User_Login? userWhoShared = DB.User_Login.FirstOrDefault(s => s.ID == item.UserID);
                 if (userWhoShared is not null)
                 {
                     Guid? groupID = groupItem.IsVisible ? groupItem.ID : null;

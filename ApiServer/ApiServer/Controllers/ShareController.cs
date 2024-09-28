@@ -278,7 +278,7 @@ namespace StyleWerk.NBB.Controllers
 
             User_Login user = UserExists(model.Username);
 
-            Share_Item exists = DB.Share_Item.FirstOrDefault(i => i.ID == model.ShareItem && i.ToWhom == user.ID && i.WhoShared == CurrentUser.ID)
+            Share_Item exists = DB.Share_Item.FirstOrDefault(i => i.ID == model.ShareItem && i.ToWhom == user.ID && i.UserID == CurrentUser.ID)
                 ?? throw new RequestException(ResultCodes.NoDataFound);
 
             exists.CanDelete = model.Rights.CanDelete;
@@ -458,7 +458,7 @@ namespace StyleWerk.NBB.Controllers
             Share_Item newSharedEntry = new()
             {
                 ID = Guid.NewGuid(),
-                WhoShared = CurrentUser.ID,
+                UserID = CurrentUser.ID,
                 Visibility = isGroup ? ShareVisibility.Group : ShareVisibility.Directly,
                 ItemType = 1,
                 ItemID = entry.ID,
@@ -476,7 +476,7 @@ namespace StyleWerk.NBB.Controllers
             Share_Item newSharedEntry = new()
             {
                 ID = Guid.NewGuid(),
-                WhoShared = CurrentUser.ID,
+                UserID = CurrentUser.ID,
                 Visibility = isGroup ? ShareVisibility.Group : ShareVisibility.Directly,
                 ItemType = 2,
                 ItemID = template.ID,
