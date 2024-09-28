@@ -3,7 +3,6 @@
 using StyleWerk.NBB.Authentication;
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Share;
-using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Queries;
@@ -12,27 +11,21 @@ public class SharedItemQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
 {
     public List<Model_ShareItem> DirectlySharedItems(ShareType itemType)
     {
-        List<Share_Item> sharedItems = [.. DB.Share_Item.Where(s => s.Visibility == ShareVisibility.Directly && s.ToWhom == CurrentUser.ID && s.Type == itemType).Include(s => s.O_User)];
-        List<Model_ShareItem> result = [];
-        foreach (Share_Item item in sharedItems)
-        {
-            User_Login? userWhoShared = DB.User_Login.FirstOrDefault(s => s.ID == item.UserID);
-            if (userWhoShared is not null)
-            {
-                Model_ShareItem model = new(
+        List<Model_ShareItem> list =
+        [
+            .. DB.Share_Item.Where(s => s.Visibility == ShareVisibility.Directly && s.ToWhom == CurrentUser.ID && s.Type == itemType)
+                .Include(s => s.O_User)
+                .Select(item => new Model_ShareItem(
                     item.ID,
                     item.ItemID,
                     item.O_User.Username,
                     CurrentUser.Login.Username,
                     item.Visibility,
-                    new ShareRight(
                     item.CanShare,
                     item.CanEdit,
-                    item.CanDelete));
-                result.Add(model);
-            }
-        }
-        return result;
+                    item.CanDelete)),
+        ];
+        return list;
     }
 
     public List<Model_ShareItem> SharedViaGroupItems(ShareType itemType)
@@ -52,21 +45,16 @@ public class SharedItemQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
 
             foreach (Share_Item? item in shareItem)
             {
-                User_Login? userWhoShared = DB.User_Login.FirstOrDefault(s => s.ID == item.UserID);
-                if (userWhoShared is not null)
-                {
-                    Model_ShareItem model = new(
-                        item.ID,
-                        item.ItemID,
-                        item.O_User.Username,
-                        groupItem.Name,
-                        item.Visibility,
-                        new ShareRight(
-                        item.CanShare,
-                        item.CanEdit,
-                        item.CanDelete));
-                    result.Add(model);
-                }
+                Model_ShareItem model = new(
+                    item.ID,
+                    item.ItemID,
+                    item.O_User.Username,
+                    groupItem.Name,
+                    item.Visibility,
+                    item.CanShare,
+                    item.CanEdit,
+                    item.CanDelete);
+                result.Add(model);
             }
         }
 

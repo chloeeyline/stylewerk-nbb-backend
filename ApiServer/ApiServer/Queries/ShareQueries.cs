@@ -12,27 +12,27 @@ namespace StyleWerk.NBB.Queries;
 public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedItemQueries(DB, CurrentUser)
 {
     #region Groups
-    public List<Model_Group2> GetOwnedGroups()
+    public List<Model_Group> GetOwnedGroups()
     {
-        List<Model_Group2> list = [..
+        List<Model_Group> list = [..
             DB.Share_Group
             .Where(s => s.UserID == CurrentUser.ID)
             .Include(s => s.O_GroupUser)
-            .Select(s => new Model_Group2(s.ID, s.Name, s.O_GroupUser.Count))];
+            .Select(s => new Model_Group(s.ID, s.Name, s.O_GroupUser.Count))];
         return list;
     }
 
-    public List<Model_GroupUser2> GetUsersInGroup(Guid? id)
+    public List<Model_GroupUser> GetUsersInGroup(Guid? id)
     {
         if (id is null || id == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
 
-        List<Model_GroupUser2> list = [..
+        List<Model_GroupUser> list = [..
             DB.Share_GroupUser
             .Where(s => s.GroupID == id)
             .Include(s => s.O_User)
             .Include(s => s.O_WhoAdded)
-            .Select(s => new Model_GroupUser2(s.O_User.Username, s.GroupID, s.CanAddUsers, s.CanRemoveUsers, s.O_WhoAdded.Username))];
+            .Select(s => new Model_GroupUser(s.O_User.Username, s.GroupID, s.CanAddUsers, s.CanRemoveUsers, s.O_WhoAdded.Username))];
         return list;
     }
 
@@ -62,7 +62,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
         return result;
     }
 
-    public Model_Group2 UpdateGroup(Model_Group2? model)
+    public Model_Group UpdateGroup(Model_Group? model)
     {
         if (model is null)
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -117,7 +117,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
     #endregion
 
     #region Users in Group
-    public void UpdateUserInGroup(Model_GroupUser2? model)
+    public void UpdateUserInGroup(Model_GroupUser? model)
     {
         if (model is null ||
             model.GroupID == Guid.Empty ||
@@ -204,7 +204,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
             if (item.Visibility is ShareVisibility.Public)
             {
                 result.Add(new Model_ShareItem(item.ID, item.ItemID, item.O_User.Username, "", item.Visibility,
-                    new ShareRight(item.CanShare, item.CanEdit, item.CanDelete)));
+                    item.CanShare, item.CanEdit, item.CanDelete));
             }
             else if (item.Visibility is ShareVisibility.Directly)
             {
@@ -213,7 +213,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
 
                 if (userID == CurrentUser.ID || item.UserID == CurrentUser.ID)
                     result.Add(new Model_ShareItem(item.ID, item.ItemID, item.O_User.Username, user.Username, item.Visibility,
-                    new ShareRight(item.CanShare, item.CanEdit, item.CanDelete)));
+                    item.CanShare, item.CanEdit, item.CanDelete));
             }
             else if (item.Visibility is ShareVisibility.Group)
             {
@@ -222,7 +222,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
 
                 if (userID == CurrentUser.ID || group.UserID == CurrentUser.ID)
                     result.Add(new Model_ShareItem(item.ID, item.ItemID, item.O_User.Username, group.Name, item.Visibility,
-                    new ShareRight(item.CanShare, item.CanEdit, item.CanDelete)));
+                     item.CanShare, item.CanEdit, item.CanDelete));
             }
         }
         return result;
@@ -308,18 +308,18 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
                 Type = model.Type,
                 ItemID = model.ID,
                 ToWhom = toWhom,
-                CanShare = model.Rights.CanShare,
-                CanDelete = model.Rights.CanDelete,
-                CanEdit = model.Rights.CanEdit
+                CanShare = model.CanShare,
+                CanDelete = model.CanDelete,
+                CanEdit = model.CanEdit
             };
 
             DB.Share_Item.Add(item);
         }
         else
         {
-            item.CanShare = model.Rights.CanShare;
-            item.CanEdit = model.Rights.CanEdit;
-            item.CanDelete = model.Rights.CanDelete;
+            item.CanShare = model.CanShare;
+            item.CanEdit = model.CanEdit;
+            item.CanDelete = model.CanDelete;
         }
         DB.SaveChanges();
     }

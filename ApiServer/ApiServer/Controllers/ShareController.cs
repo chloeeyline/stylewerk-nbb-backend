@@ -19,12 +19,12 @@ public class ShareController(NbbContext db) : BaseController(db)
     /// </summary>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Groups")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_Group2>>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_Group>>))]
     [HttpGet(nameof(GetOwnedGroups))]
     public IActionResult GetOwnedGroups()
     {
-        List<Model_Group2> list = Query.GetOwnedGroups();
-        return Ok(new Model_Result<List<Model_Group2>>(list));
+        List<Model_Group> list = Query.GetOwnedGroups();
+        return Ok(new Model_Result<List<Model_Group>>(list));
     }
 
     /// <summary>
@@ -33,13 +33,13 @@ public class ShareController(NbbContext db) : BaseController(db)
     /// <param name="id">The ID of the group from which zou want to load the users</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Groups")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_GroupUser2>>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_GroupUser>>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid)]
     [HttpGet(nameof(GetUsersInGroup))]
     public IActionResult GetUsersInGroup(Guid? id)
     {
-        List<Model_GroupUser2> list = Query.GetUsersInGroup(id);
-        return Ok(new Model_Result<List<Model_GroupUser2>>(list));
+        List<Model_GroupUser> list = Query.GetUsersInGroup(id);
+        return Ok(new Model_Result<List<Model_GroupUser>>(list));
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ public class ShareController(NbbContext db) : BaseController(db)
     /// <param name="id"></param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Groups")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_GroupUser2>>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_GroupUser>>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
     [HttpGet(nameof(GetSharedToGroup))]
     public IActionResult GetSharedToGroup(Guid? id)
@@ -63,13 +63,13 @@ public class ShareController(NbbContext db) : BaseController(db)
     /// <param name="model"></param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Groups")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Group2>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Group>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.GroupNameAlreadyExists, ResultCodes.DontOwnGroup)]
     [HttpPost(nameof(UpdateGroup))]
-    public IActionResult UpdateGroup([FromBody] Model_Group2? model)
+    public IActionResult UpdateGroup([FromBody] Model_Group? model)
     {
         model = Query.UpdateGroup(model);
-        return Ok(new Model_Result<Model_Group2>(model));
+        return Ok(new Model_Result<Model_Group>(model));
     }
 
     /// <summary>
@@ -98,7 +98,7 @@ public class ShareController(NbbContext db) : BaseController(db)
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.MissingRight)]
     [HttpPost(nameof(UpdateUserInGroup))]
-    public IActionResult UpdateUserInGroup([FromBody] Model_GroupUser2? model)
+    public IActionResult UpdateUserInGroup([FromBody] Model_GroupUser? model)
     {
         Query.UpdateUserInGroup(model);
         return Ok(new Model_Result<string>());
