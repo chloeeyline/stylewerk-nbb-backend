@@ -22,6 +22,12 @@ public class RequestException(ResultCodes Code, string? message = null, Exceptio
     public ResultCodes Code { get; set; } = Code;
 }
 
+[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+public class ResultCodesResponseAttribute(params ResultCodes[] possibleCodes) : Attribute
+{
+    public ResultCodes[] PossibleCodes { get; } = possibleCodes;
+}
+
 
 public enum ResultCodes
 {

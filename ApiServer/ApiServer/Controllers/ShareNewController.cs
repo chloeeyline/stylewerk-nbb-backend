@@ -17,7 +17,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     /// Load all groups which you own
     /// </summary>
     /// <returns></returns>
-    [Produces("application/json"), ApiExplorerSettings(GroupName = "Groups")]
+    [ApiExplorerSettings(GroupName = "Groups")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_Group2>>))]
     [HttpGet(nameof(GetOwnedGroups))]
     public IActionResult GetOwnedGroups()
@@ -31,7 +31,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     /// </summary>
     /// <param name="id">The ID of the group from which zou want to load the users</param>
     /// <returns></returns>
-    [Produces("application/json"), ApiExplorerSettings(GroupName = "Groups")]
+    [ApiExplorerSettings(GroupName = "Groups")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_GroupUser2>>))]
     [HttpGet(nameof(GetUsersInGroup))]
     public IActionResult GetUsersInGroup(Guid? id)
@@ -45,7 +45,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    [Produces("application/json"), ApiExplorerSettings(GroupName = "Groups")]
+    [ApiExplorerSettings(GroupName = "Groups")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_UpdateGroup2>))]
     [HttpPost(nameof(UpdateGroup))]
     public IActionResult UpdateGroup([FromBody] Model_UpdateGroup2? model)
@@ -59,7 +59,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [Produces("application/json"), ApiExplorerSettings(GroupName = "Groups")]
+    [ApiExplorerSettings(GroupName = "Groups")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(RemoveGroup))]
     public IActionResult RemoveGroup(Guid? id)
@@ -75,7 +75,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    [Produces("application/json"), ApiExplorerSettings(GroupName = "Users in Group")]
+    [ApiExplorerSettings(GroupName = "Users in Group")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(UpdateUserInGroup))]
     public IActionResult UpdateUserInGroup([FromBody] Model_UserFromGroup2? model)
@@ -90,7 +90,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     /// <param name="username"></param>
     /// <param name="groupID"></param>
     /// <returns></returns>
-    [Produces("application/json"), ApiExplorerSettings(GroupName = "Users in Group")]
+    [ApiExplorerSettings(GroupName = "Users in Group")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(RemoveUserFromGroup))]
     public IActionResult RemoveUserFromGroup(string? username, Guid? groupID)
@@ -101,8 +101,9 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     #endregion
 
     #region Share
-    [Produces("application/json"), ApiExplorerSettings(GroupName = "Share")]
+    [ApiExplorerSettings(GroupName = "Share")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.GroupNameAlreadyExists, ResultCodes.DontOwnGroup, ResultCodes.OnlyOwnerCanSetPublic)]
     [HttpPost(nameof(UpdateShare))]
     public IActionResult UpdateShare([FromBody] Model_Share? model)
     {
@@ -110,7 +111,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<string>());
     }
 
-    [Produces("application/json"), ApiExplorerSettings(GroupName = "Share")]
+    [ApiExplorerSettings(GroupName = "Share")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(RemoveShare))]
     public IActionResult RemoveShare(Guid? id)

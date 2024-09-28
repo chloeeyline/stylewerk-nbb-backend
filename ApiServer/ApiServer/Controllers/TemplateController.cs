@@ -16,7 +16,6 @@ public class TemplateController(NbbContext db) : BaseController(db)
     #region Load Templates
 
     [ApiExplorerSettings(GroupName = "Templates")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_TemplatePaging>))]
     [HttpPost(nameof(FilterTemplates))]
     public IActionResult FilterTemplates([FromBody] Model_FilterTemplate filters)
@@ -26,7 +25,6 @@ public class TemplateController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Templates")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedTemplate>))]
     [HttpGet(nameof(LoadTemplate))]
     public IActionResult LoadTemplate(Guid id)
@@ -37,9 +35,7 @@ public class TemplateController(NbbContext db) : BaseController(db)
     #endregion
 
     #region Actions
-
     [ApiExplorerSettings(GroupName = "Template Overview Actions")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(RemoveTemplate))]
     public IActionResult RemoveTemplate(Guid? TemplateId)
@@ -92,7 +88,6 @@ public class TemplateController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Template Overview Actions")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
     [HttpPost(nameof(AddTemplate))]
     public IActionResult AddTemplate(Model_AddTemplate newTemplate)
@@ -113,7 +108,6 @@ public class TemplateController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Template Overview Actions")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
     [HttpPost(nameof(CopyTemplate))]
     public IActionResult CopyTemplate(Guid? TemplateId)
@@ -173,7 +167,6 @@ public class TemplateController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Template Overview Actions")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ChangeTemplateName))]
     public IActionResult ChangeTemplateName(Model_ChangeTemplateName? template)
@@ -191,7 +184,6 @@ public class TemplateController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Editor Actions")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
     [HttpPost(nameof(SaveTemplate))]
     public IActionResult SaveTemplate(Model_DetailedTemplate model)
@@ -261,6 +253,5 @@ public class TemplateController(NbbContext db) : BaseController(db)
 
         return Ok(new Model_Result<Guid>(model.ID));
     }
-
     #endregion
 }

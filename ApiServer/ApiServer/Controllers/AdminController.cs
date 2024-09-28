@@ -13,7 +13,6 @@ public class AdminController(NbbContext db) : BaseController(db)
 {
     #region Language
     [ApiExplorerSettings(GroupName = "Language")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_LanguageItem>>))]
     [HttpGet(nameof(GetLanguageList))]
     public IActionResult GetLanguageList()
@@ -23,7 +22,6 @@ public class AdminController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Language")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
     [HttpGet(nameof(GetLanguage))]
     public IActionResult GetLanguage(string? code)
@@ -35,7 +33,6 @@ public class AdminController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Language")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_LanguageDetails>))]
     [HttpGet(nameof(GetLanguageDetails))]
     public IActionResult GetLanguageDetails(string? code)
@@ -48,7 +45,6 @@ public class AdminController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Language")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(SaveLanguage)), Authorize]
     public IActionResult SaveLanguage([FromBody] Model_LanguageDetails? model)
@@ -81,7 +77,6 @@ public class AdminController(NbbContext db) : BaseController(db)
 
     #region Color Theme
     [ApiExplorerSettings(GroupName = "Color Theme")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_ColorThemeItem>>))]
     [HttpGet(nameof(GetThemeList))]
     public IActionResult GetThemeList()
@@ -91,7 +86,6 @@ public class AdminController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Color Theme")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
     [HttpGet(nameof(GetTheme))]
     public IActionResult GetTheme(Guid? id)
@@ -103,7 +97,6 @@ public class AdminController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Color Theme")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_ColorThemeDetails>))]
     [HttpGet(nameof(GetThemeDetails))]
     public IActionResult GetThemeDetails(Guid? id)
@@ -116,7 +109,6 @@ public class AdminController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Color Theme")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(SaveTheme)), Authorize]
     public IActionResult SaveTheme([FromBody] Model_ColorThemeDetails? model)

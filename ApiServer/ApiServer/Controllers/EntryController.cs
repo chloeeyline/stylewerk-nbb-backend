@@ -16,7 +16,6 @@ public class EntryController(NbbContext db) : BaseController(db)
 
     #region Folder
     [ApiExplorerSettings(GroupName = "Folder")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
     [HttpGet(nameof(GetFolders))]
     public IActionResult GetFolders()
@@ -26,7 +25,6 @@ public class EntryController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Folder")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
     [HttpGet(nameof(GetFolderContent))]
     public IActionResult GetFolderContent(Guid? id)
@@ -36,7 +34,6 @@ public class EntryController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Folder")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
     [HttpPost(nameof(AddFolder))]
     public IActionResult AddFolder(string? name)
@@ -65,7 +62,6 @@ public class EntryController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Folder")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(DeleteFolder))]
     public IActionResult DeleteFolder(Guid? id)
@@ -92,7 +88,6 @@ public class EntryController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Folder")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(DragAndDrop))]
     public IActionResult DragAndDrop([FromBody] Model_ListFolderSortOrder model)
@@ -111,7 +106,6 @@ public class EntryController(NbbContext db) : BaseController(db)
 
     #region Entries
     [ApiExplorerSettings(GroupName = "Entries")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryItem>>))]
     [HttpPost(nameof(FilterEntries))]
     public IActionResult FilterEntries([FromBody] Model_FilterEntry? model)
@@ -124,7 +118,6 @@ public class EntryController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Entries")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Guid>))]
     [HttpPost(nameof(AddEntry))]
     public IActionResult AddEntry([FromBody] Model_AddEntry? model)
@@ -149,7 +142,6 @@ public class EntryController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Entries")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ChangeEntryName))]
     public IActionResult ChangeEntryName([FromBody] Model_ChangeEntryName model)
@@ -167,7 +159,6 @@ public class EntryController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Entries")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ChangeFolder))]
     public IActionResult ChangeFolder([FromBody] Model_ChangeFolder? model)
@@ -186,7 +177,6 @@ public class EntryController(NbbContext db) : BaseController(db)
     }
 
     [ApiExplorerSettings(GroupName = "Entries")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedEntry>))]
     [HttpGet(nameof(GetEntry))]
     public IActionResult GetEntry(Guid? id)

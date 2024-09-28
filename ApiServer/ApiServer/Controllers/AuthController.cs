@@ -16,7 +16,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Login
     [ApiExplorerSettings(GroupName = "Login")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<AuthenticationResult>))]
     [HttpPost(nameof(Login))]
     public IActionResult Login([FromBody] Model_Login? model)
@@ -30,7 +29,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     [ApiExplorerSettings(GroupName = "Login")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<AuthenticationResult>))]
     [HttpPost(nameof(RefreshToken))]
     public IActionResult RefreshToken([FromBody] Model_RefreshToken? model)
@@ -46,7 +44,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Registration
     [ApiExplorerSettings(GroupName = "Registration")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(Registration))]
     public IActionResult Registration([FromBody] Model_Registration? model)
@@ -56,7 +53,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     [ApiExplorerSettings(GroupName = "Registration")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(VerifyEmail))]
     public IActionResult VerifyEmail(string? token)
@@ -68,7 +64,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Forgot Password
     [ApiExplorerSettings(GroupName = "Forgot Password")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(RequestPasswordReset))]
     public IActionResult RequestPasswordReset([FromBody] string email)
@@ -78,7 +73,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     [ApiExplorerSettings(GroupName = "Forgot Password")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ResetPassword))]
     public IActionResult ResetPassword([FromBody] Model_ResetPassword? model)
@@ -90,7 +84,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Session
     [ApiExplorerSettings(GroupName = "Session")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(RemoveSessions)), Authorize]
     public IActionResult RemoveSessions()
@@ -100,7 +93,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     [ApiExplorerSettings(GroupName = "Session")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(Logout)), Authorize]
     public IActionResult Logout()
@@ -112,7 +104,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Change Email
     [ApiExplorerSettings(GroupName = "Change Email")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(UpdateEmail)), Authorize]
     public IActionResult UpdateEmail(string? email)
@@ -122,7 +113,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     [ApiExplorerSettings(GroupName = "Change Email")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(VerifyUpdatedEmail)), Authorize]
     public IActionResult VerifyUpdatedEmail(string? code)
@@ -134,7 +124,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Userdata
     [ApiExplorerSettings(GroupName = "Userdata")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_UserData>))]
     [HttpPost(nameof(GetUserData)), Authorize]
     public IActionResult GetUserData()
@@ -144,7 +133,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     [ApiExplorerSettings(GroupName = "Userdata")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(UpdateUserData)), Authorize]
     public IActionResult UpdateUserData([FromBody] Model_UpdateUserData model)
@@ -156,7 +144,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     #region Validation
     [ApiExplorerSettings(GroupName = "Validation")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ValidatePassword))]
     public IActionResult ValidatePassword([FromBody] Model_ValidateIdentification model)
@@ -166,7 +153,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     [ApiExplorerSettings(GroupName = "Validation")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ValidateEmail))]
     public IActionResult ValidateEmail([FromBody] Model_ValidateIdentification? model)
@@ -176,7 +162,6 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     }
 
     [ApiExplorerSettings(GroupName = "Validation")]
-    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ValidateUsername))]
     public IActionResult ValidateUsername([FromBody] Model_ValidateIdentification? model)
