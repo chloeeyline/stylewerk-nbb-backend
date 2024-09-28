@@ -26,11 +26,6 @@ public class Share_GroupUser : IConnectedEntity<Share_GroupUser>, IEntity_User
     public required Guid WhoAdded { get; set; }
 
     /// <summary>
-    /// Determines if the user can view other group members.
-    /// </summary>
-    public required bool CanSeeUsers { get; set; }
-
-    /// <summary>
     /// Determines if the user can add new users to the group.
     /// </summary>
     public required bool CanAddUsers { get; set; }
@@ -66,7 +61,6 @@ public class Share_GroupUser : IConnectedEntity<Share_GroupUser>, IEntity_User
 
         b.Property(s => s.WhoAdded).IsRequired(true);
 
-        b.Property(s => s.CanSeeUsers).IsRequired(true);
         b.Property(s => s.CanAddUsers).IsRequired(true);
         b.Property(s => s.CanRemoveUsers).IsRequired(true);
 
