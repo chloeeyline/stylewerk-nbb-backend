@@ -29,7 +29,7 @@ public class User_Right : IConnectedEntity<User_Right>, IEntity_GuidID, IEntity_
     public static void Build(EntityTypeBuilder<User_Right> b)
     {
         b.UseTemplates();
-        b.UseIEntity_GuidID(false);
+        b.UseIEntity_GuidID();
         b.UseIEntity_Name();
         b.HasKey(s => new { s.ID, s.Name });
     }

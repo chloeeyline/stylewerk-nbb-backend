@@ -53,7 +53,7 @@ public class SimpleEmailService
     public static string AccessEmailTemplate(string fileName)
     {
         Assembly assembly = Assembly.GetExecutingAssembly();
-        using Stream stream = assembly.GetManifestResourceStream($"StyleWerk.NBB.AWS.EmailTemplate.{fileName}") ?? throw new Exception();
+        using Stream stream = assembly.GetManifestResourceStream($"StyleWerk.NBB.AWS.EmailTemplates.{fileName}") ?? throw new Exception();
         using StreamReader reader = new(stream);
         string fileContent = reader.ReadToEnd();
         return fileContent;

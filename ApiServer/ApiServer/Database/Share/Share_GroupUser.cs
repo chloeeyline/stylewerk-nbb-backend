@@ -8,7 +8,7 @@ namespace StyleWerk.NBB.Database.Share;
 /// <summary>
 /// Represents a user within a shared group, detailing their permissions within the group.
 /// </summary>
-public class Share_GroupUser : IConnectedEntity<Share_GroupUser>
+public class Share_GroupUser : IConnectedEntity<Share_GroupUser>, IEntity_User
 {
     /// <summary>
     /// Group ID for which the user belongs.
@@ -32,12 +32,12 @@ public class Share_GroupUser : IConnectedEntity<Share_GroupUser>
 
     /// <summary>
     /// Determines if the user can add new users to the group.
-    /// </summary
+    /// </summary>
     public required bool CanAddUsers { get; set; }
 
     /// <summary>
     /// Determines if the user can remove users from the group.
-    /// </summary
+    /// </summary>
     public required bool CanRemoveUsers { get; set; }
 
 #pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
@@ -59,13 +59,16 @@ public class Share_GroupUser : IConnectedEntity<Share_GroupUser>
     public static void Build(EntityTypeBuilder<Share_GroupUser> b)
     {
         b.UseTemplates();
+        b.UseIEntity_User();
         b.Property(s => s.GroupID).IsRequired(true);
-        b.Property(s => s.UserID).IsRequired(true);
-        b.HasKey(s => new { s.GroupID, s.UserID });
+
         b.Property(s => s.WhoAdded).IsRequired(true);
+
         b.Property(s => s.CanSeeUsers).IsRequired(true);
         b.Property(s => s.CanAddUsers).IsRequired(true);
         b.Property(s => s.CanRemoveUsers).IsRequired(true);
+
+        b.HasKey(s => new { s.GroupID, s.UserID });
     }
 
     /// <summary>
@@ -77,10 +80,6 @@ public class Share_GroupUser : IConnectedEntity<Share_GroupUser>
         b.HasOne(s => s.O_Group)
             .WithMany(s => s.O_GroupUser)
             .HasForeignKey(s => s.GroupID)
-            .IsRequired(true);
-        b.HasOne(s => s.O_User)
-            .WithMany()
-            .HasForeignKey(s => s.UserID)
             .IsRequired(true);
     }
 }

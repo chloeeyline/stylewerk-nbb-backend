@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace StyleWerk.NBB.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDB : Migration
+    public partial class Version1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,10 +15,21 @@ namespace StyleWerk.NBB.Migrations
                 .Annotation("Npgsql:PostgresExtension:uuid-ossp", ",,");
 
             migrationBuilder.CreateTable(
+                name: "Right",
+                columns: table => new
+                {
+                    Name = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Right", x => x.Name);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Share_Item",
                 columns: table => new
                 {
-                    ID = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "uuid_generate_v4()"),
+                    ID = table.Column<Guid>(type: "uuid", nullable: false),
                     WhoShared = table.Column<Guid>(type: "uuid", nullable: false),
                     Group = table.Column<bool>(type: "boolean", nullable: false),
                     ItemType = table.Column<byte>(type: "smallint", nullable: false),
@@ -34,19 +45,6 @@ namespace StyleWerk.NBB.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Structure_Entry_Folder",
-                columns: table => new
-                {
-                    ID = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "uuid_generate_v4()"),
-                    Name = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
-                    SortOrder = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Structure_Entry_Folder", x => x.ID);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "User_Login",
                 columns: table => new
                 {
@@ -57,9 +55,11 @@ namespace StyleWerk.NBB.Migrations
                     UsernameNormalized = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
                     PasswordSalt = table.Column<string>(type: "text", nullable: false),
-                    StatusCode = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    StatusToken = table.Column<Guid>(type: "uuid", nullable: true),
-                    StatusTokenTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true)
+                    Admin = table.Column<bool>(type: "boolean", nullable: false),
+                    StatusCode = table.Column<int>(type: "integer", nullable: true),
+                    StatusToken = table.Column<string>(type: "text", nullable: true),
+                    StatusTokenExpireTime = table.Column<long>(type: "bigint", nullable: true),
+                    NewEmail = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -67,12 +67,53 @@ namespace StyleWerk.NBB.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Admin_ColorTheme",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserID = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Base = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Data = table.Column<string>(type: "JSONB", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Admin_ColorTheme", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_Admin_ColorTheme_User_Login_UserID",
+                        column: x => x.UserID,
+                        principalTable: "User_Login",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Admin_Language",
+                columns: table => new
+                {
+                    Code = table.Column<string>(type: "character varying(5)", maxLength: 5, nullable: false),
+                    UserID = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Data = table.Column<string>(type: "JSONB", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Admin_Language", x => x.Code);
+                    table.ForeignKey(
+                        name: "FK_Admin_Language_User_Login_UserID",
+                        column: x => x.UserID,
+                        principalTable: "User_Login",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Share_Group",
                 columns: table => new
                 {
-                    ID = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "uuid_generate_v4()"),
+                    ID = table.Column<Guid>(type: "uuid", nullable: false),
                     UserID = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     IsVisible = table.Column<bool>(type: "boolean", nullable: false),
                     CanSeeOthers = table.Column<bool>(type: "boolean", nullable: false)
                 },
@@ -88,16 +129,37 @@ namespace StyleWerk.NBB.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Structure_Entry_Folder",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserID = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Structure_Entry_Folder", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_Structure_Entry_Folder_User_Login_UserID",
+                        column: x => x.UserID,
+                        principalTable: "User_Login",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Structure_Template",
                 columns: table => new
                 {
-                    ID = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "uuid_generate_v4()"),
+                    ID = table.Column<Guid>(type: "uuid", nullable: false),
                     UserID = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    IsPublic = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-                    LastUpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    IsPublic = table.Column<bool>(type: "boolean", nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Tags = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<long>(type: "bigint", nullable: false),
+                    LastUpdatedAt = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -118,7 +180,7 @@ namespace StyleWerk.NBB.Migrations
                     Gender = table.Column<byte>(type: "smallint", nullable: false),
                     FirstName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Birthday = table.Column<DateOnly>(type: "date", nullable: false)
+                    Birthday = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -136,11 +198,17 @@ namespace StyleWerk.NBB.Migrations
                 columns: table => new
                 {
                     ID = table.Column<Guid>(type: "uuid", nullable: false),
-                    Admin = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_User_Right", x => x.ID);
+                    table.PrimaryKey("PK_User_Right", x => new { x.ID, x.Name });
+                    table.ForeignKey(
+                        name: "FK_User_Right_Right_Name",
+                        column: x => x.Name,
+                        principalTable: "Right",
+                        principalColumn: "Name",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "User",
                         column: x => x.ID,
@@ -156,7 +224,8 @@ namespace StyleWerk.NBB.Migrations
                     ID = table.Column<Guid>(type: "uuid", nullable: false),
                     Agent = table.Column<string>(type: "text", nullable: false),
                     RefreshToken = table.Column<string>(type: "text", nullable: false),
-                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    RefreshTokenExpiryTime = table.Column<long>(type: "bigint", nullable: false),
+                    ConsistOverSession = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -201,13 +270,16 @@ namespace StyleWerk.NBB.Migrations
                 name: "Structure_Entry",
                 columns: table => new
                 {
-                    ID = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "uuid_generate_v4()"),
-                    Name = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    ID = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     UserID = table.Column<Guid>(type: "uuid", nullable: false),
                     TemplateID = table.Column<Guid>(type: "uuid", nullable: false),
                     FolderID = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()"),
-                    LastUpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    IsPublic = table.Column<bool>(type: "boolean", nullable: false),
+                    IsEncrypted = table.Column<bool>(type: "boolean", nullable: false),
+                    Tags = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<long>(type: "bigint", nullable: false),
+                    LastUpdatedAt = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -235,10 +307,12 @@ namespace StyleWerk.NBB.Migrations
                 name: "Structure_Template_Row",
                 columns: table => new
                 {
-                    ID = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "uuid_generate_v4()"),
+                    ID = table.Column<Guid>(type: "uuid", nullable: false),
                     TemplateID = table.Column<Guid>(type: "uuid", nullable: false),
                     SortOrder = table.Column<int>(type: "integer", nullable: false),
-                    CanWrapCells = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
+                    CanWrapCells = table.Column<bool>(type: "boolean", nullable: false),
+                    CanRepeat = table.Column<bool>(type: "boolean", nullable: false),
+                    HideOnNoInput = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -252,16 +326,43 @@ namespace StyleWerk.NBB.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Structure_Entry_Row",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "uuid", nullable: false),
+                    EntryID = table.Column<Guid>(type: "uuid", nullable: false),
+                    TemplateID = table.Column<Guid>(type: "uuid", nullable: false),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Structure_Entry_Row", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_Structure_Entry_Row_Structure_Entry_EntryID",
+                        column: x => x.EntryID,
+                        principalTable: "Structure_Entry",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Structure_Entry_Row_Structure_Template_Row_TemplateID",
+                        column: x => x.TemplateID,
+                        principalTable: "Structure_Template_Row",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Structure_Template_Cell",
                 columns: table => new
                 {
-                    ID = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "uuid_generate_v4()"),
+                    ID = table.Column<Guid>(type: "uuid", nullable: false),
                     RowID = table.Column<Guid>(type: "uuid", nullable: false),
-                    SortOrder = table.Column<int>(type: "integer", nullable: false),
                     InputHelper = table.Column<int>(type: "integer", nullable: false),
+                    SortOrder = table.Column<int>(type: "integer", nullable: false),
                     HideOnEmpty = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    IsRequiered = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    IsRequired = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     Text = table.Column<string>(type: "text", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: true),
                     MetaData = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
@@ -279,26 +380,37 @@ namespace StyleWerk.NBB.Migrations
                 name: "Structure_Entry_Cell",
                 columns: table => new
                 {
-                    EntryID = table.Column<Guid>(type: "uuid", nullable: false),
-                    CellID = table.Column<Guid>(type: "uuid", nullable: false),
-                    Metadata = table.Column<string>(type: "text", nullable: false)
+                    ID = table.Column<Guid>(type: "uuid", nullable: false),
+                    RowID = table.Column<Guid>(type: "uuid", nullable: false),
+                    TemplateID = table.Column<Guid>(type: "uuid", nullable: false),
+                    Data = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Structure_Entry_Cell", x => new { x.EntryID, x.CellID });
+                    table.PrimaryKey("PK_Structure_Entry_Cell", x => x.ID);
                     table.ForeignKey(
-                        name: "FK_Structure_Entry_Cell_Structure_Entry_EntryID",
-                        column: x => x.EntryID,
-                        principalTable: "Structure_Entry",
+                        name: "FK_Structure_Entry_Cell_Structure_Entry_Row_RowID",
+                        column: x => x.RowID,
+                        principalTable: "Structure_Entry_Row",
                         principalColumn: "ID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Structure_Entry_Cell_Structure_Template_Cell_CellID",
-                        column: x => x.CellID,
+                        name: "FK_Structure_Entry_Cell_Structure_Template_Cell_TemplateID",
+                        column: x => x.TemplateID,
                         principalTable: "Structure_Template_Cell",
                         principalColumn: "ID",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Admin_ColorTheme_UserID",
+                table: "Admin_ColorTheme",
+                column: "UserID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Admin_Language_UserID",
+                table: "Admin_Language",
+                column: "UserID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Share_Group_UserID",
@@ -326,9 +438,29 @@ namespace StyleWerk.NBB.Migrations
                 column: "UserID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Structure_Entry_Cell_CellID",
+                name: "IX_Structure_Entry_Cell_RowID",
                 table: "Structure_Entry_Cell",
-                column: "CellID");
+                column: "RowID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Structure_Entry_Cell_TemplateID",
+                table: "Structure_Entry_Cell",
+                column: "TemplateID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Structure_Entry_Folder_UserID",
+                table: "Structure_Entry_Folder",
+                column: "UserID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Structure_Entry_Row_EntryID",
+                table: "Structure_Entry_Row",
+                column: "EntryID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Structure_Entry_Row_TemplateID",
+                table: "Structure_Entry_Row",
+                column: "TemplateID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Structure_Template_UserID",
@@ -374,11 +506,22 @@ namespace StyleWerk.NBB.Migrations
                 table: "User_Login",
                 column: "UsernameNormalized",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_User_Right_Name",
+                table: "User_Right",
+                column: "Name");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Admin_ColorTheme");
+
+            migrationBuilder.DropTable(
+                name: "Admin_Language");
+
             migrationBuilder.DropTable(
                 name: "Share_GroupUser");
 
@@ -401,16 +544,22 @@ namespace StyleWerk.NBB.Migrations
                 name: "Share_Group");
 
             migrationBuilder.DropTable(
-                name: "Structure_Entry");
+                name: "Structure_Entry_Row");
 
             migrationBuilder.DropTable(
                 name: "Structure_Template_Cell");
 
             migrationBuilder.DropTable(
-                name: "Structure_Entry_Folder");
+                name: "Right");
+
+            migrationBuilder.DropTable(
+                name: "Structure_Entry");
 
             migrationBuilder.DropTable(
                 name: "Structure_Template_Row");
+
+            migrationBuilder.DropTable(
+                name: "Structure_Entry_Folder");
 
             migrationBuilder.DropTable(
                 name: "Structure_Template");

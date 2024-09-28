@@ -13,7 +13,7 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
-    public Guid ID { get; set; }
+    public required Guid ID { get; set; }
 
     /// <summary>
     /// The email address associated with the user account.
@@ -58,15 +58,14 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
     /// <summary>
     /// Optional token used for operations such as password reset or email change verification.
     /// </summary>
-    public Guid? StatusToken { get; set; }
+    public string? StatusToken { get; set; }
 
     /// <summary>
     /// The timestamp when the status token was issued.
     /// </summary>
-    public DateTimeOffset? StatusTokenExpireTime { get; set; }
+    public long? StatusTokenExpireTime { get; set; }
 
     public string? NewEmail { get; set; }
-    public string? EmailChangeCode { get; set; }
 
 #pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
     /// <summary>
@@ -93,18 +92,20 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
     {
         b.UseTemplates();
         b.UseIEntity_GuidID();
+
         b.Property(s => s.Username).IsRequired(true).HasMaxLength(30);
         b.Property(s => s.UsernameNormalized).IsRequired(true).HasMaxLength(30);
         b.Property(s => s.Email).IsRequired(true).HasMaxLength(100);
         b.Property(s => s.EmailNormalized).IsRequired(true).HasMaxLength(100);
+
         b.Property(s => s.PasswordHash).IsRequired(true);
         b.Property(s => s.PasswordSalt).IsRequired(true);
+
         b.Property(s => s.Admin).IsRequired(true);
         b.Property(s => s.StatusCode).IsRequired(false);
         b.Property(s => s.StatusToken).IsRequired(false);
         b.Property(s => s.StatusTokenExpireTime).IsRequired(false);
         b.Property(s => s.NewEmail).IsRequired(false);
-        b.Property(s => s.EmailChangeCode).IsRequired(false);
 
         b.HasIndex(s => s.UsernameNormalized).IsUnique(true);
         b.HasIndex(s => s.EmailNormalized).IsUnique(true);

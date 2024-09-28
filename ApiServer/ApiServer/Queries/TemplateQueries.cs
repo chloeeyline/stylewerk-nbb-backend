@@ -2,65 +2,33 @@
 
 using StyleWerk.NBB.Authentication;
 using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Queries;
 
-public class TemplateQueries(NbbContext DB, ApplicationUser User)
+public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQueries(DB, CurrentUser)
 {
-    //Default
-    public List<Model_Templates> LoadTemplates()
+    public Model_DetailedTemplate LoadTemplate(Guid templateId)
     {
-        List<Model_Templates> templates =
-        [
-            .. DB.Structure_Template
-                            .Include(t => t.O_User)
-                            .Where(t => t.UserID == User.ID)
-                            .Select(t => new Model_Templates(t, new ShareTypes(true, false, false, false)))
-,
-        ];
-        //.OrderBy(t=> t.IsCopied);
-
-        return templates;
-    }
-
-    public List<Model_TemplatePreviewItems> LoadPreview(Guid templateId)
-    {
-        Model_TemplateCell[] cells =
-        [
-            .. DB.Structure_Template_Cell
-                        .Include(c => c.O_Row)
-                        .Where(c => c.RowID == c.O_Row.ID && c.O_Row.TemplateID == templateId)
-                        .Select(c => new Model_TemplateCell(c.ID, c.RowID, c.SortOrder, c.HideOnEmpty, c.IsRequiered, c.Text, c.MetaData))
-,
-        ];
+        Structure_Template? item = DB.Structure_Template.FirstOrDefault(t => t.ID == templateId) ?? throw new RequestException(ResultCodes.NoDataFound);
 
         Model_TemplateRow[] rows =
         [
             .. DB.Structure_Template_Row
-                        .Include(r => r.O_Cells)
-                        .Include(r => r.O_Template)
-                        .Where(r => r.TemplateID == templateId)
-                        .Select(r => new Model_TemplateRow(r.ID, r.O_Template.ID, r.SortOrder, r.CanWrapCells, cells)),
+                    .Include(r => r.O_Cells)
+                    .Where(r => r.TemplateID == templateId)
+                    .Select(r => new Model_TemplateRow(r))
         ];
 
-        List<Model_TemplatePreviewItems> preview =
-        [
-            .. DB.Structure_Template
-                        .Where(t => t.ID == templateId)
-                        .Select(t => new Model_TemplatePreviewItems(t.ID, t.Name, rows))
-,
-        ];
+        Model_DetailedTemplate model = new(item.ID, item.Name, item.Description, rows);
 
-        return preview;
-
+        return model;
     }
 
-    public List<Model_Templates> LoadFilterTemplates(Model_FilterTemplate filter)
+    public Model_TemplatePaging LoadFilterTemplates(Model_FilterTemplate filter)
     {
-        List<Model_Templates> result = [];
+        List<Model_Template> result = [];
         filter = filter with { Username = filter.Username?.Normalize().ToLower() };
 
         if (filter.Share.Own && string.IsNullOrEmpty(filter.Username))
@@ -72,128 +40,93 @@ public class TemplateQueries(NbbContext DB, ApplicationUser User)
         if (filter.Share.Public || !string.IsNullOrEmpty(filter.Username))
             result.AddRange(LoadPublicTemplates(filter));
 
-        List<Model_Templates> templates = result.DistinctBy(s => s.Id).ToList();
-        return templates;
+        List<Model_Template> templates = result.DistinctBy(s => s.ID).ToList();
+
+        int tCount = templates.Count;
+        int maxPages = tCount / filter.PerPage;
+        if (filter.Page > maxPages)
+            filter = filter with { Page = 1 };
+        templates = templates.Skip(filter.Page * filter.PerPage).Take(filter.PerPage).ToList();
+
+        Model_TemplatePaging paging = new(tCount, filter.Page, maxPages, filter.PerPage, templates);
+
+        return paging;
     }
 
-    private List<Model_Templates> LoadUserTemplates(Model_FilterTemplate filter)
+    private List<Model_Template> LoadUserTemplates(Model_FilterTemplate filter)
     {
         IEnumerable<Structure_Template> list = DB.Structure_Template
-            .Where(t => t.UserID == User.ID)
+            .Where(t => t.UserID == CurrentUser.ID)
             .Include(t => t.O_User);
 
-        if (!string.IsNullOrEmpty(filter.Name))
-            list = list.Where(t => t.Name.Contains(filter.Name));
-        if (!string.IsNullOrEmpty(filter.Username))
-            list = list.Where(t => t.O_User.UsernameNormalized.Contains(filter.Username));
-        if (filter.Tags != null)
-        {
-            foreach (string tag in filter.Tags)
-            {
-                list = list.Where(t => t.Tags != null && t.Tags.Contains(tag));
-            }
-        }
+        list = FilterTemplates(list, filter);
 
-        List<Model_Templates> result = list.Select(s => new Model_Templates(s, new ShareTypes(true, false, false, false))).ToList();
+        List<Model_Template> result = list.Select(s => new Model_Template(s, new ShareTypes(true, false, false, false))).ToList();
         return result;
     }
 
-    private List<Model_Templates> LoadGroupTemplates(Model_FilterTemplate filter)
+    private List<Model_Template> LoadGroupTemplates(Model_FilterTemplate filter)
     {
-        List<Model_Templates> result = [];
+        List<Model_Template> result = [];
+        List<Model_SharedItem> shareList = SharedViaGroupItems(2);
 
-        IQueryable<Share_Group> groups = DB.Share_GroupUser
-            .Include(u => u.O_Group)
-            .Where(u => u.UserID == User.ID)
-            .Select(g => g.O_Group);
-
-        foreach (Share_Group group in groups)
+        foreach (Model_SharedItem item in shareList)
         {
-            IQueryable<Share_Item> items = DB.Share_Item.Where(s => s.Group == true && s.ID == group.ID && s.ItemType == 2);
+            IEnumerable<Structure_Template> list = DB.Structure_Template
+                .Where(t => t.ID == item.ID)
+                .Include(t => t.O_User);
 
-            foreach (Share_Item item in items)
-            {
-                IEnumerable<Structure_Template> list = DB.Structure_Template
-                    .Where(t => t.ID == item.ID)
-                    .Include(t => t.O_User);
+            list = FilterTemplates(list, filter);
 
-                if (!string.IsNullOrEmpty(filter.Name) && !filter.DirectUser)
-                    list = list.Where(t => t.Name.Contains(filter.Name));
-                if (!string.IsNullOrEmpty(filter.Name) && filter.DirectUser)
-                    list = list.Where(t => t.Name == filter.Name);
-                if (!string.IsNullOrEmpty(filter.Username))
-                    list = list.Where(t => t.O_User.UsernameNormalized.Contains(filter.Username));
-                if (filter.Tags != null)
-                {
-                    foreach (string tag in filter.Tags)
-                    {
-                        list = list.Where(t => t.Tags != null && t.Tags.Contains(tag));
-                    }
-                }
-
-                result.AddRange(list.Select(s => new Model_Templates(s, new ShareTypes(false, true, false, false))));
-            }
+            result.AddRange(list.Select(s => new Model_Template(s, new ShareTypes(false, true, false, false))));
         }
 
         return result;
     }
 
-    private List<Model_Templates> LoadDirectlySharedTemplates(Model_FilterTemplate filter)
+    private List<Model_Template> LoadDirectlySharedTemplates(Model_FilterTemplate filter)
     {
-        List<Model_Templates> result = [];
+        List<Model_Template> result = [];
+        List<Model_SharedItem> shareList = DirectlySharedItems(2);
 
-        IQueryable<Share_Item> shared = DB.Share_Item.Where(s => s.Group == false && s.ID == User.ID && s.ItemType == 2); //ItemType: 1 == entry
-
-        foreach (Share_Item? item in shared)
+        foreach (Model_SharedItem item in shareList)
         {
             IEnumerable<Structure_Template> list = DB.Structure_Template
             .Where(s => s.ID == item.ID)
             .Include(s => s.O_User);
 
-            if (!string.IsNullOrEmpty(filter.Name) && !filter.DirectUser)
-                list = list.Where(s => s.Name.Contains(filter.Name));
-            if (!string.IsNullOrEmpty(filter.Name) && filter.DirectUser)
-                list = list.Where(s => s.Name == filter.Name);
-            if (!string.IsNullOrEmpty(filter.Username))
-                list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
-            if (filter.Tags != null)
-            {
-                foreach (string tag in filter.Tags)
-                {
-                    list = list.Where(t => t.Tags != null && t.Tags.Contains(tag));
-                }
-            }
+            list = FilterTemplates(list, filter);
 
-            result.AddRange(list.Select(s => new Model_Templates(s, new ShareTypes(false, false, false, true))));
+            result.AddRange(list.Select(s => new Model_Template(s, new ShareTypes(false, false, false, true))));
         }
 
         return result;
     }
 
-    private List<Model_Templates> LoadPublicTemplates(Model_FilterTemplate filter)
+    private List<Model_Template> LoadPublicTemplates(Model_FilterTemplate filter)
     {
-        List<Model_Templates> publicEntryItem = [];
+        List<Model_Template> publicEntryItem = [];
 
         IEnumerable<Structure_Template> list = DB.Structure_Template
             .Where(s => s.IsPublic)
             .Include(s => s.O_User);
 
-        if (!string.IsNullOrEmpty(filter.Name) && !filter.DirectUser)
-            list = list.Where(s => s.Name.Contains(filter.Name));
-        if (!string.IsNullOrEmpty(filter.Name) && filter.DirectUser)
-            list = list.Where(s => s.Name == filter.Name);
-        if (!string.IsNullOrEmpty(filter.Username))
-            list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
-        if (filter.Tags != null)
-        {
-            foreach (string tag in filter.Tags)
-            {
-                list = list.Where(t => t.Tags != null && t.Tags.Contains(tag));
-            }
-        }
+        list = FilterTemplates(list, filter);
 
-        List<Model_Templates> result = list.Select(s => new Model_Templates(s, new ShareTypes(false, false, true, false))).ToList();
+        List<Model_Template> result = list.Select(s => new Model_Template(s, new ShareTypes(false, false, true, false))).ToList();
         return result;
     }
 
+    private static IEnumerable<Structure_Template> FilterTemplates(IEnumerable<Structure_Template> list, Model_FilterTemplate filter)
+    {
+        if (!string.IsNullOrWhiteSpace(filter.Name))
+            list = list.Where(s => s.Name.Contains(filter.Name));
+        if (!string.IsNullOrWhiteSpace(filter.Username) && !filter.DirectUser)
+            list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
+        if (!string.IsNullOrWhiteSpace(filter.Username) && filter.DirectUser)
+            list = list.Where(s => s.O_User.UsernameNormalized == filter.Username);
+        if (!string.IsNullOrWhiteSpace(filter.Tags))
+            list = list.Where(s => !string.IsNullOrWhiteSpace(s.Tags) && filter.Tags.Contains(s.Tags));
+        return list.Distinct().OrderBy(s => s.LastUpdatedAt).ThenBy(s => s.Name);
+    }
 }

@@ -1,45 +1,67 @@
-﻿using StyleWerk.NBB.Authentication;
+﻿namespace StyleWerk.NBB.Models;
 
-namespace StyleWerk.NBB.Models;
-
-public record PagingList<T>(int Count, int Page, int MaxPage, int PerPage, List<T> Items);
-
+public record GroupUserRights(bool CanSeeUsers, bool CanAddUsers, bool CanRemoveUsers);
 public record ShareTypes(bool Own, bool GroupShared, bool Public, bool DirectlyShared);
+public record ShareRights(bool CanShare, bool CanEdit, bool CanDelete);
 public record Model_SharedItem(Guid ID, string SharedFrom, bool FromGroup, Guid? GroupID, string? GroupName, bool CanShare, bool CanEdit, bool CanDelete);
 
 /// <summary>
 /// The default Model to always wrap the results of a requests from the frontend
 /// </summary>
-/// <param name="Type"></param>
-/// <param name="TypeText"></param>
-/// <param name="ErrorCode"></param>
-/// <param name="ErrorMessage"></param>
-/// <param name="Data"></param>
-public record Model_Result<T>(ResultType Type, string TypeText, int? ErrorCode, string? ErrorMessage, T? Data)
+public record Model_Result<T>(ResultCodes Code, string CodeName, T? Data)
 {
-    public Model_Result() : this(ResultType.Success, ResultType.Success.ToString(), null, null, default) { }
-    public Model_Result(T? data) : this(ResultType.SuccessReturnData, ResultType.SuccessReturnData.ToString(), null, null, data) { }
-    public Model_Result(ResultType type) : this(type, type.ToString(), null, null, default) { }
-    public Model_Result(ResultType type, int? errorCode, string? errorMessage) : this(type, type.ToString(), errorCode, errorMessage, default) { }
-    public Model_Result(AuthenticationErrorCodes warning) : this(ResultType.Authentification, ResultType.Authentification.ToString(), (int) warning, warning.ToString(), default) { }
+    public Model_Result() : this(ResultCodes.Success, ResultCodes.Success.ToString(), default) { }
+    public Model_Result(T? data) : this(ResultCodes.SuccessReturnData, ResultCodes.SuccessReturnData.ToString(), data) { }
+    public Model_Result(ResultCodes code) : this(code, code.ToString(), default) { }
+    public Model_Result(ResultCodes code, T? data) : this(code, code.ToString(), data) { }
 }
 
 [Serializable]
-public class RequestException : Exception
+public class RequestException(ResultCodes Code, string? message = null, Exception? inner = null) : Exception(message, inner)
 {
-    public ResultType ErrorCode { get; set; }
-    public RequestException(ResultType code) : base() => ErrorCode = code;
-    public RequestException(ResultType code, string message) : base(message) => ErrorCode = code;
-    public RequestException(ResultType code, string message, Exception inner) : base(message, inner) => ErrorCode = code;
+    public ResultCodes Code { get; set; } = Code;
 }
 
-public enum ResultType
+public enum ResultCodes
 {
-    Success,
-    SuccessReturnData,
-    GeneralError,
-    Authentification,
-    NoDataFound,
-    MissingRight,
-    DataIsInvalid,
+    Success = 1000,
+    SuccessReturnData = 1001,
+
+    GeneralError = 1100,
+    DataIsInvalid = 1101,
+    NoDataFound = 1102,
+    MissingRight = 1103,
+
+    #region Authentication
+    EmailInvalid = 1210,
+    EmailAlreadyExists = 1211,
+    UsernameInvalid = 1212,
+    UnToShort = 1213,
+    UnToLong = 1214,
+    UnUsesInvalidChars = 1215,
+    UsernameAlreadyExists = 1216,
+
+    WrongStatusCode = 1220,
+    StatusTokenNotFound = 1221,
+    StatusTokenExpired = 1222,
+    StatusTokenAlreadyRequested = 1223,
+    EmailChangeCodeWrong = 1224,
+    PendingChangeOpen = 1225,
+
+    NoUserFound = 1230,
+    RefreshTokenNotFound = 1231,
+    RefreshTokenExpired = 1232,
+    EmailIsNotVerified = 1233,
+    PasswordResetWasRequested = 1234,
+
+    // Password Errors
+    PasswordInvalid = 1240,
+    PwTooShort = 1241,
+    PwHasNoLowercaseLetter = 1242,
+    PwHasNoUppercaseLetter = 1243,
+    PwHasNoNumber = 1244,
+    PwHasNoSpecialChars = 1245,
+    PwHasWhitespace = 1246,
+    PwUsesInvalidChars = 1247
+    #endregion
 }

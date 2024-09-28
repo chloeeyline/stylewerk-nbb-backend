@@ -2,7 +2,11 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
+
+using StyleWerk.NBB.Database.User;
+using StyleWerk.NBB.Models;
 
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -42,6 +46,20 @@ public static class SwaggerConfiguration
             string xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);
+
+            options.MapType<ResultCodes>(() => new OpenApiSchema
+            {
+                Type = "integer",
+                Enum = [.. Enum.GetValues<ResultCodes>().Select(value => new OpenApiInteger((int) value))],
+                Description = string.Join(", ", Enum.GetValues<ResultCodes>().Select(value => $"{value} = {(int) value}"))
+            });
+
+            options.MapType<UserStatus>(() => new OpenApiSchema
+            {
+                Type = "integer",
+                Enum = [.. Enum.GetValues<UserStatus>().Select(value => new OpenApiInteger((byte) value))],
+                Description = string.Join(", ", Enum.GetValues<UserStatus>().Select(value => $"{value} = {(byte) value}"))
+            });
         });
     }
 }
@@ -58,8 +76,8 @@ public class AuthorizeCheckOperationFilter : IOperationFilter
         if (hasAuthorize)
         {
             // Add the security requirement to Swagger UI for this endpoint
-            operation.Security = new List<OpenApiSecurityRequirement>
-            {
+            operation.Security =
+            [
                 new() {
                     {
                         new OpenApiSecurityScheme
@@ -73,7 +91,7 @@ public class AuthorizeCheckOperationFilter : IOperationFilter
                         Array.Empty<string>()
                     }
                 }
-            };
+            ];
         }
     }
 }

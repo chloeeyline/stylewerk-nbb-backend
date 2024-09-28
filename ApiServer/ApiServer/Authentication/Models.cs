@@ -26,7 +26,7 @@ public record ApplicationUser
             FirstName = string.Empty,
             LastName = string.Empty,
             Gender = UserGender.NotSpecified,
-            Birthday = new DateOnly(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day)
+            Birthday = new DateTimeOffset(new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day)).ToUnixTimeMilliseconds(),
         };
         Rights = [];
     }
@@ -55,9 +55,9 @@ public record Model_Registration(string Username, string Email, string Password,
 public record Model_Login([Required] string Username, [Required] string Password, bool ConsistOverSession);
 public record Model_RefreshToken(string Token, bool ConsistOverSession);
 
-public record Model_ResetPassword(Guid Token, string Password);
+public record Model_ResetPassword(string Token, string Password);
 public record Model_ValidateIdentification(string ToValidate);
-public record Model_StatusToken(Guid Token);
+public record Model_StatusToken(string Token);
 
 #region Result
 public record AuthenticationResult(Model_Token AccessToken, Model_Token RefreshToken, UserStatus? StatusCode, bool ConsistOverSession, string Username, bool Admin, string[] Rights);

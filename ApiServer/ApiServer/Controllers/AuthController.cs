@@ -47,88 +47,88 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     #region Registration
     [ApiExplorerSettings(GroupName = "Registration")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<object>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(Registration))]
     public IActionResult Registration([FromBody] Model_Registration? model)
     {
         Authentication.Registration(model);
-        return Ok(new Model_Result<object>());
+        return Ok(new Model_Result<string>());
     }
 
     [ApiExplorerSettings(GroupName = "Registration")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<object>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(VerifyEmail))]
-    public IActionResult VerifyEmail(Guid? token)
+    public IActionResult VerifyEmail(string? token)
     {
         Authentication.VerifyEmail(token);
-        return Ok(new Model_Result<object>());
+        return Ok(new Model_Result<string>());
     }
     #endregion
 
     #region Forgot Password
     [ApiExplorerSettings(GroupName = "Forgot Password")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<object>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(RequestPasswordReset))]
     public IActionResult RequestPasswordReset([FromBody] string email)
     {
         Authentication.RequestPasswordReset(email);
-        return Ok(new Model_Result<object>());
+        return Ok(new Model_Result<string>());
     }
 
     [ApiExplorerSettings(GroupName = "Forgot Password")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<object>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ResetPassword))]
     public IActionResult ResetPassword([FromBody] Model_ResetPassword? model)
     {
         Authentication.ResetPassword(model);
-        return Ok(new Model_Result<object>());
+        return Ok(new Model_Result<string>());
     }
     #endregion
 
     #region Session
     [ApiExplorerSettings(GroupName = "Session")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<object>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(RemoveSessions)), Authorize]
     public IActionResult RemoveSessions()
     {
         Authentication.RemoveSessions(CurrentUser.ID, UserAgent);
-        return Ok(new Model_Result<object>());
+        return Ok(new Model_Result<string>());
     }
 
     [ApiExplorerSettings(GroupName = "Session")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<object>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(Logout)), Authorize]
     public IActionResult Logout()
     {
         Authentication.Logout(CurrentUser.ID, UserAgent);
-        return Ok(new Model_Result<object>());
+        return Ok(new Model_Result<string>());
     }
     #endregion
 
     #region Change Email
     [ApiExplorerSettings(GroupName = "Change Email")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<object>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(UpdateEmail)), Authorize]
     public IActionResult UpdateEmail(string? email)
     {
         Authentication.UpdateEmail(email, CurrentUser.Login);
-        return Ok(new Model_Result<object>());
+        return Ok(new Model_Result<string>());
     }
 
     [ApiExplorerSettings(GroupName = "Change Email")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<object>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(VerifyUpdatedEmail)), Authorize]
     public IActionResult VerifyUpdatedEmail(string? code)
     {
         Authentication.VerifyUpdatedEmail(code, CurrentUser.Login, UserAgent);
-        return Ok(new Model_Result<object>());
+        return Ok(new Model_Result<string>());
     }
     #endregion
 
@@ -145,44 +145,44 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
 
     [ApiExplorerSettings(GroupName = "Userdata")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<object>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(UpdateUserData)), Authorize]
     public IActionResult UpdateUserData([FromBody] Model_UpdateUserData model)
     {
         Authentication.UpdateUserData(model, CurrentUser.ID);
-        return Ok(new Model_Result<object>());
+        return Ok(new Model_Result<string>());
     }
     #endregion
 
     #region Validation
     [ApiExplorerSettings(GroupName = "Validation")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<object>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ValidatePassword))]
     public IActionResult ValidatePassword([FromBody] Model_ValidateIdentification model)
     {
         Authentication.ValidatePassword(model?.ToValidate);
-        return Ok(new Model_Result<object>());
+        return Ok(new Model_Result<string>());
     }
 
     [ApiExplorerSettings(GroupName = "Validation")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<object>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ValidateEmail))]
     public IActionResult ValidateEmail([FromBody] Model_ValidateIdentification? model)
     {
         Authentication.ValidateEmail(model?.ToValidate);
-        return Ok(new Model_Result<object>());
+        return Ok(new Model_Result<string>());
     }
 
     [ApiExplorerSettings(GroupName = "Validation")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<object>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ValidateUsername))]
     public IActionResult ValidateUsername([FromBody] Model_ValidateIdentification? model)
     {
         Authentication.ValidateUsername(model?.ToValidate);
-        return Ok(new Model_Result<object>());
+        return Ok(new Model_Result<string>());
     }
     #endregion
 }

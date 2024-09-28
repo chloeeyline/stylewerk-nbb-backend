@@ -32,13 +32,12 @@ public static class Extension
     /// </summary>
     /// <typeparam name="T">The entity type being configured.</typeparam>
     /// <param name="b">The builder used for entity type configuration.</param>
-    public static void UseIEntity_GuidID<T>(this EntityTypeBuilder<T> b, bool defaultValue = true) where T : class, IEntity<T>, IEntity_GuidID
+    public static void UseIEntity_GuidID<T>(this EntityTypeBuilder<T> b) where T : class, IEntity<T>, IEntity_GuidID
     {
         b.HasKey(s => s.ID);
         PropertyBuilder<Guid> prop = b.Property(s => s.ID)
             .IsRequired(true)
             .HasColumnName("ID");
-        if (defaultValue) prop.HasDefaultValueSql("uuid_generate_v4()");
     }
 
     /// <summary>
@@ -48,7 +47,7 @@ public static class Extension
     /// <param name="b">The builder used for entity type configuration.</param>
     public static void UseIEntity_Name<T>(this EntityTypeBuilder<T> b) where T : class, IEntity<T>, IEntity_Name
     {
-        b.Property(s => s.Name).IsRequired(true).HasMaxLength(250);
+        b.Property(s => s.Name).IsRequired(true).HasMaxLength(100);
     }
 
     /// <summary>
@@ -68,7 +67,13 @@ public static class Extension
     /// <param name="b">The builder used for entity type configuration.</param>
     public static void UseIEntity_EditDate<T>(this EntityTypeBuilder<T> b) where T : class, IEntity<T>, IEntity_EditDate
     {
-        b.Property(s => s.CreatedAt).IsRequired(true).HasDefaultValueSql("NOW()");
-        b.Property(s => s.LastUpdatedAt).IsRequired(true).HasDefaultValueSql("NOW()");
+        b.Property(s => s.CreatedAt).IsRequired(true);
+        b.Property(s => s.LastUpdatedAt).IsRequired(true);
+    }
+
+    public static void UseIEntity_User<T>(this EntityTypeBuilder<T> b) where T : class, IEntity<T>, IEntity_User
+    {
+        b.Property(s => s.UserID).IsRequired(true);
+        b.HasOne(s => s.O_User).WithMany().HasForeignKey(s => s.UserID).IsRequired(true);
     }
 }

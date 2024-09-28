@@ -37,7 +37,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQue
     public List<Model_EntryItem> GetFolderContent(Guid? folderId)
     {
         if (folderId is null || folderId == Guid.Empty)
-            throw new RequestException(ResultType.DataIsInvalid);
+            throw new RequestException(ResultCodes.DataIsInvalid);
 
         List<Model_EntryItem> list =
         [
@@ -49,7 +49,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQue
                 .Select(e => new Model_EntryItem(e, new ShareTypes(true, false, false, false))),
         ];
 
-        return list.Count != 0 ? list : throw new RequestException(ResultType.NoDataFound);
+        return list.Count != 0 ? list : throw new RequestException(ResultCodes.NoDataFound);
     }
     #endregion
 
@@ -59,13 +59,20 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQue
         List<Model_EntryItem> result = [];
         filter = filter with { Username = filter.Username?.Normalize().ToLower() };
 
-        if (filter.Share.Own && string.IsNullOrWhiteSpace(filter.Username)) result.AddRange(LoadUserEntryItems(filter));
-        if (filter.Share.GroupShared || !string.IsNullOrWhiteSpace(filter.Username)) result.AddRange(LoadGroupEntryItems(filter));
-        if (filter.Share.DirectlyShared || !string.IsNullOrWhiteSpace(filter.Username)) result.AddRange(LoadDirectlySharedEntryItems(filter));
-        if (filter.Share.Public || !string.IsNullOrWhiteSpace(filter.Username)) result.AddRange(LoadPublicEntryItems(filter));
+        if (filter.Share.Own && string.IsNullOrWhiteSpace(filter.Username))
+            result.AddRange(LoadUserEntryItems(filter));
+        if (filter.Share.GroupShared || !string.IsNullOrWhiteSpace(filter.Username))
+            result.AddRange(LoadGroupEntryItems(filter));
+        if (filter.Share.DirectlyShared || !string.IsNullOrWhiteSpace(filter.Username))
+            result.AddRange(LoadDirectlySharedEntryItems(filter));
+        if (filter.Share.Public || !string.IsNullOrWhiteSpace(filter.Username))
+            result.AddRange(LoadPublicEntryItems(filter));
 
-        //Dont think that it is neccacery because that should already be all unique items
-        List<Model_EntryItem> entries = result.DistinctBy(s => s.ID).ToList();
+        List<Model_EntryItem> entries = [.. result
+            .DistinctBy(s => s.ID)
+            .OrderBy(s => s.LastUpdatedAt)
+            .ThenBy(s => s.Name)];
+
         return entries;
     }
 
@@ -153,8 +160,8 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQue
             list = list.Where(s => s.O_User.UsernameNormalized.Contains(filter.Username));
         if (!string.IsNullOrWhiteSpace(filter.Username) && filter.DirectUser)
             list = list.Where(s => s.O_User.UsernameNormalized == filter.Username);
-        if (filter.Tags.Length > 0)
-            list = list.Where(s => s.Tags != null && s.Tags.Any(tag => filter.Tags.Contains(tag)));
+        if (!string.IsNullOrWhiteSpace(filter.Tags))
+            list = list.Where(s => !string.IsNullOrWhiteSpace(s.Tags) && filter.Tags.Contains(s.Tags));
         return list.Distinct().OrderBy(s => s.LastUpdatedAt).ThenBy(s => s.Name);
     }
     #endregion
