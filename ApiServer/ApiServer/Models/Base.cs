@@ -1,7 +1,7 @@
 ﻿namespace StyleWerk.NBB.Models;
 
 
-public record ShareTypes(bool Own, bool GroupShared, bool Public, bool DirectlyShared);
+public record ShareTypes(bool Group, bool Public, bool Directly);
 
 /// <summary>
 /// The default Model to always wrap the results of a requests from the frontend

@@ -48,7 +48,7 @@ public class ShareController(NbbContext db) : BaseController(db)
     /// <param name="id"></param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Groups")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_GroupUser>>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_SharedToGroup>>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
     [HttpGet(nameof(GetSharedToGroup))]
     public IActionResult GetSharedToGroup(Guid? id)

@@ -29,7 +29,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
                 .Include(s => s.O_Folder)
                 .Include(s => s.O_Template)
                 .Include(s => s.O_User)
-                .Select(s => new Model_EntryItem(s, new ShareTypes(true, false, false, false))),
+                .Select(s => new Model_EntryItem(s, new ShareTypes(false, false, false))),
         ];
         entryFolders.Insert(0, new Model_EntryFolders(null, null, 0, result));
         return entryFolders;
@@ -47,7 +47,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
                 .Include(e => e.O_Template)
                 .Include(e => e.O_User)
                 .Where(e => e.FolderID == folderId)
-                .Select(e => new Model_EntryItem(e, new ShareTypes(true, false, false, false))),
+                .Select(e => new Model_EntryItem(e, new ShareTypes(false, false, false))),
         ];
 
         return list.Count != 0 ? list : throw new RequestException(ResultCodes.NoDataFound);
@@ -60,11 +60,11 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
         List<Model_EntryItem> result = [];
         filter = filter with { Username = filter.Username?.Normalize().ToLower() };
 
-        if (filter.Share.Own && string.IsNullOrWhiteSpace(filter.Username))
+        if (string.IsNullOrWhiteSpace(filter.Username))
             result.AddRange(LoadUserEntryItems(filter));
-        if (filter.Share.GroupShared || !string.IsNullOrWhiteSpace(filter.Username))
+        if (filter.Share.Group || !string.IsNullOrWhiteSpace(filter.Username))
             result.AddRange(LoadGroupEntryItems(filter));
-        if (filter.Share.DirectlyShared || !string.IsNullOrWhiteSpace(filter.Username))
+        if (filter.Share.Directly || !string.IsNullOrWhiteSpace(filter.Username))
             result.AddRange(LoadDirectlySharedEntryItems(filter));
         if (filter.Share.Public || !string.IsNullOrWhiteSpace(filter.Username))
             result.AddRange(LoadPublicEntryItems(filter));
@@ -87,23 +87,28 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
 
         list = FilterEntries(list, filter);
 
-        List<Model_EntryItem> result = list.Select(s => new Model_EntryItem(s, new ShareTypes(true, false, false, false))).ToList();
+        List<Model_EntryItem> result = list.Select(s => new Model_EntryItem(s, new ShareTypes(false, false, false))).ToList();
         return result;
     }
 
     private List<Model_EntryItem> LoadPublicEntryItems(Model_FilterEntry filter)
     {
-        List<Model_EntryItem> publicEntryItem = [];
+        List<Model_EntryItem> result = [];
+        List<Model_ShareItem> shareList = PublicSharedItems(ShareType.Entry);
 
-        IEnumerable<Structure_Entry> list = DB.Structure_Entry
-            //.Where(s => s.IsPublic)
+        foreach (Model_ShareItem item in shareList)
+        {
+            IEnumerable<Structure_Entry> list = DB.Structure_Entry
+            .Where(s => s.ID == item.ItemID)
             .Include(s => s.O_Folder)
             .Include(s => s.O_Template)
             .Include(s => s.O_User);
 
-        list = FilterEntries(list, filter);
+            list = FilterEntries(list, filter);
 
-        List<Model_EntryItem> result = list.Select(s => new Model_EntryItem(s, new ShareTypes(false, false, true, false))).ToList();
+            //adding entries to List
+            result.AddRange(list.Select(s => new Model_EntryItem(s, new ShareTypes(false, false, true))));
+        }
         return result;
     }
 
@@ -123,7 +128,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
             list = FilterEntries(list, filter);
 
             //adding entries to List
-            result.AddRange(list.Select(s => new Model_EntryItem(s, new ShareTypes(false, false, false, true))));
+            result.AddRange(list.Select(s => new Model_EntryItem(s, new ShareTypes(false, false, true))));
         }
 
         return result;
@@ -145,7 +150,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
             list = FilterEntries(list, filter);
 
             //adding entries to List
-            result.AddRange(list.Select(s => new Model_EntryItem(s, new ShareTypes(false, true, false, false))));
+            result.AddRange(list.Select(s => new Model_EntryItem(s, new ShareTypes(true, false, false))));
         }
 
         return result;

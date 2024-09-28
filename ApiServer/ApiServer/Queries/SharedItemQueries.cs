@@ -15,15 +15,18 @@ public class SharedItemQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
         [
             .. DB.Share_Item.Where(s => s.Visibility == ShareVisibility.Directly && s.ToWhom == CurrentUser.ID && s.Type == itemType)
                 .Include(s => s.O_User)
-                .Select(item => new Model_ShareItem(
-                    item.ID,
-                    item.ItemID,
-                    item.O_User.Username,
-                    CurrentUser.Login.Username,
-                    item.Visibility,
-                    item.CanShare,
-                    item.CanEdit,
-                    item.CanDelete)),
+                .Select(item => new Model_ShareItem(item, CurrentUser.Login.Username)),
+        ];
+        return list;
+    }
+
+    public List<Model_ShareItem> PublicSharedItems(ShareType itemType)
+    {
+        List<Model_ShareItem> list =
+        [
+            .. DB.Share_Item.Where(s => s.Visibility == ShareVisibility.Public && s.Type == itemType)
+                .Include(s => s.O_User)
+                .Select(item => new Model_ShareItem(item, CurrentUser.Login.Username)),
         ];
         return list;
     }
@@ -45,15 +48,7 @@ public class SharedItemQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
 
             foreach (Share_Item? item in shareItem)
             {
-                Model_ShareItem model = new(
-                    item.ID,
-                    item.ItemID,
-                    item.O_User.Username,
-                    groupItem.Name,
-                    item.Visibility,
-                    item.CanShare,
-                    item.CanEdit,
-                    item.CanDelete);
+                Model_ShareItem model = new(item, groupItem.Name);
                 result.Add(model);
             }
         }

@@ -32,11 +32,11 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
         List<Model_Template> result = [];
         filter = filter with { Username = filter.Username?.Normalize().ToLower() };
 
-        if (filter.Share.Own && string.IsNullOrEmpty(filter.Username))
+        if (string.IsNullOrEmpty(filter.Username))
             result.AddRange(LoadUserTemplates(filter));
-        if (filter.Share.GroupShared || !string.IsNullOrEmpty(filter.Username))
+        if (filter.Share.Group || !string.IsNullOrEmpty(filter.Username))
             result.AddRange(LoadGroupTemplates(filter));
-        if (filter.Share.DirectlyShared || !string.IsNullOrEmpty(filter.Username))
+        if (filter.Share.Directly || !string.IsNullOrEmpty(filter.Username))
             result.AddRange(LoadDirectlySharedTemplates(filter));
         if (filter.Share.Public || !string.IsNullOrEmpty(filter.Username))
             result.AddRange(LoadPublicTemplates(filter));
@@ -62,7 +62,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
 
         list = FilterTemplates(list, filter);
 
-        List<Model_Template> result = list.Select(s => new Model_Template(s, new ShareTypes(true, false, false, false))).ToList();
+        List<Model_Template> result = list.Select(s => new Model_Template(s, new ShareTypes(false, false, false))).ToList();
         return result;
     }
 
@@ -79,7 +79,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
 
             list = FilterTemplates(list, filter);
 
-            result.AddRange(list.Select(s => new Model_Template(s, new ShareTypes(false, true, false, false))));
+            result.AddRange(list.Select(s => new Model_Template(s, new ShareTypes(true, false, false))));
         }
 
         return result;
@@ -98,7 +98,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
 
             list = FilterTemplates(list, filter);
 
-            result.AddRange(list.Select(s => new Model_Template(s, new ShareTypes(false, false, false, true))));
+            result.AddRange(list.Select(s => new Model_Template(s, new ShareTypes(false, false, true))));
         }
 
         return result;
@@ -106,15 +106,19 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
 
     private List<Model_Template> LoadPublicTemplates(Model_FilterTemplate filter)
     {
-        List<Model_Template> publicEntryItem = [];
+        List<Model_Template> result = [];
+        List<Model_ShareItem> shareList = PublicSharedItems(ShareType.Template);
 
-        IEnumerable<Structure_Template> list = DB.Structure_Template
-            //.Where(s => s.IsPublic)
+        foreach (Model_ShareItem item in shareList)
+        {
+            IEnumerable<Structure_Template> list = DB.Structure_Template
+            .Where(s => s.ID == item.ItemID)
             .Include(s => s.O_User);
 
-        list = FilterTemplates(list, filter);
+            list = FilterTemplates(list, filter);
 
-        List<Model_Template> result = list.Select(s => new Model_Template(s, new ShareTypes(false, false, true, false))).ToList();
+            result.AddRange(list.Select(s => new Model_Template(s, new ShareTypes(false, true, false))));
+        }
         return result;
     }
 

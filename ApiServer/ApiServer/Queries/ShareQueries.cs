@@ -203,8 +203,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
 
             if (item.Visibility is ShareVisibility.Public)
             {
-                result.Add(new Model_ShareItem(item.ID, item.ItemID, item.O_User.Username, "", item.Visibility,
-                    item.CanShare, item.CanEdit, item.CanDelete));
+                result.Add(new Model_ShareItem(item, ""));
             }
             else if (item.Visibility is ShareVisibility.Directly)
             {
@@ -212,8 +211,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
                     ?? throw new RequestException(ResultCodes.NoDataFound);
 
                 if (userID == CurrentUser.ID || item.UserID == CurrentUser.ID)
-                    result.Add(new Model_ShareItem(item.ID, item.ItemID, item.O_User.Username, user.Username, item.Visibility,
-                    item.CanShare, item.CanEdit, item.CanDelete));
+                    result.Add(new Model_ShareItem(item, user.Username));
             }
             else if (item.Visibility is ShareVisibility.Group)
             {
@@ -221,8 +219,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
                     ?? throw new RequestException(ResultCodes.NoDataFound);
 
                 if (userID == CurrentUser.ID || group.UserID == CurrentUser.ID)
-                    result.Add(new Model_ShareItem(item.ID, item.ItemID, item.O_User.Username, group.Name, item.Visibility,
-                     item.CanShare, item.CanEdit, item.CanDelete));
+                    result.Add(new Model_ShareItem(item, group.Name));
             }
         }
         return result;
