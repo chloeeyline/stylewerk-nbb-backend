@@ -12,48 +12,93 @@ public class ShareNewController(NbbContext db) : BaseController(db)
 {
     public ShareNewQueries Query => new(DB, CurrentUser);
 
-    //Welche Gruppen man selbst erstellt hat
+    #region Groups
+    /// <summary>
+    /// Load all groups which you own
+    /// </summary>
+    /// <returns></returns>
+    [Produces("application/json"), ApiExplorerSettings(GroupName = "Groups")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_Group2>>))]
+    [HttpGet(nameof(GetOwnedGroups))]
     public IActionResult GetOwnedGroups()
     {
         List<Model_Group2> list = Query.GetOwnedGroups();
-        return Ok(new Model_Result<List<Queries.Model_Group2>>(list));
+        return Ok(new Model_Result<List<Model_Group2>>(list));
     }
 
-    //Welche User in der Gruppe sind
+    /// <summary>
+    /// Load the users in a specific group with the rights they have
+    /// </summary>
+    /// <param name="id">The ID of the group from which zou want to load the users</param>
+    /// <returns></returns>
+    [Produces("application/json"), ApiExplorerSettings(GroupName = "Groups")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_GroupUser2>>))]
+    [HttpGet(nameof(GetUsersInGroup))]
     public IActionResult GetUsersInGroup(Guid? id)
     {
         List<Model_GroupUser2> list = Query.GetUsersInGroup(id);
         return Ok(new Model_Result<List<Model_GroupUser2>>(list));
     }
 
+    /// <summary>
+    /// Create a group or update the group informations of an existing group
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [Produces("application/json"), ApiExplorerSettings(GroupName = "Groups")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_UpdateGroup2>))]
+    [HttpPost(nameof(UpdateGroup))]
     public IActionResult UpdateGroup([FromBody] Model_UpdateGroup2? model)
     {
         model = Query.UpdateGroup(model);
         return Ok(new Model_Result<Model_UpdateGroup2>(model));
     }
 
-    //Gruppe loeschen
+    /// <summary>
+    /// Delete a group you own
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [Produces("application/json"), ApiExplorerSettings(GroupName = "Groups")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [HttpPost(nameof(RemoveGroup))]
     public IActionResult RemoveGroup(Guid? id)
     {
         Query.RemoveGroup(id);
         return Ok(new Model_Result<string>());
     }
+    #endregion
 
-    //User zur Gruppe hinzufuegen
-    public IActionResult AddUserToGroup()
+    #region Users in Group
+    /// <summary>
+    /// Add an user to a group or change there rights in a group where they already are a part of
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    [Produces("application/json"), ApiExplorerSettings(GroupName = "Users in Group")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [HttpPost(nameof(UpdateUserInGroup))]
+    public IActionResult UpdateUserInGroup([FromBody] Model_UserFromGroup2? model)
     {
+        Query.UpdateUserInGroup(model);
         return Ok(new Model_Result<string>());
     }
 
-    //User aus Gruppe entfernen
-    public IActionResult RemoveUserFromGroup()
+    /// <summary>
+    /// Remove a user from a group they are part of
+    /// </summary>
+    /// <param name="username"></param>
+    /// <param name="groupID"></param>
+    /// <returns></returns>
+    [Produces("application/json"), ApiExplorerSettings(GroupName = "Users in Group")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [HttpPost(nameof(RemoveUserFromGroup))]
+    public IActionResult RemoveUserFromGroup(string? username, Guid? groupID)
     {
+        Query.RemoveUserFromGroup(username, groupID);
         return Ok(new Model_Result<string>());
     }
+    #endregion
 
-    //Rechte eines Users innerhalb einer Gruppe bearbeiten
-    public IActionResult EditUserRightsForGroup()
-    {
-        return Ok(new Model_Result<string>());
-    }
+
 }
