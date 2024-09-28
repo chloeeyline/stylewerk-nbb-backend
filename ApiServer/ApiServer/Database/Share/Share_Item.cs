@@ -28,7 +28,7 @@ public class Share_Item : IEntity<Share_Item>, IEntity_GuidID, IEntity_User
     /// <summary>
     /// Type of the item being shared.
     /// </summary>
-    public required byte ItemType { get; set; }
+    public required ShareType Type { get; set; }
 
     /// <summary>
     /// Identifier of the item being shared.
@@ -70,7 +70,7 @@ public class Share_Item : IEntity<Share_Item>, IEntity_GuidID, IEntity_User
         b.UseIEntity_User();
 
         b.Property(s => s.Visibility).IsRequired(true);
-        b.Property(s => s.ItemType).IsRequired(true);
+        b.Property(s => s.Type).IsRequired(true);
         b.Property(s => s.ItemID).IsRequired(true);
         b.Property(s => s.ToWhom).IsRequired(false);
 
@@ -80,9 +80,15 @@ public class Share_Item : IEntity<Share_Item>, IEntity_GuidID, IEntity_User
     }
 }
 
-public enum ShareVisibility
+public enum ShareVisibility : byte
 {
     Public,
     Group,
     Directly
+}
+
+public enum ShareType : byte
+{
+    Entry,
+    Template
 }

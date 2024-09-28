@@ -18,14 +18,13 @@ public record Model_GroupDetails(Guid GroupId, Guid ShareItem);
 public record Model_ShareItemRightsUser(Guid ShareItem, string Username, ShareRights Rights);
 public record Model_ShareItemRightsGroup(Guid ShareItem, Guid? GroupId, ShareRights Rights);
 
+
 #region NewModels
-public record Model_ShareItem(Guid ID, string WhoShared, string ToWhom, ShareVisibility Visibility, ShareRight Rights);
-public record Model_Share(Guid ID, string? ToWhom, ShareVisibility Visibility, byte Type, ShareRight Rights);
-public record Model_UserFromGroup2(string UserName, Guid GroupID, GroupRight2 Rights);
+public record Model_ShareItem(Guid ID, Guid ItemID, string WhoShared, string ToWhom, ShareVisibility Visibility, ShareRight Rights);
+public record Model_Share(Guid ID, string? ToWhom, ShareVisibility Visibility, ShareType Type, ShareRight Rights);
 
 public record Model_Group2(Guid ID, string Name, bool IsVisible, bool CanSeeOthers, int UserCount);
-public record Model_GroupUser2(string Username, string WhoAdded, GroupRight2 Rights);
+public record Model_GroupUser2(string Username, Guid GroupID, bool CanSeeUsers, bool CanAddUsers, bool CanRemoveUsers, string? WhoAdded);
 
-public record GroupRight2(bool CanSeeUsers, bool CanAddUsers, bool CanRemoveUsers);
 public record ShareRight(bool CanShare, bool CanEdit, bool CanDelete);
 #endregion

@@ -3,8 +3,6 @@
 
 public record ShareTypes(bool Own, bool GroupShared, bool Public, bool DirectlyShared);
 
-public record Model_SharedItem(Guid ID, string SharedFrom, bool FromGroup, Guid? GroupID, string? GroupName, bool CanShare, bool CanEdit, bool CanDelete);
-
 /// <summary>
 /// The default Model to always wrap the results of a requests from the frontend
 /// </summary>

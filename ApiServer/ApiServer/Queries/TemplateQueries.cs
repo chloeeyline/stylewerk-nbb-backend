@@ -2,6 +2,7 @@
 
 using StyleWerk.NBB.Authentication;
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
 
@@ -68,12 +69,12 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
     private List<Model_Template> LoadGroupTemplates(Model_FilterTemplate filter)
     {
         List<Model_Template> result = [];
-        List<Model_SharedItem> shareList = SharedViaGroupItems(2);
+        List<Model_ShareItem> shareList = SharedViaGroupItems(ShareType.Template);
 
-        foreach (Model_SharedItem item in shareList)
+        foreach (Model_ShareItem item in shareList)
         {
             IEnumerable<Structure_Template> list = DB.Structure_Template
-                .Where(t => t.ID == item.ID)
+                .Where(t => t.ID == item.ItemID)
                 .Include(t => t.O_User);
 
             list = FilterTemplates(list, filter);
@@ -87,12 +88,12 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
     private List<Model_Template> LoadDirectlySharedTemplates(Model_FilterTemplate filter)
     {
         List<Model_Template> result = [];
-        List<Model_SharedItem> shareList = DirectlySharedItems(2);
+        List<Model_ShareItem> shareList = DirectlySharedItems(ShareType.Template);
 
-        foreach (Model_SharedItem item in shareList)
+        foreach (Model_ShareItem item in shareList)
         {
             IEnumerable<Structure_Template> list = DB.Structure_Template
-            .Where(s => s.ID == item.ID)
+            .Where(s => s.ID == item.ItemID)
             .Include(s => s.O_User);
 
             list = FilterTemplates(list, filter);

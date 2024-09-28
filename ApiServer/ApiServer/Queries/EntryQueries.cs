@@ -2,6 +2,7 @@
 
 using StyleWerk.NBB.Authentication;
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
 
@@ -109,12 +110,12 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
     private List<Model_EntryItem> LoadDirectlySharedEntryItems(Model_FilterEntry filter)
     {
         List<Model_EntryItem> result = [];
-        List<Model_SharedItem> shareList = DirectlySharedItems(1);
+        List<Model_ShareItem> shareList = DirectlySharedItems(ShareType.Entry);
 
-        foreach (Model_SharedItem item in shareList)
+        foreach (Model_ShareItem item in shareList)
         {
             IEnumerable<Structure_Entry> list = DB.Structure_Entry
-            .Where(s => s.ID == item.ID)
+            .Where(s => s.ID == item.ItemID)
             .Include(s => s.O_Folder)
             .Include(s => s.O_Template)
             .Include(s => s.O_User);
@@ -131,12 +132,12 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
     private List<Model_EntryItem> LoadGroupEntryItems(Model_FilterEntry filter)
     {
         List<Model_EntryItem> result = [];
-        List<Model_SharedItem> shareList = SharedViaGroupItems(1);
+        List<Model_ShareItem> shareList = SharedViaGroupItems(ShareType.Entry);
 
-        foreach (Model_SharedItem item in shareList)
+        foreach (Model_ShareItem item in shareList)
         {
             IEnumerable<Structure_Entry> list = DB.Structure_Entry
-            .Where(s => s.ID == item.ID)
+            .Where(s => s.ID == item.ItemID)
             .Include(s => s.O_Folder)
             .Include(s => s.O_Template)
             .Include(s => s.O_User);

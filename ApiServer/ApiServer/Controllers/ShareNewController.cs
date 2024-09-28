@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
@@ -82,7 +83,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.MissingRight)]
     [HttpPost(nameof(UpdateUserInGroup))]
-    public IActionResult UpdateUserInGroup([FromBody] Model_UserFromGroup2? model)
+    public IActionResult UpdateUserInGroup([FromBody] Model_GroupUser2? model)
     {
         Query.UpdateUserInGroup(model);
         return Ok(new Model_Result<string>());
@@ -106,6 +107,16 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     #endregion
 
     #region Share
+    [ApiExplorerSettings(GroupName = "Share")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_ShareItem>>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
+    [HttpGet(nameof(GetShare))]
+    public IActionResult GetShare(Guid? id, ShareType? type)
+    {
+        List<Model_ShareItem> list = Query.GetShare(id, type);
+        return Ok(new Model_Result<List<Model_ShareItem>>(list));
+    }
+
     [ApiExplorerSettings(GroupName = "Share")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.MissingRight, ResultCodes.OnlyOwnerCanChangePublicity)]
