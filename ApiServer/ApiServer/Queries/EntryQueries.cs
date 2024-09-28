@@ -7,7 +7,7 @@ using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Queries;
 
-public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQueries(DB, CurrentUser)
+public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedItemQueries(DB, CurrentUser)
 {
     #region Folder
     public List<Model_EntryFolders> GetFolders()

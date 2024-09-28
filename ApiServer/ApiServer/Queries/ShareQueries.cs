@@ -8,90 +8,27 @@ using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Queries;
 
-public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
+public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedItemQueries(DB, CurrentUser)
 {
-    public List<Model_SharedItem> DirectlySharedItems(int itemType)
+    public List<Models.Model_Group> LoadUserGroups()
     {
-        List<Share_Item> sharedItems = [.. DB.Share_Item.Where(s => !s.Group && s.ToWhom == CurrentUser.ID && s.ItemType == itemType)];
-        List<Model_SharedItem> result = [];
-        foreach (Share_Item item in sharedItems)
-        {
-            User_Login? userWhoShared = DB.User_Login.FirstOrDefault(s => s.ID == item.WhoShared);
-            if (userWhoShared is not null)
-            {
-                Model_SharedItem model = new(
-                    item.ItemID,
-                    userWhoShared.Username,
-                    false,
-                    null,
-                    null,
-                    item.CanShare,
-                    item.CanEdit,
-                    item.CanDelete);
-                result.Add(model);
-            }
-        }
-        return result;
-    }
-
-    public List<Model_SharedItem> SharedViaGroupItems(int itemType)
-    {
-        List<Share_Group> groupPartof =
-        [
-            .. DB.Share_GroupUser
-                .Include(u => u.O_Group)
-                .Where(u => u.UserID == CurrentUser.ID)
-                .Select(g => g.O_Group),
-        ];
-        List<Model_SharedItem> result = [];
-
-        foreach (Share_Group? groupItem in groupPartof)
-        {
-            List<Share_Item> shareItem = [.. DB.Share_Item.Where(s => s.Group && s.ToWhom == groupItem.ID && s.ItemType == itemType)];
-
-            foreach (Share_Item? item in shareItem)
-            {
-                User_Login? userWhoShared = DB.User_Login.FirstOrDefault(s => s.ID == item.WhoShared);
-                if (userWhoShared is not null)
-                {
-                    Guid? groupID = groupItem.IsVisible ? groupItem.ID : null;
-                    string? groupName = groupItem.IsVisible ? groupItem.Name : null;
-                    Model_SharedItem model = new(
-                        item.ItemID,
-                        userWhoShared.Username,
-                        true,
-                        groupID,
-                        groupName,
-                        item.CanShare,
-                        item.CanEdit,
-                        item.CanDelete);
-                    result.Add(model);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    public List<Model_Group> LoadUserGroups()
-    {
-        List<Model_Group> groups = [.. DB.Share_Group
+        List<Models.Model_Group> groups = [.. DB.Share_Group
             .Include(g => g.O_GroupUser)
             .Where(g => g.UserID == CurrentUser.ID)
-            .Select(g => new Model_Group(g.ID, g.Name, g.IsVisible, g.CanSeeOthers,
+            .Select(g => new Models.Model_Group(g.ID, g.Name, g.IsVisible, g.CanSeeOthers,
             g.O_GroupUser.Select(u => new Model_GroupUser(u.O_User.Username, u.GroupID, new GroupUserRights(u.CanSeeUsers, u.CanAddUsers, u.CanRemoveUsers))).ToArray()))];
 
         return groups;
     }
 
     //groups that the user is in
-    public List<Model_Group> LoadGroups()
+    public List<Models.Model_Group> LoadGroups()
     {
         List<Share_GroupUser> groups = [.. DB.Share_GroupUser.Where(g => g.UserID == CurrentUser.ID)];
 
-        List<Model_Group> result = [ .. DB.Share_Group
+        List<Models.Model_Group> result = [.. DB.Share_Group
             .Where(g => groups.Any(u => u.GroupID == g.ID))
-            .Select(g => new Model_Group(g.ID, g.Name, g.IsVisible, g.CanSeeOthers, new Model_GroupUser[0]))];
+            .Select(g => new Models.Model_Group(g.ID, g.Name, g.IsVisible, g.CanSeeOthers, new Model_GroupUser[0]))];
 
         return result;
     }

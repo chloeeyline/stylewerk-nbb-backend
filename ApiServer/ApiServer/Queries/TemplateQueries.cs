@@ -7,7 +7,7 @@ using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Queries;
 
-public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : ShareQueries(DB, CurrentUser)
+public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedItemQueries(DB, CurrentUser)
 {
     public Model_DetailedTemplate LoadTemplate(Guid templateId)
     {

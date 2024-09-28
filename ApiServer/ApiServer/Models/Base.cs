@@ -62,6 +62,11 @@ public enum ResultCodes
     PwHasNoNumber = 1244,
     PwHasNoSpecialChars = 1245,
     PwHasWhitespace = 1246,
-    PwUsesInvalidChars = 1247
+    PwUsesInvalidChars = 1247,
+    #endregion
+
+    #region Share
+    GroupNameAlreadyExists = 1301,
+    DontOwnGroup = 1302
     #endregion
 }

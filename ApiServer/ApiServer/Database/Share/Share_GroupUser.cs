@@ -46,6 +46,8 @@ public class Share_GroupUser : IConnectedEntity<Share_GroupUser>, IEntity_User
     /// </summary>
     public virtual Share_Group O_Group { get; set; }
 
+    public virtual User_Login O_WhoShared { get; set; }
+
     /// <summary>
     /// Navigation property for the user.
     /// </summary>

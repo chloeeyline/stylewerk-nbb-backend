@@ -13,7 +13,7 @@ namespace StyleWerk.NBB.Controllers
     [ApiController, Route("Share"), Authorize]
     public class ShareController(NbbContext db) : BaseController(db)
     {
-        public TemplateQueries Query => new(DB, CurrentUser);
+        public ShareQueries Query => new(DB, CurrentUser);
 
         #region Group
         [ApiExplorerSettings(GroupName = "Load Group")]
