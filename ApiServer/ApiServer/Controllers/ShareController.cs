@@ -315,7 +315,7 @@ namespace StyleWerk.NBB.Controllers
                     ?? throw new RequestException(ResultCodes.NoDataFound);
 
                 //check if entry has already been shared with group
-                bool isShared = DB.Share_Item.Any(i => i.ItemID == model.ShareItem && i.ToWhom == model.GroupId && i.Group);
+                bool isShared = DB.Share_Item.Any(i => i.ItemID == model.ShareItem && i.ToWhom == model.GroupId && i.Visibility == ShareVisibility.Group);
                 if (isShared)
                     throw new RequestException(ResultCodes.GeneralError);
 
@@ -459,7 +459,7 @@ namespace StyleWerk.NBB.Controllers
             {
                 ID = Guid.NewGuid(),
                 WhoShared = CurrentUser.ID,
-                Group = isGroup,
+                Visibility = isGroup ? ShareVisibility.Group : ShareVisibility.Directly,
                 ItemType = 1,
                 ItemID = entry.ID,
                 ToWhom = toWhom,
@@ -477,7 +477,7 @@ namespace StyleWerk.NBB.Controllers
             {
                 ID = Guid.NewGuid(),
                 WhoShared = CurrentUser.ID,
-                Group = isGroup,
+                Visibility = isGroup ? ShareVisibility.Group : ShareVisibility.Directly,
                 ItemType = 2,
                 ItemID = template.ID,
                 ToWhom = toWhom,

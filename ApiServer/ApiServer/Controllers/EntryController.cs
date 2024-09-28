@@ -140,7 +140,6 @@ public class EntryController(NbbContext db) : BaseController(db)
             TemplateID = model.TemplateID,
             FolderID = model.FolderID,
             IsEncrypted = false,
-            IsPublic = false,
         };
 
         DB.Structure_Entry.Add(newEntry);

@@ -104,7 +104,6 @@ public class TemplateController(NbbContext db) : BaseController(db)
             UserID = CurrentUser.ID,
             Name = newTemplate.Name,
             Tags = newTemplate.Tags,
-            IsPublic = false
         };
 
         DB.Structure_Template.Add(template);
@@ -131,7 +130,6 @@ public class TemplateController(NbbContext db) : BaseController(db)
             Name = $"{copyTemplate.Name} kopie",
             Description = copyTemplate.Description,
             UserID = CurrentUser.ID,
-            IsPublic = false
         };
 
         DB.Structure_Template.Add(template);

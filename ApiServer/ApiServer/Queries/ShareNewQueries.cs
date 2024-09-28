@@ -89,7 +89,7 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
             throw new RequestException(ResultCodes.DontOwnGroup);
 
         DB.Share_Group.Remove(item);
-        DB.Share_Item.RemoveRange(DB.Share_Item.Where(s => s.Group && s.ToWhom == item.ID));
+        DB.Share_Item.RemoveRange(DB.Share_Item.Where(s => s.Visibility == ShareVisibility.Group && s.ToWhom == item.ID));
     }
     #endregion
 
@@ -163,11 +163,17 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
     #endregion
 
     #region Directly Share
-    public void GetShare() { }
+    public void GetShare()
+    {
+    }
 
-    public void UpdateShare() { }
+    public void UpdateShare()
+    {
+    }
 
-    public void RemoveShare() { }
+    public void RemoveShare()
+    {
+    }
     #endregion
 }
 

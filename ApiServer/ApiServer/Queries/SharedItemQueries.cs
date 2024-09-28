@@ -12,7 +12,7 @@ public class SharedItemQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
 {
     public List<Model_SharedItem> DirectlySharedItems(int itemType)
     {
-        List<Share_Item> sharedItems = [.. DB.Share_Item.Where(s => !s.Group && s.ToWhom == CurrentUser.ID && s.ItemType == itemType)];
+        List<Share_Item> sharedItems = [.. DB.Share_Item.Where(s => s.Visibility == ShareVisibility.Directly && s.ToWhom == CurrentUser.ID && s.ItemType == itemType)];
         List<Model_SharedItem> result = [];
         foreach (Share_Item item in sharedItems)
         {
@@ -47,7 +47,7 @@ public class SharedItemQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
 
         foreach (Share_Group? groupItem in groupPartof)
         {
-            List<Share_Item> shareItem = [.. DB.Share_Item.Where(s => s.Group && s.ToWhom == groupItem.ID && s.ItemType == itemType)];
+            List<Share_Item> shareItem = [.. DB.Share_Item.Where(s => s.Visibility == ShareVisibility.Group && s.ToWhom == groupItem.ID && s.ItemType == itemType)];
 
             foreach (Share_Item? item in shareItem)
             {

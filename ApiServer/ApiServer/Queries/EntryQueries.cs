@@ -95,7 +95,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
         List<Model_EntryItem> publicEntryItem = [];
 
         IEnumerable<Structure_Entry> list = DB.Structure_Entry
-            .Where(s => s.IsPublic)
+            //.Where(s => s.IsPublic)
             .Include(s => s.O_Folder)
             .Include(s => s.O_Template)
             .Include(s => s.O_User);

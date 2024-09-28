@@ -108,7 +108,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
         List<Model_Template> publicEntryItem = [];
 
         IEnumerable<Structure_Template> list = DB.Structure_Template
-            .Where(s => s.IsPublic)
+            //.Where(s => s.IsPublic)
             .Include(s => s.O_User);
 
         list = FilterTemplates(list, filter);

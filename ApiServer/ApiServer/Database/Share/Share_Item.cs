@@ -22,7 +22,7 @@ public class Share_Item : IEntity<Share_Item>, IEntity_GuidID
     /// <summary>
     /// Indicates whether the shared item is accessible to a group or individual user.
     /// </summary>
-    public required bool Group { get; set; }
+    public required ShareVisibility Visibility { get; set; }
 
     /// <summary>
     /// Type of the item being shared.
@@ -37,7 +37,7 @@ public class Share_Item : IEntity<Share_Item>, IEntity_GuidID
     /// <summary>
     /// User or group ID to whom the item is shared.
     /// </summary>
-    public required Guid ToWhom { get; set; }
+    public Guid? ToWhom { get; set; }
 
     /// <summary>
     /// Determines if the recipient can share this item further.
@@ -64,13 +64,20 @@ public class Share_Item : IEntity<Share_Item>, IEntity_GuidID
         b.UseIEntity_GuidID();
         b.Property(s => s.WhoShared).IsRequired(true);
 
-        b.Property(s => s.Group).IsRequired(true);
+        b.Property(s => s.Visibility).IsRequired(true);
         b.Property(s => s.ItemType).IsRequired(true);
         b.Property(s => s.ItemID).IsRequired(true);
-        b.Property(s => s.ToWhom).IsRequired(true);
+        b.Property(s => s.ToWhom).IsRequired(false);
 
         b.Property(s => s.CanShare).IsRequired(true).HasDefaultValue(false);
         b.Property(s => s.CanEdit).IsRequired(true).HasDefaultValue(false);
         b.Property(s => s.CanDelete).IsRequired(true).HasDefaultValue(false);
     }
+}
+
+public enum ShareVisibility
+{
+    Public,
+    Group,
+    Directly
 }

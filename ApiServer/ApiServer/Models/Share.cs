@@ -12,4 +12,4 @@ public record Model_User(Guid UserId, string Username);
 public record Model_UserDetails(string Username, Guid ShareItem);
 public record Model_GroupDetails(Guid GroupId, Guid ShareItem);
 public record Model_ShareItemRightsUser(Guid ShareItem, string Username, ShareRights Rights);
-public record Model_ShareItemRightsGroup(Guid ShareItem, Guid GroupId, ShareRights Rights);
+public record Model_ShareItemRightsGroup(Guid ShareItem, Guid? GroupId, ShareRights Rights);
