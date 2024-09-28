@@ -75,6 +75,6 @@ public enum ResultCodes
     #region Share
     GroupNameAlreadyExists = 1301,
     DontOwnGroup = 1302,
-    OnlyOwnerCanSetPublic = 1303
+    OnlyOwnerCanChangePublicity = 1303
     #endregion
 }

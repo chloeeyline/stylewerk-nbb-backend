@@ -33,6 +33,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Groups")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_GroupUser2>>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid)]
     [HttpGet(nameof(GetUsersInGroup))]
     public IActionResult GetUsersInGroup(Guid? id)
     {
@@ -47,6 +48,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Groups")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_UpdateGroup2>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.GroupNameAlreadyExists, ResultCodes.DontOwnGroup)]
     [HttpPost(nameof(UpdateGroup))]
     public IActionResult UpdateGroup([FromBody] Model_UpdateGroup2? model)
     {
@@ -61,6 +63,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Groups")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.DontOwnGroup)]
     [HttpPost(nameof(RemoveGroup))]
     public IActionResult RemoveGroup(Guid? id)
     {
@@ -77,6 +80,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Users in Group")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.MissingRight)]
     [HttpPost(nameof(UpdateUserInGroup))]
     public IActionResult UpdateUserInGroup([FromBody] Model_UserFromGroup2? model)
     {
@@ -92,6 +96,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Users in Group")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.MissingRight)]
     [HttpPost(nameof(RemoveUserFromGroup))]
     public IActionResult RemoveUserFromGroup(string? username, Guid? groupID)
     {
@@ -103,7 +108,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
     #region Share
     [ApiExplorerSettings(GroupName = "Share")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
-    [ResultCodesResponse(ResultCodes.GroupNameAlreadyExists, ResultCodes.DontOwnGroup, ResultCodes.OnlyOwnerCanSetPublic)]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.MissingRight, ResultCodes.OnlyOwnerCanChangePublicity)]
     [HttpPost(nameof(UpdateShare))]
     public IActionResult UpdateShare([FromBody] Model_Share? model)
     {
@@ -113,6 +118,7 @@ public class ShareNewController(NbbContext db) : BaseController(db)
 
     [ApiExplorerSettings(GroupName = "Share")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.DontOwnGroup)]
     [HttpPost(nameof(RemoveShare))]
     public IActionResult RemoveShare(Guid? id)
     {

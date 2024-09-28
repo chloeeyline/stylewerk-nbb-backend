@@ -224,7 +224,7 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
                 s.ItemType == model.Type);
 
             if (userID != CurrentUser.ID)
-                throw new RequestException(ResultCodes.OnlyOwnerCanSetPublic);
+                throw new RequestException(ResultCodes.OnlyOwnerCanChangePublicity);
         }
         else if (Guid.TryParse(model.ToWhom, out Guid groupID) && model.Visibility is ShareVisibility.Group)
         {
@@ -291,7 +291,7 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
             throw new RequestException(ResultCodes.NoDataFound);
 
         if (item.Visibility is ShareVisibility.Public && item.WhoShared != CurrentUser.ID)
-            throw new RequestException(ResultCodes.OnlyOwnerCanSetPublic);
+            throw new RequestException(ResultCodes.OnlyOwnerCanChangePublicity);
         else if (item.WhoShared != CurrentUser.ID)
         {
             Guid userID = item.ItemType == 1
@@ -307,7 +307,7 @@ public class ShareNewQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
         DB.SaveChanges();
     }
 
-    private Guid Exist_SharedItem<T>(DbSet<T> set, Guid id) where T : class, IEntity_GuidID, IEntity_User
+    private static Guid Exist_SharedItem<T>(DbSet<T> set, Guid id) where T : class, IEntity_GuidID, IEntity_User
     {
         T item = set.FirstOrDefault(s => s.ID == id) ?? throw new RequestException(ResultCodes.NoDataFound);
         return item.UserID;

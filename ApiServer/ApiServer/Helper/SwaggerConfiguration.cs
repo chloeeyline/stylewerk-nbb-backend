@@ -2,10 +2,8 @@
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 
-using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
 
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -44,25 +42,12 @@ public static class SwaggerConfiguration
 
             options.OperationFilter<AuthorizeCheckOperationFilter>();
             options.OperationFilter<ResultCodesOperationFilter>();
-            options.SchemaFilter<GenericSchemaFilter>();
+            options.SchemaFilter<EnumSchemaFilter>();
 
             string xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);
-
-            options.MapType<ResultCodes>(() => new OpenApiSchema
-            {
-                Type = "integer",
-                Enum = [.. Enum.GetValues<ResultCodes>().Select(value => new OpenApiInteger((int)value))],
-                Description = string.Join(", ", Enum.GetValues<ResultCodes>().Select(value => $"{value} = {(int)value}"))
-            });
-
-            options.MapType<UserStatus>(() => new OpenApiSchema
-            {
-                Type = "integer",
-                Enum = [.. Enum.GetValues<UserStatus>().Select(value => new OpenApiInteger((byte)value))],
-                Description = string.Join(", ", Enum.GetValues<UserStatus>().Select(value => $"{value} = {(byte)value}"))
-            });
+            options.SchemaFilter<GenericSchemaFilter>();
         });
     }
 }
@@ -108,11 +93,27 @@ public class ResultCodesOperationFilter : IOperationFilter
         if (resultCodesAttr is null)
             return;
 
-        List<string> resultCodesDescriptions = [.. resultCodesAttr.PossibleCodes.Select(code => $"- {code} = {(int)code}")];
+        List<string> resultCodesDescriptions = [.. resultCodesAttr.PossibleCodes.Select(code => $"- {code} = {(int) code}")];
         string formattedResultCodes = "### Possible Result Codes:\n" + string.Join("\n", resultCodesDescriptions);
 
         foreach (KeyValuePair<string, OpenApiResponse> response in operation.Responses)
             response.Value.Description += "\n\n" + formattedResultCodes;
+    }
+}
+
+public class EnumSchemaFilter : ISchemaFilter
+{
+    public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+    {
+        if (context.Type.IsEnum)
+        {
+            // Generate a bullet list of enum names and values
+            List<string> enumDescriptions = [.. Enum.GetValues(context.Type).Cast<Enum>()
+                .Select(value => $"- **{value}** = {Convert.ChangeType(value, value.GetTypeCode())}")];
+
+            // Add the formatted description to the schema
+            schema.Description = $"### Enum Values:\n" + string.Join("\n", enumDescriptions);
+        }
     }
 }
 
