@@ -233,7 +233,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
     /// <param name="id"></param>
     /// <returns></returns>
     /// <exception cref="RequestException"></exception>
-    public Model_DetailedEntry GetEntryFromTemplate(Guid? id)
+    public Model_Entry GetEntryFromTemplate(Guid? id)
     {
         if (id is null || id == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -255,15 +255,16 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
 
             foreach (Structure_Template_Cell cell in itemCells)
             {
-                Model_EntryCell cellModel = new(null, cell.ID, new Model_TemplateCell(cell), null);
+                Model_TemplateCell cellModelTemplate = new(cell.ID, cell.RowID, cell.InputHelper, cell.HideOnEmpty, cell.IsRequired, cell.Text, cell.MetaData);
+                Model_EntryCell cellModel = new(null, cell.ID, cellModelTemplate, null);
                 cells.Add(cellModel);
             }
 
-            Model_EntryRow rowModel = new(null, row.ID, 0, new Model_TemplateRow(row), cells);
+            Model_EntryRow rowModel = new(null, row.ID, 0, new Model_TemplateRow(row.ID, row.CanWrapCells, row.CanRepeat, row.HideOnNoInput, []), cells);
             rows.Add(rowModel);
         }
 
-        Model_DetailedEntry result = new(null, null, item.ID, null, null, false, rows);
+        Model_Entry result = new(null, null, item.ID, null, null, false, rows);
         return result;
     }
 
@@ -273,7 +274,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
     /// <param name="id"></param>
     /// <returns></returns>
     /// <exception cref="RequestException"></exception>
-    public Model_DetailedEntry GetEntry(Guid? id)
+    public Model_Entry GetEntry(Guid? id)
     {
         if (id is null || id == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -295,14 +296,16 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
 
             foreach (Structure_Template_Cell cell in itemCells)
             {
-                Model_EntryCell cellModel = new(null, cell.ID, new Model_TemplateCell(cell), null);
+                Model_TemplateCell cellModelTemplate = new(cell.ID, cell.RowID, cell.InputHelper, cell.HideOnEmpty, cell.IsRequired, cell.Text, cell.MetaData);
+                Model_EntryCell cellModel = new(null, cell.ID, cellModelTemplate, null);
                 cells.Add(cellModel);
             }
 
-            Model_EntryRow rowModel = new(null, row.ID, 0, new Model_TemplateRow(row), cells);
+            Model_TemplateRow rowModeltempalte = new(row.ID, row.CanWrapCells, row.CanRepeat, row.HideOnNoInput, []);
+            Model_EntryRow rowModel = new(null, row.ID, 0, rowModeltempalte, cells);
             rows.Add(rowModel);
         }
-        Model_DetailedEntry entryModel = new(item.ID, item.FolderID, item.TemplateID, item.Name, item.Tags, item.IsEncrypted, rows);
+        Model_Entry entryModel = new(item.ID, item.FolderID, item.TemplateID, item.Name, item.Tags, item.IsEncrypted, rows);
 
         return entryModel;
     }
@@ -313,7 +316,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
     /// <param name="model"></param>
     /// <returns></returns>
     /// <exception cref="RequestException"></exception>
-    public Model_DetailedEntry UpdateEntry(Model_DetailedEntry? model)
+    public Model_Entry UpdateEntry(Model_Entry? model)
     {
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -425,7 +428,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
             rowTemplateID = entryRow.TemplateID;
         }
 
-        Model_DetailedEntry result = GetEntry(model.ID);
+        Model_Entry result = GetEntry(model.ID);
         return result;
     }
     #endregion

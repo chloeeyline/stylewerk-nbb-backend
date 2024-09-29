@@ -104,12 +104,12 @@ public class EntryController(NbbContext db) : BaseController(db)
     /// <param name="id"></param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Entries")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedEntry>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Entry>))]
     [HttpGet(nameof(GetEntryFromTemplate))]
     public IActionResult GetEntryFromTemplate(Guid? id)
     {
-        Model_DetailedEntry result = Query.GetEntryFromTemplate(id);
-        return Ok(new Model_Result<Model_DetailedEntry>(result));
+        Model_Entry result = Query.GetEntryFromTemplate(id);
+        return Ok(new Model_Result<Model_Entry>(result));
     }
 
     /// <summary>
@@ -118,21 +118,21 @@ public class EntryController(NbbContext db) : BaseController(db)
     /// <param name="id"></param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Entries")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedEntry>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Entry>))]
     [HttpGet(nameof(GetEntry))]
     public IActionResult GetEntry(Guid? id)
     {
-        Model_DetailedEntry result = Query.GetEntry(id);
-        return Ok(new Model_Result<Model_DetailedEntry>(result));
+        Model_Entry result = Query.GetEntry(id);
+        return Ok(new Model_Result<Model_Entry>(result));
     }
 
     [ApiExplorerSettings(GroupName = "Entries")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedEntry>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Entry>))]
     [HttpPost(nameof(UpdateEntry))]
-    public IActionResult UpdateEntry([FromBody] Model_DetailedEntry? model)
+    public IActionResult UpdateEntry([FromBody] Model_Entry? model)
     {
-        Model_DetailedEntry result = Query.UpdateEntry(model);
-        return Ok(new Model_Result<Model_DetailedEntry>(result));
+        Model_Entry result = Query.UpdateEntry(model);
+        return Ok(new Model_Result<Model_Entry>(result));
     }
     #endregion
 }

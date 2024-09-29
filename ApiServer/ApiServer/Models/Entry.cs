@@ -10,6 +10,6 @@ public record Model_EntryItem(Guid ID, string Name, string? FolderName, string U
 }
 
 public record Model_FilterEntry(string? Name, string? Username, string? TemplateName, string? Tags, bool Public, bool Directly, bool Group, bool DirectUser);
-public record Model_DetailedEntry(Guid? ID, Guid? FolderID, Guid TemplateID, string? Name, string? Tags, bool IsEncrypted, List<Model_EntryRow> Items);
+public record Model_Entry(Guid? ID, Guid? FolderID, Guid TemplateID, string? Name, string? Tags, bool IsEncrypted, List<Model_EntryRow> Items);
 public record Model_EntryRow(Guid? ID, Guid TemplateID, int SortOrder, Model_TemplateRow? Info, List<Model_EntryCell> Items);
 public record Model_EntryCell(Guid? ID, Guid TemplateID, Model_TemplateCell? Info, string? Data);
