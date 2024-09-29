@@ -10,6 +10,10 @@ namespace StyleWerk.NBB.Queries;
 public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedItemQueries(DB, CurrentUser)
 {
     #region Folder
+    /// <summary>
+    /// Get all folders and all entries which arent't in a folder, that belong to the current user
+    /// </summary>
+    /// <returns></returns>
     public List<Model_EntryFolders> GetFolders()
     {
         List<Model_EntryFolders> entryFolders =
@@ -33,10 +37,19 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
         return entryFolders;
     }
 
+    /// <summary>
+    /// Get all entries in a folder specified by the given folder id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    /// <exception cref="RequestException"></exception>
     public List<Model_EntryItem> GetFolderContent(Guid? id)
     {
         if (id is null || id == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
+
+        Structure_Entry_Folder folderExists = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == id && s.UserID == CurrentUser.ID)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
 
         List<Model_EntryItem> list =
         [
@@ -51,6 +64,12 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
         return list;
     }
 
+    /// <summary>
+    /// update or add folder
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    /// <exception cref="RequestException"></exception>
     public Model_EntryFolders UpdateFolder(Model_EntryFolders? model)
     {
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
@@ -64,6 +83,9 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
             throw new RequestException(ResultCodes.DataIsInvalid);
 
         Structure_Entry_Folder? item = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == model.ID);
+        if (DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID && s.Name == model.Name))
+            throw new RequestException(ResultCodes.FolderNameAlreadyExists);
+
         if (item is null)
         {
             item = new()
@@ -73,6 +95,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
                 SortOrder = sortOrder,
                 UserID = CurrentUser.ID
             };
+
             DB.Structure_Entry_Folder.Add(item);
         }
         else
@@ -89,6 +112,11 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
         return result;
     }
 
+    /// <summary>
+    /// remove a folder based on the given folder id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <exception cref="RequestException"></exception>
     public void RemoveFolder(Guid? id)
     {
         if (id is null)
@@ -105,6 +133,11 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
         DB.SaveChanges();
     }
 
+    /// <summary>
+    /// reorder folders based on the given folder ids in a list
+    /// </summary>
+    /// <param name="model"></param>
+    /// <exception cref="RequestException"></exception>
     public void ReorderFolders(List<Guid>? model)
     {
         if (model is null || model.Count == 0)
@@ -122,6 +155,12 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
     #endregion
 
     #region Entries
+    /// <summary>
+    /// Load all Entries that are available for User and filter them by the specified filters
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    /// <exception cref="RequestException"></exception>
     public List<Model_EntryItem> FilterEntries(Model_FilterEntry? model)
     {
         IEnumerable<Structure_Entry> Filter(IEnumerable<Structure_Entry> list)
@@ -158,6 +197,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
 
         if (model is null)
             throw new RequestException(ResultCodes.DataIsInvalid);
+
         List<Model_EntryItem> result = [];
         model = model with { Username = model.Username?.Normalize().ToLower() };
 
@@ -172,6 +212,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
             list = Filter(list);
             result.AddRange(list.Select(s => new Model_EntryItem(s, null)));
         }
+
         if (model.Public || !string.IsNullOrWhiteSpace(model.Username))
             result.AddRange(LoadShared(PublicSharedItems(ShareType.Entry), ShareVisibility.Public));
         if (model.Group || !string.IsNullOrWhiteSpace(model.Username))
@@ -186,6 +227,12 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
         return entries;
     }
 
+    /// <summary>
+    /// Get template rows and cells to use for an entry based on the given tempate Id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    /// <exception cref="RequestException"></exception>
     public Model_DetailedEntry GetEntryFromTemplate(Guid? id)
     {
         if (id is null || id == Guid.Empty)
@@ -193,6 +240,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
 
         Structure_Template item = DB.Structure_Template.FirstOrDefault(e => e.ID == id)
             ?? throw new RequestException(ResultCodes.NoDataFound);
+
         List<Structure_Template_Row> itemRows = [.. DB.Structure_Template_Row
             .Where(s => s.TemplateID == item.ID)
             .OrderBy(s => s.SortOrder)];
@@ -219,6 +267,12 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
         return result;
     }
 
+    /// <summary>
+    /// Get entry details based on entry id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    /// <exception cref="RequestException"></exception>
     public Model_DetailedEntry GetEntry(Guid? id)
     {
         if (id is null || id == Guid.Empty)
@@ -253,17 +307,33 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
         return entryModel;
     }
 
+    /// <summary>
+    /// update or add entry and entry details
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    /// <exception cref="RequestException"></exception>
     public Model_DetailedEntry UpdateEntry(Model_DetailedEntry? model)
     {
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
             throw new RequestException(ResultCodes.DataIsInvalid);
 
         Structure_Entry? entry = DB.Structure_Entry.FirstOrDefault(s => s.ID == model.ID);
+
+        if (!DB.Structure_Template.Any(s => s.ID == model.TemplateID && s.UserID == CurrentUser.ID))
+            throw new RequestException(ResultCodes.NoDataFound);
+
+        if (DB.Structure_Entry.Any(s => s.Name == model.Name && s.UserID == CurrentUser.ID))
+            throw new RequestException(ResultCodes.EntryNameAlreadyExists);
+
+        if (model.FolderID is not null)
+        {
+            if (!DB.Structure_Entry_Folder.Any(s => s.ID == model.FolderID && s.UserID == CurrentUser.ID))
+                throw new RequestException(ResultCodes.NoDataFound);
+        }
+
         if (entry is null)
         {
-            if (!DB.Structure_Template.Any(s => s.ID == model.TemplateID && s.UserID == CurrentUser.ID))
-                throw new RequestException(ResultCodes.DataIsInvalid);
-
             entry = new()
             {
                 ID = Guid.NewGuid(),
@@ -273,6 +343,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
                 Name = model.Name,
                 IsEncrypted = model.IsEncrypted,
             };
+
             DB.Structure_Entry.Add(entry);
         }
         else

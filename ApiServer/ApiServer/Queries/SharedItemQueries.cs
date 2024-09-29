@@ -7,6 +7,12 @@ namespace StyleWerk.NBB.Queries;
 
 public class SharedItemQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
+    /// <summary>
+    /// get all directly shared templates or entries for the current user
+    /// directly shared template or entries can only be seen by the specified user that the template or entry was shard with
+    /// </summary>
+    /// <param name="itemType"></param>
+    /// <returns></returns>
     public List<Model_ShareItem> DirectlySharedItems(ShareType itemType)
     {
         List<Model_ShareItem> list =
@@ -18,6 +24,12 @@ public class SharedItemQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
         return list;
     }
 
+    /// <summary>
+    /// get all public shared templates or entries
+    /// public shared templates or entries can be seen by everyone
+    /// </summary>
+    /// <param name="itemType"></param>
+    /// <returns></returns>
     public List<Model_ShareItem> PublicSharedItems(ShareType itemType)
     {
         List<Model_ShareItem> list =
@@ -29,6 +41,12 @@ public class SharedItemQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
         return list;
     }
 
+    /// <summary>
+    /// get all templates or entries that were shared in a group the current user is part of
+    /// only the group can see the template or entry that was shared
+    /// </summary>
+    /// <param name="itemType"></param>
+    /// <returns></returns>
     public List<Model_ShareItem> SharedViaGroupItems(ShareType itemType)
     {
         List<Share_Group> groupPartof =
@@ -38,6 +56,7 @@ public class SharedItemQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
                 .Where(u => u.UserID == CurrentUser.ID)
                 .Select(g => g.O_Group),
         ];
+
         List<Model_ShareItem> result = [];
 
         foreach (Share_Group? groupItem in groupPartof)

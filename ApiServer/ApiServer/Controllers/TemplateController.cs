@@ -92,6 +92,12 @@ public class TemplateController(NbbContext db) : BaseController(db)
     [HttpPost(nameof(AddTemplate))]
     public IActionResult AddTemplate(Model_AddTemplate newTemplate)
     {
+        if (newTemplate is null)
+            throw new RequestException(ResultCodes.DataIsInvalid);
+
+        if (Query.DB.Structure_Template.Any(s => s.Name == newTemplate.Name && s.UserID == CurrentUser.ID))
+            throw new RequestException(ResultCodes.TemplateNameAlreadyExists);
+
         Structure_Template template = new()
         {
             ID = Guid.NewGuid(),
@@ -177,6 +183,9 @@ public class TemplateController(NbbContext db) : BaseController(db)
         Structure_Template? changeTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == template.ID)
              ?? throw new RequestException(ResultCodes.NoDataFound);
 
+        if (DB.Structure_Template.Any(s => s.UserID == CurrentUser.ID && s.Name == template.Name))
+            throw new RequestException(ResultCodes.TemplateNameAlreadyExists);
+
         changeTemplate.Name = template.Name;
         DB.SaveChanges();
 
@@ -211,8 +220,6 @@ public class TemplateController(NbbContext db) : BaseController(db)
             }
             else
             {
-
-
                 rowExists.SortOrder = row.SortOrder;
                 rowExists.CanWrapCells = row.CanWrapCells;
             }

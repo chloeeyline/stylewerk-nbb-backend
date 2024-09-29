@@ -122,6 +122,12 @@ public class ShareController(NbbContext db) : BaseController(db)
     #endregion
 
     #region Share
+    /// <summary>
+    /// get the rights of a group or another user on a specific shared item
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Share")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_ShareItem>>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
@@ -132,6 +138,12 @@ public class ShareController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<List<Model_ShareItem>>(list));
     }
 
+    /// <summary>
+    /// Update the rights of a group or another user on a specific shared item 
+    /// or create the item if it doesn't exists
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Share")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.MissingRight, ResultCodes.OnlyOwnerCanChangePublicity)]
@@ -142,6 +154,11 @@ public class ShareController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<string>());
     }
 
+    /// <summary>
+    /// Remove a shared template or entry based on the given Id. 
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Share")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.DontOwnGroup)]

@@ -8,10 +8,10 @@ public record ShareTypes(bool Group, bool Public, bool Directly);
 /// </summary>
 public record Model_Result<T>(int Code, ResultCodes CodeName, T? Data)
 {
-    public Model_Result() : this((int) ResultCodes.Success, ResultCodes.Success, default) { }
-    public Model_Result(T? data) : this((int) ResultCodes.SuccessReturnData, ResultCodes.SuccessReturnData, data) { }
-    public Model_Result(ResultCodes code) : this((int) code, code, default) { }
-    public Model_Result(ResultCodes code, T? data) : this((int) code, code, data) { }
+    public Model_Result() : this((int)ResultCodes.Success, ResultCodes.Success, default) { }
+    public Model_Result(T? data) : this((int)ResultCodes.SuccessReturnData, ResultCodes.SuccessReturnData, data) { }
+    public Model_Result(ResultCodes code) : this((int)code, code, default) { }
+    public Model_Result(ResultCodes code, T? data) : this((int)code, code, data) { }
 }
 
 [Serializable]
@@ -73,6 +73,19 @@ public enum ResultCodes
     #region Share
     GroupNameAlreadyExists = 1301,
     DontOwnGroup = 1302,
-    OnlyOwnerCanChangePublicity = 1303
+    OnlyOwnerCanChangePublicity = 1303,
+    #endregion
+
+    #region Entry
+    EntryNameAlreadyExists = 1401,
+
+    #endregion
+
+    #region Folder
+    FolderNameAlreadyExists = 1501,
+    #endregion
+
+    #region Template
+    TemplateNameAlreadyExists = 1601,
     #endregion
 }

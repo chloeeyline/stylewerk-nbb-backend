@@ -13,6 +13,10 @@ public class EntryController(NbbContext db) : BaseController(db)
     public EntryQueries Query => new(DB, CurrentUser);
 
     #region Folder
+    /// <summary>
+    /// Get all folders and entries
+    /// </summary>
+    /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Folder")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
     [HttpGet(nameof(GetFolders))]
@@ -22,6 +26,11 @@ public class EntryController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<List<Model_EntryFolders>>(result));
     }
 
+    /// <summary>
+    /// Get all items in a folder
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Folder")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
     [HttpGet(nameof(GetFolderContent))]
@@ -31,6 +40,11 @@ public class EntryController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<List<Model_EntryItem>>(result));
     }
 
+    /// <summary>
+    /// Change folder name or add a folder
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Folder")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_EntryFolders>))]
     [HttpPost(nameof(UpdateFolder))]
@@ -40,6 +54,11 @@ public class EntryController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<Model_EntryFolders>(result));
     }
 
+    /// <summary>
+    /// Remove a folder but preserve all the items that were in it
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Folder")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(RemoveFolder))]
@@ -49,6 +68,11 @@ public class EntryController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<string>());
     }
 
+    /// <summary>
+    /// Change the order of a folder
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Folder")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(ReorderFolders))]
@@ -60,6 +84,11 @@ public class EntryController(NbbContext db) : BaseController(db)
     #endregion
 
     #region Entries
+    /// <summary>
+    /// Load all entries and filter them
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Entries")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryItem>>))]
     [HttpPost(nameof(FilterEntries))]
@@ -69,6 +98,11 @@ public class EntryController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<List<Model_EntryItem>>(result));
     }
 
+    /// <summary>
+    /// Get the structure of the entry based on the selected template
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Entries")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedEntry>))]
     [HttpGet(nameof(GetEntryFromTemplate))]
