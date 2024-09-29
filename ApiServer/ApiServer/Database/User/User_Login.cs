@@ -138,9 +138,6 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
     }
 }
 
-/// <summary>
-/// Enumeration for the various status codes a user account can have.
-/// </summary>
 public enum UserStatus
 {
     /// <summary>

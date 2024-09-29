@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,7 +16,11 @@ builder.Services.AddControllers(options =>
 {
     options.UseDateOnlyTimeOnlyStringConverters();
     options.Filters.Add(new ProducesAttribute("application/json"));
+}).AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
+
 builder.Services.AddDbContext<NbbContext>(options => options.UseNpgsql(secretData.GetConnectionString()));
 builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 

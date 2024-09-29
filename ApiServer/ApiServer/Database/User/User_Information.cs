@@ -71,9 +71,6 @@ public class User_Information : IConnectedEntity<User_Information>, IEntity_Guid
     }
 }
 
-/// <summary>
-/// Enumeration for user gender options.
-/// </summary>
 public enum UserGender : byte
 {
     NotSpecified,

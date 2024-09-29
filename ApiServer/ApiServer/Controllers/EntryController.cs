@@ -78,6 +78,11 @@ public class EntryController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<Model_DetailedEntry>(result));
     }
 
+    /// <summary>
+    /// Not Finished
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Entries")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedEntry>))]
     [HttpGet(nameof(GetEntry))]
