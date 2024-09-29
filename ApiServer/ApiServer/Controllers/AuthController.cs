@@ -1,18 +1,19 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 using StyleWerk.NBB.Authentication;
+using StyleWerk.NBB.AWS;
 using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Controllers;
 
 [ApiController, AllowAnonymous, Route("Auth")]
 
-public class AuthController(NbbContext db, IAuthenticationService Authentication) : BaseController(db)
+public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : BaseController(db)
 {
-    private string UserAgent => Request.Headers.UserAgent.ToString();
+    public AuthQueries Authentication => new(DB, CurrentUser, Request.Headers.UserAgent.ToString(), SecretData);
 
     #region Login
     [ApiExplorerSettings(GroupName = "Login")]
@@ -20,11 +21,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     [HttpPost(nameof(Login))]
     public IActionResult Login([FromBody] Model_Login? model)
     {
-        User_Login user = Authentication.GetUser(model);
-        Model_Token accessToken = Authentication.GetAccessToken(user);
-        Model_Token refreshToken = Authentication.GetRefreshToken(user.ID, UserAgent, model?.ConsistOverSession);
-        AuthenticationResult result = Authentication.GetAuthenticationResult(user.ID, accessToken, refreshToken, model?.ConsistOverSession);
-
+        AuthenticationResult result = Authentication.Login(model);
         return Ok(new Model_Result<AuthenticationResult>(result));
     }
 
@@ -33,11 +30,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     [HttpPost(nameof(RefreshToken))]
     public IActionResult RefreshToken([FromBody] Model_RefreshToken? model)
     {
-        User_Login user = Authentication.GetUser(model, UserAgent);
-        Model_Token accessToken = Authentication.GetAccessToken(user);
-        Model_Token refreshToken = Authentication.GetRefreshToken(user.ID, UserAgent, model?.ConsistOverSession);
-        AuthenticationResult result = Authentication.GetAuthenticationResult(user.ID, accessToken, refreshToken, model?.ConsistOverSession);
-
+        AuthenticationResult result = Authentication.RefreshToken(model);
         return Ok(new Model_Result<AuthenticationResult>(result));
     }
     #endregion
@@ -88,7 +81,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     [HttpPost(nameof(RemoveSessions)), Authorize]
     public IActionResult RemoveSessions()
     {
-        Authentication.RemoveSessions(CurrentUser.ID, UserAgent);
+        Authentication.RemoveSessions();
         return Ok(new Model_Result<string>());
     }
 
@@ -97,7 +90,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     [HttpPost(nameof(Logout)), Authorize]
     public IActionResult Logout()
     {
-        Authentication.Logout(CurrentUser.ID, UserAgent);
+        Authentication.Logout();
         return Ok(new Model_Result<string>());
     }
     #endregion
@@ -108,7 +101,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     [HttpPost(nameof(UpdateEmail)), Authorize]
     public IActionResult UpdateEmail(string? email)
     {
-        Authentication.UpdateEmail(email, CurrentUser.Login);
+        Authentication.UpdateEmail(email);
         return Ok(new Model_Result<string>());
     }
 
@@ -117,7 +110,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     [HttpPost(nameof(VerifyUpdatedEmail)), Authorize]
     public IActionResult VerifyUpdatedEmail(string? code)
     {
-        Authentication.VerifyUpdatedEmail(code, CurrentUser.Login, UserAgent);
+        Authentication.VerifyUpdatedEmail(code);
         return Ok(new Model_Result<string>());
     }
     #endregion
@@ -128,7 +121,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     [HttpPost(nameof(GetUserData)), Authorize]
     public IActionResult GetUserData()
     {
-        Model_UserData user = Authentication.GetUserData(CurrentUser);
+        Model_UserData user = Authentication.GetUserData();
         return Ok(new Model_Result<Model_UserData>(user));
     }
 
@@ -137,7 +130,7 @@ public class AuthController(NbbContext db, IAuthenticationService Authentication
     [HttpPost(nameof(UpdateUserData)), Authorize]
     public IActionResult UpdateUserData([FromBody] Model_UpdateUserData model)
     {
-        Authentication.UpdateUserData(model, CurrentUser.ID);
+        Authentication.UpdateUserData(model);
         return Ok(new Model_Result<string>());
     }
     #endregion

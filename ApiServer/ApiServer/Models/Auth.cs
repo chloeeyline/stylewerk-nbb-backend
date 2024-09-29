@@ -2,7 +2,7 @@
 
 using StyleWerk.NBB.Database.User;
 
-namespace StyleWerk.NBB.Authentication;
+namespace StyleWerk.NBB.Models;
 
 public record ApplicationUser
 {

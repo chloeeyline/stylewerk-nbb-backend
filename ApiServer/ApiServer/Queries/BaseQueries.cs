@@ -1,5 +1,5 @@
-﻿using StyleWerk.NBB.Authentication;
-using StyleWerk.NBB.Database;
+﻿using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Queries;
 

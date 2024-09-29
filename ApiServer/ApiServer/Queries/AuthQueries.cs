@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -12,12 +13,13 @@ using StyleWerk.NBB.AWS;
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
+using StyleWerk.NBB.Queries;
 
 using UAParser;
 
 namespace StyleWerk.NBB.Authentication;
 
-public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> SecretData) : IAuthenticationService
+public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, string UserAgent, IOptions<SecretData> SecretData) : BaseQueries(DB, CurrentUser)
 {
     #region Fixed Values
     private const int KeySize = 256;
@@ -44,14 +46,14 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         return user.PasswordHash != hashedPassword ? throw new RequestException(ResultCodes.NoUserFound) : user;
     }
 
-    public User_Login GetUser(Model_RefreshToken? model, string userAgent)
+    public User_Login GetUser(Model_RefreshToken? model)
     {
         if (model is null ||
             string.IsNullOrWhiteSpace(model.Token) ||
-            string.IsNullOrWhiteSpace(userAgent))
+            string.IsNullOrWhiteSpace(UserAgent))
             throw new RequestException(ResultCodes.DataIsInvalid);
 
-        string agent = GetUserAgentString(userAgent);
+        string agent = GetUserAgentString(UserAgent);
         User_Token? token = DB.User_Token.FirstOrDefault(s => s.Agent == agent && s.RefreshToken == model.Token)
             ?? throw new RequestException(ResultCodes.RefreshTokenNotFound);
 
@@ -82,9 +84,9 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         return new Model_Token(loginToken, LoginTokenDuration);
     }
 
-    public Model_Token GetRefreshToken(Guid userID, string userAgent, bool? consistOverSession)
+    public Model_Token GetRefreshToken(Guid userID, bool? consistOverSession)
     {
-        string agent = GetUserAgentString(userAgent);
+        string agent = GetUserAgentString(UserAgent);
         string refreshToken = GenerateRandomKey();
         long expireTime = consistOverSession is true ? RefreshTokenDuration : RefreshTokenShortDuration;
 
@@ -122,6 +124,26 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         string[] rights = [.. DB.User_Right.Where(s => s.ID == id).Select(s => s.Name)];
 
         return new AuthenticationResult(accessToken, refreshToken, user.StatusCode, consistOverSession is true, user.Username, user.Admin, rights);
+    }
+
+    public AuthenticationResult Login(Model_Login? model)
+    {
+        User_Login user = GetUser(model);
+        Model_Token accessToken = GetAccessToken(user);
+        Model_Token refreshToken = GetRefreshToken(user.ID, model?.ConsistOverSession);
+        AuthenticationResult result = GetAuthenticationResult(user.ID, accessToken, refreshToken, model?.ConsistOverSession);
+
+        return result;
+    }
+
+    public AuthenticationResult RefreshToken([FromBody] Model_RefreshToken? model)
+    {
+        User_Login user = GetUser(model);
+        Model_Token accessToken = GetAccessToken(user);
+        Model_Token refreshToken = GetRefreshToken(user.ID, model?.ConsistOverSession);
+        AuthenticationResult result = GetAuthenticationResult(user.ID, accessToken, refreshToken, model?.ConsistOverSession);
+
+        return result;
     }
     #endregion
 
@@ -169,7 +191,6 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
             LastName = model.LastName,
             Birthday = birthday,
         };
-
 
         DB.User_Login.Add(user);
         DB.User_Information.Add(userInformation);
@@ -245,80 +266,79 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
     #endregion
 
     #region Edit Session
-    public void RemoveSessions(Guid userID, string userAgent)
+    public void RemoveSessions()
     {
-        DB.User_Token.RemoveRange(DB.User_Token.Where(s => s.ID == userID && s.Agent != userAgent));
+        DB.User_Token.RemoveRange(DB.User_Token.Where(s => s.ID == CurrentUser.ID && s.Agent != UserAgent));
     }
 
-    public void Logout(Guid userID, string userAgent)
+    public void Logout()
     {
-        DB.User_Token.RemoveRange(DB.User_Token.Where(s => s.ID == userID && s.Agent == userAgent));
+        DB.User_Token.RemoveRange(DB.User_Token.Where(s => s.ID == CurrentUser.ID && s.Agent == UserAgent));
     }
     #endregion
 
     #region Change Email
-    public void UpdateEmail(string? email, User_Login user)
+    public void UpdateEmail(string? email)
     {
         if (string.IsNullOrWhiteSpace(email))
             throw new RequestException(ResultCodes.DataIsInvalid);
 
-        if (user.StatusCode is UserStatus.PasswordReset)
+        if (CurrentUser.Login.StatusCode is UserStatus.PasswordReset)
             throw new RequestException(ResultCodes.PasswordResetWasRequested);
 
-        user.NewEmail = email;
-        user.StatusCode = UserStatus.EmailChange;
-        user.StatusToken = new Random().Next(100001).ToString("D6");
-        user.StatusTokenExpireTime = StatusTokenDuration;
+        CurrentUser.Login.NewEmail = email;
+        CurrentUser.Login.StatusCode = UserStatus.EmailChange;
+        CurrentUser.Login.StatusToken = new Random().Next(100001).ToString("D6");
+        CurrentUser.Login.StatusTokenExpireTime = StatusTokenDuration;
         DB.SaveChanges();
 
-        SendMail_EmailChange(email, user.StatusToken);
+        SendMail_EmailChange(email, CurrentUser.Login.StatusToken);
     }
 
-    public void VerifyUpdatedEmail(string? token, User_Login user, string userAgent)
+    public void VerifyUpdatedEmail(string? token)
     {
         if (string.IsNullOrWhiteSpace(token))
             throw new RequestException(ResultCodes.DataIsInvalid);
 
-        if (string.IsNullOrEmpty(user.StatusToken) || !token.Equals(user.StatusToken))
+        if (string.IsNullOrEmpty(CurrentUser.Login.StatusToken) || !token.Equals(CurrentUser.Login.StatusToken))
             throw new RequestException(ResultCodes.EmailChangeCodeWrong);
-        if (user.StatusCode is not UserStatus.EmailChange)
+        if (CurrentUser.Login.StatusCode is not UserStatus.EmailChange)
             throw new RequestException(ResultCodes.WrongStatusCode);
-        if (string.IsNullOrWhiteSpace(user.NewEmail))
+        if (string.IsNullOrWhiteSpace(CurrentUser.Login.NewEmail))
             throw new RequestException(ResultCodes.WrongStatusCode);
-        if (Now >= user.StatusTokenExpireTime)
+        if (Now >= CurrentUser.Login.StatusTokenExpireTime)
             throw new RequestException(ResultCodes.StatusTokenExpired);
 
-        DB.User_Token.RemoveRange(DB.User_Token.Where(s => s.ID == user.ID && s.Agent != userAgent));
-        user.Email = user.NewEmail;
-        user.EmailNormalized = user.NewEmail.ToLower().Normalize();
-        user.NewEmail = null;
+        DB.User_Token.RemoveRange(DB.User_Token.Where(s => s.ID == CurrentUser.ID && s.Agent != UserAgent));
+        CurrentUser.Login.Email = CurrentUser.Login.NewEmail;
+        CurrentUser.Login.EmailNormalized = CurrentUser.Login.NewEmail.ToLower().Normalize();
+        CurrentUser.Login.NewEmail = null;
 
-        user.StatusCode = null;
-        user.StatusToken = null;
-        user.StatusTokenExpireTime = null;
+        CurrentUser.Login.StatusCode = null;
+        CurrentUser.Login.StatusToken = null;
+        CurrentUser.Login.StatusTokenExpireTime = null;
         DB.SaveChanges();
     }
     #endregion
 
     #region Userdata
-    public Model_UserData GetUserData(ApplicationUser user)
+    public Model_UserData GetUserData()
     {
         return new Model_UserData(
-            user.Login.Username,
-            user.Login.Email,
-            user.Information.FirstName,
-            user.Information.LastName,
-            user.Information.Gender,
-            user.Information.Birthday);
+            CurrentUser.Login.Username,
+            CurrentUser.Login.Email,
+            CurrentUser.Information.FirstName,
+            CurrentUser.Information.LastName,
+            CurrentUser.Information.Gender,
+            CurrentUser.Information.Birthday);
     }
 
-    public void UpdateUserData(Model_UpdateUserData? model, Guid userID)
+    public void UpdateUserData(Model_UpdateUserData? model)
     {
         if (model is null)
             throw new RequestException(ResultCodes.DataIsInvalid);
 
-        User_Login? user = DB.User_Login.Include(s => s.O_Information).FirstOrDefault(s => s.ID == userID)
-            ?? throw new RequestException(ResultCodes.NoUserFound);
+        User_Login? user = CurrentUser.Login ?? throw new RequestException(ResultCodes.NoUserFound);
         if (user.StatusCode is not null)
             throw new RequestException(ResultCodes.PendingChangeOpen);
 
@@ -424,7 +444,6 @@ public partial class AuthenticationService(NbbContext DB, IOptions<SecretData> S
         if (!OnlyPasswordValidChars().IsMatch(password))
             throw new RequestException(ResultCodes.PwUsesInvalidChars);
     }
-
 
     [GeneratedRegex(@"[a-z]")] private static partial Regex ContainsLowercase();
     [GeneratedRegex(@"[A-Z]")] private static partial Regex ContainsUppercase();

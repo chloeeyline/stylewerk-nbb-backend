@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using StyleWerk.NBB.Models;
 
@@ -15,6 +16,7 @@ namespace StyleWerk.NBB.Helper;
 /// <param name="logger">The logger instance to log exceptions.</param>
 public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
 {
+    private static readonly JsonSerializerOptions _options = new();
 
     /// <summary>
     /// Invokes the middleware to handle the HTTP request and catch any exceptions.
@@ -56,7 +58,7 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
         context.Response.ContentType = "application/json";
 
         // Set status code depending on the exception type
-        context.Response.StatusCode = (int)HttpStatusCode.OK;
+        context.Response.StatusCode = (int) HttpStatusCode.OK;
 
         Model_Result<string> response = new(ResultCodes.GeneralError);
         if (exception is RequestException requestException)
@@ -65,7 +67,8 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
         }
 
         // Serialize the response to JSON
-        string result = JsonSerializer.Serialize(response);
+        _options.Converters.Add(new JsonStringEnumConverter());
+        string result = JsonSerializer.Serialize(response, _options);
         return context.Response.WriteAsync(result);
     }
 }

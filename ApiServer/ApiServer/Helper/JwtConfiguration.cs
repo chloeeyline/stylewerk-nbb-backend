@@ -1,14 +1,13 @@
 ﻿using System.Text;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
 using StyleWerk.NBB.AWS;
 
-namespace StyleWerk.NBB.Authentication;
+namespace StyleWerk.NBB.Helper;
 
-public static class Extension
+public static class JwtConfiguration
 {
     public static void AddJWT(this WebApplicationBuilder builder, SecretData secretData)
     {
@@ -31,8 +30,5 @@ public static class Extension
             };
         });
         builder.Services.AddAuthorization();
-        builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
     }
-
-    public static string GetUserAgentString(ControllerBase controller) => controller.Request.Headers.UserAgent.ToString();
 }

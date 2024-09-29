@@ -2,10 +2,9 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-
-using StyleWerk.NBB.Authentication;
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.User;
+using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Controllers;
 

@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-
-using StyleWerk.NBB.Authentication;
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Models;
