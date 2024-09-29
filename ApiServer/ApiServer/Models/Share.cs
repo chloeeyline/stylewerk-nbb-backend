@@ -8,6 +8,6 @@ public record Model_ShareItem(Guid ID, Guid ItemID, string WhoShared, ShareVisib
 }
 public record Model_Share(Guid ID, string? ToWhom, ShareVisibility Visibility, ShareType Type, bool CanShare, bool CanEdit, bool CanDelete);
 
-public record Model_Group(Guid ID, string Name, int UserCount);
+public record Model_Group(Guid? ID, string Name, int UserCount);
 public record Model_GroupUser(string Username, Guid GroupID, bool CanAddUsers, bool CanRemoveUsers, string? WhoAdded);
 public record Model_SharedToGroup(Guid ID, ShareType Type, string Name);
