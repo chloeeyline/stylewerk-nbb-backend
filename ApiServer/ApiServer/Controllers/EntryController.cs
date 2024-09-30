@@ -36,8 +36,8 @@ public class EntryController(NbbContext db) : BaseController(db)
     [HttpGet(nameof(GetFolderContent))]
     public IActionResult GetFolderContent(Guid? id)
     {
-        List<Model_EntryItem> result = Query.GetFolderContent(id);
-        return Ok(new Model_Result<List<Model_EntryItem>>(result));
+        List<Models.Model_EntryItem> result = Query.GetFolderContent(id);
+        return base.Ok(new Model_Result<List<Models.Model_EntryItem>>(result));
     }
 
     /// <summary>
@@ -87,15 +87,13 @@ public class EntryController(NbbContext db) : BaseController(db)
     /// <summary>
     /// Load all entries and filter them
     /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Entries")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryItem>>))]
-    [HttpPost(nameof(FilterEntries))]
-    public IActionResult FilterEntries([FromBody] Model_FilterEntry? model)
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFilterItem>>))]
+    [HttpGet(nameof(FilterEntries))]
+    public IActionResult FilterEntries(string? name, string? username, string? templateName, string? tags, bool? publicShared, bool? groupShared, bool? directlyShared, bool? directUser)
     {
-        List<Model_EntryItem> result = Query.FilterEntries(model);
-        return Ok(new Model_Result<List<Model_EntryItem>>(result));
+        List<Model_EntryFilterItem> result = Query.FilterEntries(name, username, templateName, tags, publicShared, groupShared, directlyShared, directUser);
+        return base.Ok(new Model_Result<List<Model_EntryFilterItem>>(result));
     }
 
     /// <summary>
@@ -133,18 +131,6 @@ public class EntryController(NbbContext db) : BaseController(db)
     {
         Model_Entry result = Query.UpdateEntry(model);
         return Ok(new Model_Result<Model_Entry>(result));
-    }
-
-    /// <summary>
-    /// This method should be more performant but needss testing as the syntax is not often  used by me
-    /// </summary>
-    [ApiExplorerSettings(GroupName = "Entries")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<ShareEntryResult>>))]
-    [HttpGet(nameof(FilterEntriesNew))]
-    public IActionResult FilterEntriesNew(string? name, string? username, string? templateName, string? tags, bool? publicShared, bool? groupShared, bool? directlyShared, bool? directUser)
-    {
-        List<ShareEntryResult> result = Query.GetUserSharedEntries(name, username, templateName, tags, publicShared, groupShared, directlyShared, directUser);
-        return Ok(new Model_Result<List<ShareEntryResult>>(result));
     }
     #endregion
 }

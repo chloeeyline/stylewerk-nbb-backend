@@ -23,10 +23,15 @@ public record Model_TemplateItem(
     string Name,
     string? Description,
     string? Tags,
-    string UserName,
     long CreatedAt,
-    long LastUpdated,
-    ShareVisibility? Visibility);
+    long LastUpdatedAt,
+    string OwnerUsername,
+    ShareVisibility Visibility,
+    bool CanShare,
+    bool CanEdit,
+    bool CanDelete,
+    string? SharedByUsername,
+    string? GroupName);
 
 
 public record Model_Template(
