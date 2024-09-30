@@ -234,6 +234,25 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         return result;
     }
 
+    public void Remove(Guid? id)
+    {
+        if (id is null || id == Guid.Empty)
+            throw new RequestException(ResultCodes.DataIsInvalid);
+
+        Structure_Entry entry = DB.Structure_Entry.FirstOrDefault(t => t.ID == id)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
+        List<Structure_Entry_Row> entryRows = [.. DB.Structure_Entry_Row
+                .Where(t => t.EntryID == entry.ID)
+                .Include(s => s.O_Cells)];
+
+        foreach (Structure_Entry_Row row in entryRows)
+            DB.Structure_Entry_Cell.RemoveRange(row.O_Cells);
+        DB.Structure_Entry_Row.RemoveRange(entryRows);
+        DB.Structure_Entry.Remove(entry);
+
+        DB.SaveChanges();
+    }
+
     /// <summary>
     /// update or add entry and entry details
     /// </summary>

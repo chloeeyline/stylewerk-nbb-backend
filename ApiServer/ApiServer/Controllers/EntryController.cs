@@ -49,6 +49,14 @@ public class EntryController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<Model_Entry>(result));
     }
 
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [HttpPost(nameof(Remove))]
+    public IActionResult Remove(Guid? id)
+    {
+        Query.Remove(id);
+        return Ok(new Model_Result<string>());
+    }
+
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Entry>))]
     [HttpPost(nameof(Update))]
     public IActionResult Update([FromBody] Model_Entry? model)
