@@ -1,4 +1,8 @@
-﻿using Xunit;
+﻿using Microsoft.AspNetCore.Mvc;
+using Moq;
+using StyleWerk.NBB.Controllers;
+using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Tests
 {
@@ -7,7 +11,13 @@ namespace StyleWerk.NBB.Tests
         [Fact]
         public void AddFolder()
         {
+            Mock<NbbContext> folder = new();
+            EntryController controller = new(folder.Object);
 
+            Model_EntryFolders newFolder = new(null, "TestFolder", 1, new Model_EntryItem[0]);
+            IActionResult result = controller.UpdateFolder(newFolder);
+
+            Assert.NotNull(result);
         }
 
         [Fact]
