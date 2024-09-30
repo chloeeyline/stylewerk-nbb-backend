@@ -2,7 +2,7 @@
 
 namespace StyleWerk.NBB.Models;
 
-public record Model_EntryFolders(Guid? ID, string? Name, int SortOrder, Model_EntryItem[] Items);
+public record Model_EntryFolders(Guid? ID, string? Name, Model_EntryItem[] Items);
 public record Model_EntryItem(Guid ID, string Name, string UserName, string TemplateName, string? Tags, long CreatedAt, long LastUpdatedAt);
 
 public record Model_EntryFilterItem(Guid ID,
