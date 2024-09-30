@@ -427,13 +427,14 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
             rowSortOrder = rowTemplateID == entryRow.TemplateID ? rowSortOrder + 1 : 0;
             rowTemplateID = entryRow.TemplateID;
         }
+        DB.SaveChanges();
 
         Model_Entry result = GetEntry(entry.ID);
         return result;
     }
     #endregion
 
-    public List<ShareEntryResult> GetUserSharedEntries(string? name, string? username, string? templateName, string? tags, bool? common, bool? directly, bool? group, bool? directUser)
+    public List<ShareEntryResult> GetUserSharedEntries(string? name, string? username, string? templateName, string? tags, bool? publicShared, bool? groupShared, bool? directlyShared, bool? directUser)
     {
         // Normalize the username for comparison
         username = username?.Normalize().ToLower();
@@ -442,48 +443,80 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
         var query =
         from si in DB.Share_Item
         where si.Type == ShareType.Entry
-        join entry in DB.Structure_Entry on si.ItemID equals entry.ID
-        join whoShared in DB.User_Login on si.UserID equals whoShared.ID
+        join entry in DB.Structure_Entry on
+            si.ItemID equals entry.ID
+        join whoShared in DB.User_Login on
+            si.UserID equals whoShared.ID
+        join owner in DB.User_Login on
+            entry.UserID equals owner.ID
+        join folder in DB.Structure_Entry_Folder on
+            entry.FolderID equals folder.ID into folderJoin
+        from folderData in folderJoin.DefaultIfEmpty()
+        join template in DB.Structure_Template on
+            entry.TemplateID equals template.ID
         join sgu in DB.Share_GroupUser on
             new { si.ToWhom, si.Visibility } equals
             new { ToWhom = (Guid?) sgu.GroupID, Visibility = ShareVisibility.Group }
             into groupJoin
         from sharedGroup in groupJoin.DefaultIfEmpty()
-        join sg in DB.Share_Group on sharedGroup.GroupID
-            equals sg.ID into groupDataJoin
+        join sg in DB.Share_Group on
+            sharedGroup.GroupID equals sg.ID into groupDataJoin
         from groupData in groupDataJoin.DefaultIfEmpty()
         where (si.ToWhom == CurrentUser.ID || sharedGroup.UserID == CurrentUser.ID)
         select new
         {
             entry,
             si.Visibility,
-            whoShared.Username,
-            whoShared.UsernameNormalized,
+            ownerUsername = owner.Username,
+            ownerUsernameNormalized = owner.UsernameNormalized,
+            templateName = template.Name,
             si.CanShare,
             si.CanEdit,
             si.CanDelete,
-            groupName = groupData.Name,
+            folderName = folderData.Name,
+            whoSharedUsername = whoShared.Username,
+            whoSharedUsernameNormalized = whoShared.UsernameNormalized,
+            groupName = groupData.Name
         };
 
         // Query to get entries owned by the current user
         var ownedQuery =
         from entry in DB.Structure_Entry
-        join whoShared in DB.User_Login on entry.UserID equals whoShared.ID
+        join owner in DB.User_Login on
+            entry.UserID equals owner.ID
+        join folder in DB.Structure_Entry_Folder on
+            entry.FolderID equals folder.ID into folderJoin
+        from folderData in folderJoin.DefaultIfEmpty()
+        join template in DB.Structure_Template on
+            entry.TemplateID equals template.ID
         where entry.UserID == CurrentUser.ID
         select new
         {
             entry,
             Visibility = ShareVisibility.None,
-            whoShared.Username,
-            whoShared.UsernameNormalized,
+            ownerUsername = owner.Username,
+            ownerUsernameNormalized = owner.UsernameNormalized,
+            templateName = template.Name,
             CanShare = true,
             CanEdit = true,
             CanDelete = true,
-            groupName = ""
+            folderName = folderData.Name,
+            whoSharedUsername = "",
+            whoSharedUsernameNormalized = "",
+            groupName = "",
         };
 
         // Combine the two queries (shared + owned) using Union
         query = query.Union(ownedQuery);
+
+        // Apply visibility filters based on the model
+        query = from s in query
+                where
+                (publicShared == true && s.Visibility == ShareVisibility.Public) ||
+                (groupShared == true && s.Visibility == ShareVisibility.Group) ||
+                (directlyShared == true && s.Visibility == ShareVisibility.Directly) ||
+                s.Visibility == ShareVisibility.None
+                select s;
 
         // Apply filters prior to select
         if (!string.IsNullOrWhiteSpace(name))
@@ -493,7 +526,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
 
         if (!string.IsNullOrWhiteSpace(templateName))
             query = from s in query
-                    where s.entry.O_Template.Name.Contains(templateName)
+                    where s.templateName.Contains(templateName)
                     select s;
 
         if (!string.IsNullOrWhiteSpace(tags))
@@ -503,28 +536,12 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
 
         if (!string.IsNullOrWhiteSpace(username) && directUser is false)
             query = from s in query
-                    where s.UsernameNormalized.Contains(username)
+                    where s.ownerUsernameNormalized.Contains(username)
                     select s;
 
         if (!string.IsNullOrWhiteSpace(username) && directUser is true)
             query = from s in query
-                    where s.UsernameNormalized == username
-                    select s;
-
-        // Apply visibility filters based on the model
-        if (common is true)
-            query = from s in query
-                    where s.Visibility == ShareVisibility.Public
-                    select s;
-
-        if (group is true)
-            query = from s in query
-                    where s.Visibility == ShareVisibility.Group
-                    select s;
-
-        if (directly is true)
-            query = from s in query
-                    where s.Visibility == ShareVisibility.Directly
+                    where s.ownerUsernameNormalized == username
                     select s;
 
         // Apply ordering before final select
@@ -537,18 +554,19 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
         (
             s.entry.ID,
             s.entry.Name,
-            s.entry.TemplateID,
-            s.entry.FolderID,
             s.entry.IsEncrypted,
             s.entry.Tags,
             s.entry.CreatedAt,
             s.entry.LastUpdatedAt,
-            s.Username,
-            s.groupName,
+            s.templateName,
+            s.ownerUsername,
             s.Visibility,
             s.CanShare,
             s.CanEdit,
-            s.CanDelete
+            s.CanDelete,
+            s.folderName,
+            s.whoSharedUsername,
+            s.groupName
         ));
 
         // Execute the query and return distinct results
@@ -556,17 +574,18 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
     }
 }
 
-public record ShareEntryResult(Guid EntryID,
-    string EntryName,
-    Guid TemplateID,
-    Guid? FolderID,
+public record ShareEntryResult(Guid ID,
+    string Name,
     bool IsEncrypted,
     string? Tags,
     long CreatedAt,
     long LastUpdatedAt,
-    string SharedByUsername,
-    string? GroupName,
+    string TemplateName,
+    string OwnerUsername,
     ShareVisibility Visibility,
     bool CanShare,
     bool CanEdit,
-    bool CanDelete);
+    bool CanDelete,
+    string? FolderName,
+    string? SharedByUsername,
+    string? GroupName);

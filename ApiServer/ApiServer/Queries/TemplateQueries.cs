@@ -9,15 +9,12 @@ namespace StyleWerk.NBB.Queries;
 
 public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedItemQueries(DB, CurrentUser)
 {
-    public Model_TemplatePaging List(Model_FilterTemplate? model)
+    public Model_TemplatePaging List(int page, int perPage, string? name, string? username, string? description, string? tags, bool? common, bool? directly, bool? group, bool? directUser)
     {
-        if (model is null)
-            throw new RequestException(ResultCodes.DataIsInvalid);
-
         List<Model_TemplateItem> result = [];
-        model = model with { Username = model.Username?.Normalize().ToLower() };
+        username = username?.Normalize().ToLower();
 
-        if (string.IsNullOrEmpty(model.Username))
+        if (string.IsNullOrEmpty(username))
         {
             IEnumerable<Structure_Template> list = DB.Structure_Template
                 .Where(t => t.UserID == CurrentUser.ID)
@@ -26,36 +23,38 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
             list = Filter(list);
             result.AddRange(list.Select(s => new Model_TemplateItem(s.ID, s.Name, s.Description, s.Tags, s.O_User.Username, s.CreatedAt, s.LastUpdatedAt, ShareVisibility.None)));
         }
-        if (model.Public || !string.IsNullOrWhiteSpace(model.Username))
+        if (common is true)
             LoadShared(PublicSharedItems(ShareType.Template), ShareVisibility.Public);
-        if (model.Group || !string.IsNullOrWhiteSpace(model.Username))
+        if (group is true)
             LoadShared(SharedViaGroupItems(ShareType.Template), ShareVisibility.Group);
-        if (model.Directly || !string.IsNullOrWhiteSpace(model.Username))
+        if (directly is true)
             LoadShared(DirectlySharedItems(ShareType.Template), ShareVisibility.Directly);
 
         List<Model_TemplateItem> templates = result.Distinct().OrderBy(s => s.LastUpdated).ThenBy(s => s.Name).ToList();
 
         int tCount = templates.Count;
-        if (model.PerPage < 20)
-            model = model with { PerPage = 20 };
-        int maxPages = tCount / model.PerPage;
-        if (model.Page > maxPages)
-            model = model with { Page = 0 };
-        templates = templates.Skip(model.Page * model.PerPage).Take(model.PerPage).ToList();
+        if (perPage < 20)
+            perPage = 20;
+        int maxPages = tCount / perPage;
+        if (page > maxPages)
+            page = 0;
+        templates = templates.Skip(page * perPage).Take(perPage).ToList();
 
-        Model_TemplatePaging paging = new(tCount, model.Page, maxPages, model.PerPage, templates);
+        Model_TemplatePaging paging = new(tCount, page, maxPages, perPage, templates);
         return paging;
 
         IEnumerable<Structure_Template> Filter(IEnumerable<Structure_Template> list)
         {
-            if (!string.IsNullOrWhiteSpace(model.Name))
-                list = list.Where(s => s.Name.Contains(model.Name));
-            if (!string.IsNullOrWhiteSpace(model.Username) && !model.DirectUser)
-                list = list.Where(s => s.O_User.UsernameNormalized.Contains(model.Username));
-            if (!string.IsNullOrWhiteSpace(model.Username) && model.DirectUser)
-                list = list.Where(s => s.O_User.UsernameNormalized == model.Username);
-            if (!string.IsNullOrWhiteSpace(model.Tags))
-                list = list.Where(s => !string.IsNullOrWhiteSpace(s.Tags) && model.Tags.Contains(s.Tags));
+            if (!string.IsNullOrWhiteSpace(name))
+                list = list.Where(s => s.Name.Contains(name));
+            if (!string.IsNullOrWhiteSpace(username) && directUser is false)
+                list = list.Where(s => s.O_User.UsernameNormalized.Contains(username));
+            if (!string.IsNullOrWhiteSpace(username) && directUser is true)
+                list = list.Where(s => s.O_User.UsernameNormalized == username);
+            if (!string.IsNullOrWhiteSpace(description))
+                list = list.Where(s => !string.IsNullOrWhiteSpace(s.Description) && description.Contains(s.Description));
+            if (!string.IsNullOrWhiteSpace(tags))
+                list = list.Where(s => !string.IsNullOrWhiteSpace(s.Tags) && tags.Contains(s.Tags));
             return list;
         }
 

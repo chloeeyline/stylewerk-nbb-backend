@@ -13,10 +13,10 @@ public class TemplateController(NbbContext db) : BaseController(db)
     public TemplateQueries Query => new(DB, CurrentUser);
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_TemplatePaging>))]
-    [HttpPost(nameof(List))]
-    public IActionResult List([FromBody] Model_FilterTemplate? model)
+    [HttpGet(nameof(List))]
+    public IActionResult List(int page, int perPage, string? name, string? username, string? description, string? tags, bool? common, bool? directly, bool? group, bool? directUser)
     {
-        Model_TemplatePaging result = Query.List(model);
+        Model_TemplatePaging result = Query.List(page, perPage, name, username, description, tags, common, directly, group, directUser);
         return Ok(new Model_Result<Model_TemplatePaging>(result));
     }
 
