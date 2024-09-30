@@ -10,7 +10,8 @@ public class ColorThemeQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
     {
         if (id is null || id == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
-        Admin_ColorTheme item = DB.Admin_ColorTheme.FirstOrDefault(s => s.ID == id) ?? throw new RequestException(ResultCodes.NoDataFound);
+        Admin_ColorTheme item = DB.Admin_ColorTheme.FirstOrDefault(s => s.ID == id)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
         return item.Data;
     }
 
@@ -24,9 +25,21 @@ public class ColorThemeQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
     {
         if (id is null || id == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
-        Admin_ColorTheme item = DB.Admin_ColorTheme.FirstOrDefault(s => s.ID == id) ?? throw new RequestException(ResultCodes.NoDataFound);
+        Admin_ColorTheme item = DB.Admin_ColorTheme.FirstOrDefault(s => s.ID == id)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
         Model_ColorTheme result = new(item.ID, item.Name, item.Base, item.Data);
         return result;
+    }
+
+    public void Remove(Guid? id)
+    {
+        if (id is null || id == Guid.Empty)
+            throw new RequestException(ResultCodes.DataIsInvalid);
+        Admin_ColorTheme item = DB.Admin_ColorTheme.FirstOrDefault(s => s.ID == id)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
+
+        DB.Admin_ColorTheme.Remove(item);
+        DB.SaveChanges();
     }
 
     public void Update(Model_ColorTheme? model)

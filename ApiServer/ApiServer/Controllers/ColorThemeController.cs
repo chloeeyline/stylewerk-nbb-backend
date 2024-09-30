@@ -37,6 +37,14 @@ public class ColorThemeController(NbbContext db) : BaseController(db)
     }
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [HttpGet(nameof(Remove))]
+    public IActionResult Remove(Guid? id)
+    {
+        Query.Remove(id);
+        return Ok(new Model_Result<string>());
+    }
+
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(Update)), Authorize]
     public IActionResult Update([FromBody] Model_ColorTheme? model)
     {

@@ -37,6 +37,14 @@ public class LanguageController(NbbContext db) : BaseController(db)
     }
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [HttpPost(nameof(Remove))]
+    public IActionResult Remove(string? code)
+    {
+        Query.Remove(code);
+        return Ok(new Model_Result<string>());
+    }
+
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(Update)), Authorize]
     public IActionResult Update([FromBody] Model_Language? model)
     {

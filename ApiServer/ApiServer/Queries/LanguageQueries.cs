@@ -10,7 +10,8 @@ public class LanguageQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
     {
         if (string.IsNullOrWhiteSpace(code))
             throw new RequestException(ResultCodes.DataIsInvalid);
-        Admin_Language item = DB.Admin_Language.FirstOrDefault(s => s.Code == code) ?? throw new RequestException(ResultCodes.NoDataFound);
+        Admin_Language item = DB.Admin_Language.FirstOrDefault(s => s.Code == code)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
         return item.Data;
     }
 
@@ -24,9 +25,21 @@ public class LanguageQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
     {
         if (string.IsNullOrWhiteSpace(code))
             throw new RequestException(ResultCodes.DataIsInvalid);
-        Admin_Language item = DB.Admin_Language.FirstOrDefault(s => s.Code == code) ?? throw new RequestException(ResultCodes.NoDataFound);
+        Admin_Language item = DB.Admin_Language.FirstOrDefault(s => s.Code == code)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
         Model_Language result = new(item.Code, item.Name, item.Data);
         return result;
+    }
+
+    public void Remove(string? code)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+            throw new RequestException(ResultCodes.DataIsInvalid);
+        Admin_Language item = DB.Admin_Language.FirstOrDefault(s => s.Code == code)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
+
+        DB.Admin_Language.Remove(item);
+        DB.SaveChanges();
     }
 
     public void Update(Model_Language? model)
