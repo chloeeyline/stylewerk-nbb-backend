@@ -24,6 +24,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
                 .Include(t => t.O_User);
 
             list = Filter(list);
+            result.AddRange(list.Select(s => new Model_TemplateItem(s.ID, s.Name, s.Description, s.Tags, s.O_User.Username, s.CreatedAt, s.LastUpdatedAt, ShareVisibility.None)));
         }
         if (model.Public || !string.IsNullOrWhiteSpace(model.Username))
             LoadShared(PublicSharedItems(ShareType.Template), ShareVisibility.Public);
@@ -32,12 +33,14 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
         if (model.Directly || !string.IsNullOrWhiteSpace(model.Username))
             LoadShared(DirectlySharedItems(ShareType.Template), ShareVisibility.Directly);
 
-        List<Model_TemplateItem> templates = result.DistinctBy(s => s.ID).ToList();
+        List<Model_TemplateItem> templates = result.Distinct().OrderBy(s => s.LastUpdated).ThenBy(s => s.Name).ToList();
 
         int tCount = templates.Count;
+        if (model.PerPage < 20)
+            model = model with { PerPage = 20 };
         int maxPages = tCount / model.PerPage;
         if (model.Page > maxPages)
-            model = model with { Page = 1 };
+            model = model with { Page = 0 };
         templates = templates.Skip(model.Page * model.PerPage).Take(model.PerPage).ToList();
 
         Model_TemplatePaging paging = new(tCount, model.Page, maxPages, model.PerPage, templates);
@@ -53,7 +56,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : Share
                 list = list.Where(s => s.O_User.UsernameNormalized == model.Username);
             if (!string.IsNullOrWhiteSpace(model.Tags))
                 list = list.Where(s => !string.IsNullOrWhiteSpace(s.Tags) && model.Tags.Contains(s.Tags));
-            return list.Distinct().OrderBy(s => s.LastUpdatedAt).ThenBy(s => s.Name);
+            return list;
         }
 
         void LoadShared(List<Model_ShareItem> shareList, ShareVisibility visibility)

@@ -134,5 +134,18 @@ public class EntryController(NbbContext db) : BaseController(db)
         Model_Entry result = Query.UpdateEntry(model);
         return Ok(new Model_Result<Model_Entry>(result));
     }
+
+
+    /// <summary>
+    /// This method should be more performant but needss testing as the syntax is not often  used by me
+    /// </summary>
+    [ApiExplorerSettings(GroupName = "Entries")]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<ShareEntryResult>>))]
+    [HttpGet(nameof(FilterEntriesNew))]
+    public IActionResult FilterEntriesNew(string? name, string? username, string? templateName, string? tags, bool? common, bool? directly, bool? group, bool? directUser)
+    {
+        List<ShareEntryResult> result = Query.GetUserSharedEntries(name, username, templateName, tags, common, directly, group, directUser);
+        return Ok(new Model_Result<List<ShareEntryResult>>(result));
+    }
     #endregion
 }

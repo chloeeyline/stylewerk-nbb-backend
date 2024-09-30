@@ -428,8 +428,145 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
             rowTemplateID = entryRow.TemplateID;
         }
 
-        Model_Entry result = GetEntry(model.ID);
+        Model_Entry result = GetEntry(entry.ID);
         return result;
     }
     #endregion
+
+    public List<ShareEntryResult> GetUserSharedEntries(string? name, string? username, string? templateName, string? tags, bool? common, bool? directly, bool? group, bool? directUser)
+    {
+        // Normalize the username for comparison
+        username = username?.Normalize().ToLower();
+
+        // Define the query with filters applied before the select
+        var query =
+        from si in DB.Share_Item
+        where si.Type == ShareType.Entry
+        join entry in DB.Structure_Entry on si.ItemID equals entry.ID
+        join whoShared in DB.User_Login on si.UserID equals whoShared.ID
+        join sgu in DB.Share_GroupUser on
+            new { si.ToWhom, si.Visibility } equals
+            new { ToWhom = (Guid?) sgu.GroupID, Visibility = ShareVisibility.Group }
+            into groupJoin
+        from sharedGroup in groupJoin.DefaultIfEmpty()
+        join sg in DB.Share_Group on sharedGroup.GroupID
+            equals sg.ID into groupDataJoin
+        from groupData in groupDataJoin.DefaultIfEmpty()
+        where (si.ToWhom == CurrentUser.ID || sharedGroup.UserID == CurrentUser.ID)
+        select new
+        {
+            entry,
+            si.Visibility,
+            whoShared.Username,
+            whoShared.UsernameNormalized,
+            si.CanShare,
+            si.CanEdit,
+            si.CanDelete,
+            groupName = groupData.Name,
+        };
+
+        // Query to get entries owned by the current user
+        var ownedQuery =
+        from entry in DB.Structure_Entry
+        join whoShared in DB.User_Login on entry.UserID equals whoShared.ID
+        where entry.UserID == CurrentUser.ID
+        select new
+        {
+            entry,
+            Visibility = ShareVisibility.None,
+            whoShared.Username,
+            whoShared.UsernameNormalized,
+            CanShare = true,
+            CanEdit = true,
+            CanDelete = true,
+            groupName = ""
+        };
+
+        // Combine the two queries (shared + owned) using Union
+        query = query.Union(ownedQuery);
+
+        // Apply filters prior to select
+        if (!string.IsNullOrWhiteSpace(name))
+            query = from s in query
+                    where s.entry.Name.Contains(name)
+                    select s;
+
+        if (!string.IsNullOrWhiteSpace(templateName))
+            query = from s in query
+                    where s.entry.O_Template.Name.Contains(templateName)
+                    select s;
+
+        if (!string.IsNullOrWhiteSpace(tags))
+            query = from s in query
+                    where !string.IsNullOrWhiteSpace(s.entry.Tags) && tags.Contains(s.entry.Tags)
+                    select s;
+
+        if (!string.IsNullOrWhiteSpace(username) && directUser is false)
+            query = from s in query
+                    where s.UsernameNormalized.Contains(username)
+                    select s;
+
+        if (!string.IsNullOrWhiteSpace(username) && directUser is true)
+            query = from s in query
+                    where s.UsernameNormalized == username
+                    select s;
+
+        // Apply visibility filters based on the model
+        if (common is true)
+            query = from s in query
+                    where s.Visibility == ShareVisibility.Public
+                    select s;
+
+        if (group is true)
+            query = from s in query
+                    where s.Visibility == ShareVisibility.Group
+                    select s;
+
+        if (directly is true)
+            query = from s in query
+                    where s.Visibility == ShareVisibility.Directly
+                    select s;
+
+        // Apply ordering before final select
+        query = from s in query
+                orderby s.Visibility, s.entry.LastUpdatedAt, s.entry.Name
+                select s;
+
+        // Final select to map data to ShareEntryResult
+        IQueryable<ShareEntryResult> finalQuery = query.Select(s => new ShareEntryResult
+        (
+            s.entry.ID,
+            s.entry.Name,
+            s.entry.TemplateID,
+            s.entry.FolderID,
+            s.entry.IsEncrypted,
+            s.entry.Tags,
+            s.entry.CreatedAt,
+            s.entry.LastUpdatedAt,
+            s.Username,
+            s.groupName,
+            s.Visibility,
+            s.CanShare,
+            s.CanEdit,
+            s.CanDelete
+        ));
+
+        // Execute the query and return distinct results
+        return [.. finalQuery];
+    }
 }
+
+public record ShareEntryResult(Guid EntryID,
+    string EntryName,
+    Guid TemplateID,
+    Guid? FolderID,
+    bool IsEncrypted,
+    string? Tags,
+    long CreatedAt,
+    long LastUpdatedAt,
+    string SharedByUsername,
+    string? GroupName,
+    ShareVisibility Visibility,
+    bool CanShare,
+    bool CanEdit,
+    bool CanDelete);

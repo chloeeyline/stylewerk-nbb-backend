@@ -82,9 +82,10 @@ public class Share_Item : IEntity<Share_Item>, IEntity_GuidID, IEntity_User
 
 public enum ShareVisibility : byte
 {
-    Public,
-    Group,
-    Directly
+    None = 0,
+    Directly = 1,
+    Group = 2,
+    Public = 3,
 }
 
 public enum ShareType : byte
