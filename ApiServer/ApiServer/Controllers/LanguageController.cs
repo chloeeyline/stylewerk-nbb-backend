@@ -12,6 +12,14 @@ public class LanguageController(NbbContext db) : BaseController(db)
 {
     public LanguageQueries Query => new(DB, CurrentUser);
 
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+    [HttpGet()]
+    public IActionResult Get(string? code)
+    {
+        string result = Query.Get(code);
+        return Ok(new Model_Result<string>(result));
+    }
+
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_Language>>))]
     [HttpGet(nameof(List))]
     public IActionResult List()
@@ -26,14 +34,6 @@ public class LanguageController(NbbContext db) : BaseController(db)
     {
         Model_Language result = Query.Details(code);
         return Ok(new Model_Result<Model_Language>(result));
-    }
-
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
-    [HttpGet(nameof(Get))]
-    public IActionResult Get(string? code)
-    {
-        string result = Query.Get(code);
-        return Ok(new Model_Result<string>(result));
     }
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]

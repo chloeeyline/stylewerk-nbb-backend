@@ -12,6 +12,14 @@ public class ColorThemeController(NbbContext db) : BaseController(db)
 {
     public ColorThemeQueries Query => new(DB, CurrentUser);
 
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+    [HttpGet]
+    public IActionResult Get(Guid? id)
+    {
+        string result = Query.Get(id);
+        return Ok(new Model_Result<string>(result));
+    }
+
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_ColorTheme>>))]
     [HttpGet(nameof(List))]
     public IActionResult List()
@@ -26,14 +34,6 @@ public class ColorThemeController(NbbContext db) : BaseController(db)
     {
         Model_ColorTheme result = Query.Details(id);
         return Ok(new Model_Result<Model_ColorTheme>(result));
-    }
-
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
-    [HttpGet(nameof(Get))]
-    public IActionResult Get(Guid? id)
-    {
-        string result = Query.Get(id);
-        return Ok(new Model_Result<string>(result));
     }
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]

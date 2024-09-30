@@ -6,6 +6,14 @@ namespace StyleWerk.NBB.Queries;
 
 public class LanguageQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
+    public string Get(string? code)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+            throw new RequestException(ResultCodes.DataIsInvalid);
+        Admin_Language item = DB.Admin_Language.FirstOrDefault(s => s.Code == code) ?? throw new RequestException(ResultCodes.NoDataFound);
+        return item.Data;
+    }
+
     public List<Model_Language> List()
     {
         List<Model_Language> list = [.. DB.Admin_Language.Select(s => new Model_Language(s.Code, s.Name, null))];
@@ -19,14 +27,6 @@ public class LanguageQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         Admin_Language item = DB.Admin_Language.FirstOrDefault(s => s.Code == code) ?? throw new RequestException(ResultCodes.NoDataFound);
         Model_Language result = new(item.Code, item.Name, item.Data);
         return result;
-    }
-
-    public string Get(string? code)
-    {
-        if (string.IsNullOrWhiteSpace(code))
-            throw new RequestException(ResultCodes.DataIsInvalid);
-        Admin_Language item = DB.Admin_Language.FirstOrDefault(s => s.Code == code) ?? throw new RequestException(ResultCodes.NoDataFound);
-        return item.Data;
     }
 
     public void Update(Model_Language? model)
