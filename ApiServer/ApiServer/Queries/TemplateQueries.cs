@@ -7,7 +7,7 @@ using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Queries;
 
-public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedItemQueries(DB, CurrentUser)
+public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
     public Model_TemplatePaging List(int page, int perPage, string? name, string? username, string? description, string? tags, bool? publicShared, bool? groupShared, bool? directlyShared, bool? directUser)
     {

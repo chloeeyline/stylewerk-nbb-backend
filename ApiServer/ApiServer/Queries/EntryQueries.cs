@@ -7,7 +7,7 @@ using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Queries;
 
-public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedItemQueries(DB, CurrentUser)
+public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
     /// <summary>
     /// Load all Entries that are available for User and filter them by the specified filters
