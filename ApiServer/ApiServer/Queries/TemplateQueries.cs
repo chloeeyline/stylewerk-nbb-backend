@@ -135,8 +135,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         return paging;
     }
 
-
-    public Model_Template Get(Guid? id)
+    public Model_Template Details(Guid? id)
     {
         if (id is null || id == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -198,58 +197,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
 
         DB.Structure_Template_Row.RemoveRange(rows);
         DB.Structure_Template.Remove(template);
-
-        DB.SaveChanges();
-    }
-
-    public void Copy(Guid? id)
-    {
-        if (id is null || id == Guid.Empty)
-            throw new RequestException(ResultCodes.DataIsInvalid);
-
-        Structure_Template? copyTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == id)
-            ?? throw new RequestException(ResultCodes.NoDataFound);
-
-        Structure_Template template = new()
-        {
-            ID = Guid.NewGuid(),
-            UserID = CurrentUser.ID,
-            Name = $"{copyTemplate.Name} (Kopie)",
-            Description = copyTemplate.Description,
-            Tags = copyTemplate.Tags,
-        };
-        DB.Structure_Template.Add(template);
-
-        foreach (Structure_Template_Row row in DB.Structure_Template_Row.Where(t => t.TemplateID == copyTemplate.ID).ToList())
-        {
-            Structure_Template_Row newRow = new()
-            {
-                ID = Guid.NewGuid(),
-                TemplateID = template.ID,
-                SortOrder = row.SortOrder,
-                CanWrapCells = row.CanWrapCells,
-                CanRepeat = row.CanRepeat,
-                HideOnNoInput = row.CanRepeat,
-            };
-            DB.Structure_Template_Row.Add(newRow);
-
-            foreach (Structure_Template_Cell cell in DB.Structure_Template_Cell.Where(c => c.RowID == row.ID).ToList())
-            {
-                Structure_Template_Cell newCell = new()
-                {
-                    ID = Guid.NewGuid(),
-                    RowID = newRow.ID,
-                    SortOrder = cell.SortOrder,
-                    InputHelper = cell.InputHelper,
-                    HideOnEmpty = cell.HideOnEmpty,
-                    IsRequired = cell.IsRequired,
-                    Text = cell.Text,
-                    Description = cell.Description,
-                    MetaData = cell.MetaData
-                };
-                DB.Structure_Template_Cell.Add(newCell);
-            }
-        }
 
         DB.SaveChanges();
     }
@@ -339,6 +286,56 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
 
         DB.SaveChanges();
     }
+
+    public void Copy(Guid? id)
+    {
+        if (id is null || id == Guid.Empty)
+            throw new RequestException(ResultCodes.DataIsInvalid);
+
+        Structure_Template? copyTemplate = DB.Structure_Template.FirstOrDefault(t => t.ID == id)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
+
+        Structure_Template template = new()
+        {
+            ID = Guid.NewGuid(),
+            UserID = CurrentUser.ID,
+            Name = $"{copyTemplate.Name} (Kopie)",
+            Description = copyTemplate.Description,
+            Tags = copyTemplate.Tags,
+        };
+        DB.Structure_Template.Add(template);
+
+        foreach (Structure_Template_Row row in DB.Structure_Template_Row.Where(t => t.TemplateID == copyTemplate.ID).ToList())
+        {
+            Structure_Template_Row newRow = new()
+            {
+                ID = Guid.NewGuid(),
+                TemplateID = template.ID,
+                SortOrder = row.SortOrder,
+                CanWrapCells = row.CanWrapCells,
+                CanRepeat = row.CanRepeat,
+                HideOnNoInput = row.CanRepeat,
+            };
+            DB.Structure_Template_Row.Add(newRow);
+
+            foreach (Structure_Template_Cell cell in DB.Structure_Template_Cell.Where(c => c.RowID == row.ID).ToList())
+            {
+                Structure_Template_Cell newCell = new()
+                {
+                    ID = Guid.NewGuid(),
+                    RowID = newRow.ID,
+                    SortOrder = cell.SortOrder,
+                    InputHelper = cell.InputHelper,
+                    HideOnEmpty = cell.HideOnEmpty,
+                    IsRequired = cell.IsRequired,
+                    Text = cell.Text,
+                    Description = cell.Description,
+                    MetaData = cell.MetaData
+                };
+                DB.Structure_Template_Cell.Add(newCell);
+            }
+        }
+
+        DB.SaveChanges();
+    }
 }
-
-

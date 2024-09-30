@@ -12,7 +12,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
     /// Get all folders and all entries which arent't in a folder, that belong to the current user
     /// </summary>
     /// <returns></returns>
-    public List<Model_EntryFolders> Get()
+    public List<Model_EntryFolders> List()
     {
         List<Model_EntryFolders> entryFolders =
         [

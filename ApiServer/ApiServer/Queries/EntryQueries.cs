@@ -152,53 +152,12 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
     }
 
     /// <summary>
-    /// Get template rows and cells to use for an entry based on the given tempate Id
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    /// <exception cref="RequestException"></exception>
-    public Model_Entry GetFromTemplate(Guid? id)
-    {
-        if (id is null || id == Guid.Empty)
-            throw new RequestException(ResultCodes.DataIsInvalid);
-
-        Structure_Template item = DB.Structure_Template.FirstOrDefault(e => e.ID == id)
-            ?? throw new RequestException(ResultCodes.NoDataFound);
-
-        List<Structure_Template_Row> itemRows = [.. DB.Structure_Template_Row
-            .Where(s => s.TemplateID == item.ID)
-            .OrderBy(s => s.SortOrder)];
-
-        List<Model_EntryRow> rows = [];
-        foreach (Structure_Template_Row row in itemRows)
-        {
-            List<Model_EntryCell> cells = [];
-            List<Structure_Template_Cell> itemCells = [.. DB.Structure_Template_Cell
-                .Where(s => s.RowID == row.ID)
-                .OrderBy(s => s.SortOrder)];
-
-            foreach (Structure_Template_Cell cell in itemCells)
-            {
-                Model_TemplateCell cellModelTemplate = new(cell.ID, cell.RowID, cell.InputHelper, cell.HideOnEmpty, cell.IsRequired, cell.Text, cell.MetaData);
-                Model_EntryCell cellModel = new(null, cell.ID, cellModelTemplate, null);
-                cells.Add(cellModel);
-            }
-
-            Model_EntryRow rowModel = new(null, row.ID, 0, new Model_TemplateRow(row.ID, row.CanWrapCells, row.CanRepeat, row.HideOnNoInput, []), cells);
-            rows.Add(rowModel);
-        }
-
-        Model_Entry result = new(null, null, item.ID, null, null, false, rows);
-        return result;
-    }
-
-    /// <summary>
     /// Get entry details based on entry id
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
     /// <exception cref="RequestException"></exception>
-    public Model_Entry Get(Guid? id)
+    public Model_Entry Details(Guid? id)
     {
         if (id is null || id == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -353,7 +312,48 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         }
         DB.SaveChanges();
 
-        Model_Entry result = Get(entry.ID);
+        Model_Entry result = Details(entry.ID);
+        return result;
+    }
+
+    /// <summary>
+    /// Get template rows and cells to use for an entry based on the given tempate Id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    /// <exception cref="RequestException"></exception>
+    public Model_Entry GetFromTemplate(Guid? id)
+    {
+        if (id is null || id == Guid.Empty)
+            throw new RequestException(ResultCodes.DataIsInvalid);
+
+        Structure_Template item = DB.Structure_Template.FirstOrDefault(e => e.ID == id)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
+
+        List<Structure_Template_Row> itemRows = [.. DB.Structure_Template_Row
+            .Where(s => s.TemplateID == item.ID)
+            .OrderBy(s => s.SortOrder)];
+
+        List<Model_EntryRow> rows = [];
+        foreach (Structure_Template_Row row in itemRows)
+        {
+            List<Model_EntryCell> cells = [];
+            List<Structure_Template_Cell> itemCells = [.. DB.Structure_Template_Cell
+                .Where(s => s.RowID == row.ID)
+                .OrderBy(s => s.SortOrder)];
+
+            foreach (Structure_Template_Cell cell in itemCells)
+            {
+                Model_TemplateCell cellModelTemplate = new(cell.ID, cell.RowID, cell.InputHelper, cell.HideOnEmpty, cell.IsRequired, cell.Text, cell.MetaData);
+                Model_EntryCell cellModel = new(null, cell.ID, cellModelTemplate, null);
+                cells.Add(cellModel);
+            }
+
+            Model_EntryRow rowModel = new(null, row.ID, 0, new Model_TemplateRow(row.ID, row.CanWrapCells, row.CanRepeat, row.HideOnNoInput, []), cells);
+            rows.Add(rowModel);
+        }
+
+        Model_Entry result = new(null, null, item.ID, null, null, false, rows);
         return result;
     }
 }

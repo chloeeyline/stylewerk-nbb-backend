@@ -21,10 +21,10 @@ public class TemplateController(NbbContext db) : BaseController(db)
     }
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Template>))]
-    [HttpGet(nameof(Get))]
-    public IActionResult Get(Guid? id)
+    [HttpGet(nameof(Details))]
+    public IActionResult Details(Guid? id)
     {
-        Model_Template result = Query.Get(id);
+        Model_Template result = Query.Details(id);
         return Ok(new Model_Result<Model_Template>(result));
     }
 

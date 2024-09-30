@@ -24,6 +24,27 @@ public class EntryController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
+    /// Not Finished
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Entry>))]
+    [HttpGet(nameof(Details))]
+    public IActionResult Details(Guid? id)
+    {
+        Model_Entry result = Query.Details(id);
+        return Ok(new Model_Result<Model_Entry>(result));
+    }
+
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Entry>))]
+    [HttpPost(nameof(Update))]
+    public IActionResult Update([FromBody] Model_Entry? model)
+    {
+        Model_Entry result = Query.Update(model);
+        return Ok(new Model_Result<Model_Entry>(result));
+    }
+
+    /// <summary>
     /// Get the structure of the entry based on the selected template
     /// </summary>
     /// <param name="id"></param>
@@ -33,27 +54,6 @@ public class EntryController(NbbContext db) : BaseController(db)
     public IActionResult GetFromTemplate(Guid? id)
     {
         Model_Entry result = Query.GetFromTemplate(id);
-        return Ok(new Model_Result<Model_Entry>(result));
-    }
-
-    /// <summary>
-    /// Not Finished
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Entry>))]
-    [HttpGet(nameof(Get))]
-    public IActionResult Get(Guid? id)
-    {
-        Model_Entry result = Query.Get(id);
-        return Ok(new Model_Result<Model_Entry>(result));
-    }
-
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Entry>))]
-    [HttpPost(nameof(Update))]
-    public IActionResult Update([FromBody] Model_Entry? model)
-    {
-        Model_Entry result = Query.Update(model);
         return Ok(new Model_Result<Model_Entry>(result));
     }
 }

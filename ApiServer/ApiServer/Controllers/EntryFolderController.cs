@@ -17,10 +17,10 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
     /// </summary>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
-    [HttpGet(nameof(Get))]
-    public IActionResult Get()
+    [HttpGet(nameof(List))]
+    public IActionResult List()
     {
-        List<Model_EntryFolders> result = Query.Get();
+        List<Model_EntryFolders> result = Query.List();
         return Ok(new Model_Result<List<Model_EntryFolders>>(result));
     }
 
