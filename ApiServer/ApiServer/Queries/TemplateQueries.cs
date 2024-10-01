@@ -33,8 +33,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             template,
             si.Visibility,
             ownerUsername = owner.Username,
-            ownerUsernameNormalized = owner.UsernameNormalized,
-            groupName = groupData.Name
+            ownerUsernameNormalized = owner.UsernameNormalized
         };
 
         // Query to get templates owned by the current user
@@ -47,8 +46,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             template,
             Visibility = ShareVisibility.None,
             ownerUsername = owner.Username,
-            ownerUsernameNormalized = owner.UsernameNormalized,
-            groupName = (string?) null
+            ownerUsernameNormalized = owner.UsernameNormalized
         };
 
         // Combine the two queries (shared + owned) using Union
@@ -111,8 +109,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             s.template.CreatedAt,
             s.template.LastUpdatedAt,
             s.ownerUsername,
-            s.Visibility,
-            s.groupName
+            s.Visibility
         ));
 
         // Execute the query and return distinct results

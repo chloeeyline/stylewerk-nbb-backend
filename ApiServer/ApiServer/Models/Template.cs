@@ -15,9 +15,8 @@ public record Model_TemplateItem(
     string? Tags,
     long CreatedAt,
     long LastUpdatedAt,
-    string OwnerUsername,
-    ShareVisibility Visibility,
-    string? GroupName);
+    string Username,
+    ShareVisibility Visibility);
 
 
 public record Model_Template(

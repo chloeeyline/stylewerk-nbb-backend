@@ -11,10 +11,8 @@ public record Model_EntryItem(Guid ID,
     long CreatedAt,
     long LastUpdatedAt,
     string TemplateName,
-    string OwnerUsername,
-    ShareVisibility Visibility,
-    string? FolderName,
-    string? GroupName);
+    string Username,
+    ShareVisibility Visibility);
 
 public record Model_Entry(Guid? ID, Guid? FolderID, Guid TemplateID, string? Name, string? Tags, bool IsEncrypted, List<Model_EntryRow> Items);
 public record Model_EntryRow(Guid? ID, Guid TemplateID, int SortOrder, Model_TemplateRow? Info, List<Model_EntryCell> Items);

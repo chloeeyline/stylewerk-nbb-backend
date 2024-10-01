@@ -38,6 +38,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
 
             if (item.Visibility is ShareVisibility.Public)
             {
+                DB.Share_Item.RemoveRange(DB.Share_Item.Where(s => s.ItemID == item.ID));
                 result.Add(new Model_ShareItem(item.ID, item.ItemID, owner.Username, item.Visibility, type.Value, ""));
             }
             else if (item.Visibility is ShareVisibility.Directly)
@@ -99,6 +100,8 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             string username = model.ToWhom.ToLower().Normalize();
             User_Login user = DB.User_Login.FirstOrDefault(s => s.UsernameNormalized == username)
                 ?? throw new RequestException(ResultCodes.NoDataFound);
+            if (user.ID == CurrentUser.ID)
+                throw new RequestException(ResultCodes.CantShareWithYourself);
             toWhom = user.ID;
         }
         else

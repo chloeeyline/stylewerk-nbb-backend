@@ -161,6 +161,9 @@ public class ShareGroupQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
         User_Login? user = DB.User_Login.FirstOrDefault(s => s.UsernameNormalized == model.Username) ??
             throw new RequestException(ResultCodes.NoUserFound);
 
+        if (user.ID == CurrentUser.ID)
+            throw new RequestException(ResultCodes.CantShareWithYourself);
+
         Share_GroupUser? item = DB.Share_GroupUser.Include(s => s.O_User)
             .FirstOrDefault(s => s.GroupID == group.ID && s.O_User.UsernameNormalized == model.Username);
 

@@ -25,9 +25,6 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             si.ItemID equals entry.ID
         join owner in DB.User_Login on
             entry.UserID equals owner.ID
-        join folder in DB.Structure_Entry_Folder on
-            entry.FolderID equals folder.ID into folderJoin
-        from folderData in folderJoin.DefaultIfEmpty()
         join template in DB.Structure_Template on
             entry.TemplateID equals template.ID
         join sgu in DB.Share_GroupUser on
@@ -45,9 +42,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             si.Visibility,
             ownerUsername = owner.Username,
             ownerUsernameNormalized = owner.UsernameNormalized,
-            templateName = template.Name,
-            folderName = folderData.Name,
-            groupName = groupData.Name
+            templateName = template.Name
         };
 
         // Query to get entries owned by the current user
@@ -55,9 +50,6 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         from entry in DB.Structure_Entry
         join owner in DB.User_Login on
             entry.UserID equals owner.ID
-        join folder in DB.Structure_Entry_Folder on
-            entry.FolderID equals folder.ID into folderJoin
-        from folderData in folderJoin.DefaultIfEmpty()
         join template in DB.Structure_Template on
             entry.TemplateID equals template.ID
         where entry.UserID == CurrentUser.ID
@@ -67,9 +59,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             Visibility = ShareVisibility.None,
             ownerUsername = owner.Username,
             ownerUsernameNormalized = owner.UsernameNormalized,
-            templateName = template.Name,
-            folderName = folderData.Name,
-            groupName = (string?) null,
+            templateName = template.Name
         };
 
         // Combine the two queries (shared + owned) using Union
@@ -126,9 +116,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             s.entry.LastUpdatedAt,
             s.templateName,
             s.ownerUsername,
-            s.Visibility,
-            s.folderName,
-            s.groupName
+            s.Visibility
         ));
 
         // Execute the query and return distinct results
