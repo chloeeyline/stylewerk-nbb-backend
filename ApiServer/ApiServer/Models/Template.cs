@@ -2,16 +2,6 @@ using StyleWerk.NBB.Database.Share;
 
 namespace StyleWerk.NBB.Models;
 
-public record Model_FilterTemplate(
-    string? Name,
-    string? Username,
-    string? Tags,
-    bool DirectUser,
-    bool Public,
-    bool Group,
-    bool Directly,
-    int Page,
-    int PerPage);
 public record Model_TemplatePaging(
     int Count,
     int Page,
@@ -27,7 +17,6 @@ public record Model_TemplateItem(
     long LastUpdatedAt,
     string OwnerUsername,
     ShareVisibility Visibility,
-    string? SharedByUsername,
     string? GroupName);
 
 

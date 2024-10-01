@@ -12,7 +12,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
     /// <summary>
     /// Load all Entries that are available for User and filter them by the specified filters
     /// </summary>
-    public List<Model_EntryFilterItem> List(string? name, string? username, string? templateName, string? tags, bool? publicShared, bool? groupShared, bool? directlyShared, bool? directUser)
+    public List<Model_EntryItem> List(string? name, string? username, string? templateName, string? tags, bool? publicShared, bool? groupShared, bool? directlyShared, bool? directUser)
     {
         // Normalize the username for comparison
         username = username?.Normalize().ToLower();
@@ -23,8 +23,6 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         where si.Type == ShareType.Entry
         join entry in DB.Structure_Entry on
             si.ItemID equals entry.ID
-        join whoShared in DB.User_Login on
-            si.UserID equals whoShared.ID
         join owner in DB.User_Login on
             entry.UserID equals owner.ID
         join folder in DB.Structure_Entry_Folder on
@@ -49,8 +47,6 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             ownerUsernameNormalized = owner.UsernameNormalized,
             templateName = template.Name,
             folderName = folderData.Name,
-            whoSharedUsername = whoShared.Username,
-            whoSharedUsernameNormalized = whoShared.UsernameNormalized,
             groupName = groupData.Name
         };
 
@@ -73,8 +69,6 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             ownerUsernameNormalized = owner.UsernameNormalized,
             templateName = template.Name,
             folderName = folderData.Name,
-            whoSharedUsername = (string?) null,
-            whoSharedUsernameNormalized = (string?) null,
             groupName = (string?) null,
         };
 
@@ -122,7 +116,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
                 select s;
 
         // Final select to map data to ShareEntryResult
-        IQueryable<Model_EntryFilterItem> finalQuery = query.Select(s => new Model_EntryFilterItem
+        IQueryable<Model_EntryItem> finalQuery = query.Select(s => new Model_EntryItem
         (
             s.entry.ID,
             s.entry.Name,
@@ -134,7 +128,6 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             s.ownerUsername,
             s.Visibility,
             s.folderName,
-            s.whoSharedUsername,
             s.groupName
         ));
 

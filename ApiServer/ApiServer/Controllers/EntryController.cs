@@ -15,12 +15,12 @@ public class EntryController(NbbContext db) : BaseController(db)
     /// <summary>
     /// Load all entries and filter them
     /// </summary>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFilterItem>>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryItem>>))]
     [HttpGet(nameof(List))]
     public IActionResult List(string? name, string? username, string? templateName, string? tags, bool? publicShared, bool? groupShared, bool? directlyShared, bool? directUser)
     {
-        List<Model_EntryFilterItem> result = Query.List(name, username, templateName, tags, publicShared, groupShared, directlyShared, directUser);
-        return base.Ok(new Model_Result<List<Model_EntryFilterItem>>(result));
+        List<Model_EntryItem> result = Query.List(name, username, templateName, tags, publicShared, groupShared, directlyShared, directUser);
+        return base.Ok(new Model_Result<List<Model_EntryItem>>(result));
     }
 
     /// <summary>

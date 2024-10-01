@@ -19,7 +19,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         from si in DB.Share_Item
         where si.Type == ShareType.Template
         join template in DB.Structure_Template on si.ItemID equals template.ID
-        join whoShared in DB.User_Login on si.UserID equals whoShared.ID
         join owner in DB.User_Login on template.UserID equals owner.ID
         join sgu in DB.Share_GroupUser on
             new { si.ToWhom, si.Visibility } equals
@@ -35,8 +34,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             si.Visibility,
             ownerUsername = owner.Username,
             ownerUsernameNormalized = owner.UsernameNormalized,
-            whoSharedUsername = whoShared.Username,
-            whoSharedUsernameNormalized = whoShared.UsernameNormalized,
             groupName = groupData.Name
         };
 
@@ -51,8 +48,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             Visibility = ShareVisibility.None,
             ownerUsername = owner.Username,
             ownerUsernameNormalized = owner.UsernameNormalized,
-            whoSharedUsername = (string?) null,
-            whoSharedUsernameNormalized = (string?) null,
             groupName = (string?) null
         };
 
@@ -117,7 +112,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             s.template.LastUpdatedAt,
             s.ownerUsername,
             s.Visibility,
-            s.whoSharedUsername,
             s.groupName
         ));
 

@@ -37,7 +37,7 @@ public class ShareController(NbbContext db) : BaseController(db)
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.MissingRight, ResultCodes.OnlyOwnerCanChangePublicity)]
     [HttpPost(nameof(Update))]
-    public IActionResult Update([FromBody] Model_Share? model)
+    public IActionResult Update([FromBody] Model_ShareItem? model)
     {
         Query.Update(model);
         return Ok(new Model_Result<string>());

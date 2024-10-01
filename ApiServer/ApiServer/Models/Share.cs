@@ -2,11 +2,7 @@
 
 namespace StyleWerk.NBB.Models;
 
-public record Model_ShareItem(Guid ID, Guid ItemID, string WhoShared, ShareVisibility Visibility, string? ToWhom)
-{
-    public Model_ShareItem(Share_Item item, string? toWhom) : this(item.ID, item.ItemID, item.O_User.Username, item.Visibility, toWhom) { }
-}
-public record Model_Share(Guid ID, string? ToWhom, ShareVisibility Visibility, ShareType Type);
+public record Model_ShareItem(Guid ID, Guid ItemID, string WhoShared, ShareVisibility Visibility, ShareType Type, string? ToWhom);
 
 public record Model_Group(Guid? ID, string Name, int UserCount);
 public record Model_GroupUser(string Username, Guid GroupID, bool CanAddUsers, bool CanRemoveUsers, string? WhoAdded);

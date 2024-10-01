@@ -3,9 +3,8 @@
 namespace StyleWerk.NBB.Models;
 
 public record Model_EntryFolders(Guid? ID, string? Name, Model_EntryItem[] Items);
-public record Model_EntryItem(Guid ID, string Name, string UserName, string TemplateName, string? Tags, long CreatedAt, long LastUpdatedAt);
 
-public record Model_EntryFilterItem(Guid ID,
+public record Model_EntryItem(Guid ID,
     string Name,
     bool IsEncrypted,
     string? Tags,
@@ -15,7 +14,6 @@ public record Model_EntryFilterItem(Guid ID,
     string OwnerUsername,
     ShareVisibility Visibility,
     string? FolderName,
-    string? SharedByUsername,
     string? GroupName);
 
 public record Model_Entry(Guid? ID, Guid? FolderID, Guid TemplateID, string? Name, string? Tags, bool IsEncrypted, List<Model_EntryRow> Items);

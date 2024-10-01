@@ -1,23 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using StyleWerk.NBB.Database.Core;
-using StyleWerk.NBB.Database.User;
 
 namespace StyleWerk.NBB.Database.Share;
 
 /// <summary>
 /// Represents a shared item entity with access controls.
 /// </summary>
-public class Share_Item : IEntity<Share_Item>, IEntity_GuidID, IEntity_User
+public class Share_Item : IEntity<Share_Item>, IEntity_GuidID
 {
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
     public required Guid ID { get; set; }
-    /// <summary>
-    /// User ID of the user who shared the item.
-    /// </summary>
-    public required Guid UserID { get; set; }
 
     /// <summary>
     /// Indicates whether the shared item is accessible to a group or individual user.
@@ -39,10 +34,6 @@ public class Share_Item : IEntity<Share_Item>, IEntity_GuidID, IEntity_User
     /// </summary>
     public Guid? ToWhom { get; set; }
 
-#pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
-    public virtual User_Login O_User { get; set; }
-#pragma warning restore CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
-
     /// <summary>
     /// <inheritdoc/>
     /// </summary>
@@ -51,7 +42,6 @@ public class Share_Item : IEntity<Share_Item>, IEntity_GuidID, IEntity_User
     {
         b.UseTemplates();
         b.UseIEntity_GuidID();
-        b.UseIEntity_User();
 
         b.Property(s => s.Visibility).IsRequired(true);
         b.Property(s => s.Type).IsRequired(true);

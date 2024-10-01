@@ -11,8 +11,7 @@ namespace StyleWerk.NBB.Queries;
 public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
     /// <summary>
-    /// Get a template or entry based on the given id or 
-    /// get a list of templates and entries based on the given share type
+    /// Gets to whom this item is shared
     /// </summary>
     /// <param name="id"></param>
     /// <param name="type"></param>
@@ -20,10 +19,10 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
     /// <exception cref="RequestException"></exception>
     public List<Model_ShareItem> List(Guid? id, ShareType? type)
     {
-        if (id is null || id == Guid.Empty || type is null)
+        if (id is null || id == Guid.Empty || !type.HasValue)
             throw new RequestException(ResultCodes.DataIsInvalid);
 
-        List<Share_Item> list = [.. DB.Share_Item.Where(s => s.ItemID == id && s.Type == type).Include(s => s.O_User)];
+        List<Share_Item> list = [.. DB.Share_Item.Where(s => s.ItemID == id && s.Type == type)];
         List<Model_ShareItem> result = [];
 
         foreach (Share_Item item in list)
@@ -34,17 +33,20 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
                ? Exist_SharedItem(DB.Structure_Template, item.ItemID)
                : throw new RequestException(ResultCodes.DataIsInvalid);
 
+            User_Login owner = DB.User_Login.FirstOrDefault(s => s.ID == userID)
+                    ?? throw new RequestException(ResultCodes.NoDataFound);
+
             if (item.Visibility is ShareVisibility.Public)
             {
-                result.Add(new Model_ShareItem(item, ""));
+                result.Add(new Model_ShareItem(item.ID, item.ItemID, owner.Username, item.Visibility, type.Value, ""));
             }
             else if (item.Visibility is ShareVisibility.Directly)
             {
                 User_Login user = DB.User_Login.FirstOrDefault(s => s.ID == item.ToWhom)
                     ?? throw new RequestException(ResultCodes.NoDataFound);
 
-                if (userID == CurrentUser.ID || item.UserID == CurrentUser.ID)
-                    result.Add(new Model_ShareItem(item, user.Username));
+                if (userID == CurrentUser.ID)
+                    result.Add(new Model_ShareItem(item.ID, item.ItemID, owner.Username, item.Visibility, type.Value, user.Username));
             }
             else if (item.Visibility is ShareVisibility.Group)
             {
@@ -52,7 +54,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
                     ?? throw new RequestException(ResultCodes.NoDataFound);
 
                 if (userID == CurrentUser.ID || group.UserID == CurrentUser.ID)
-                    result.Add(new Model_ShareItem(item, group.Name));
+                    result.Add(new Model_ShareItem(item.ID, item.ItemID, owner.Username, item.Visibility, type.Value, group.Name));
             }
         }
         return result;
@@ -65,7 +67,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
     /// </summary>
     /// <param name="model"></param>
     /// <exception cref="RequestException"></exception>
-    public void Update(Model_Share? model)
+    public void Update(Model_ShareItem? model)
     {
         if (model is null)
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -113,7 +115,6 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             item = new()
             {
                 ID = Guid.NewGuid(),
-                UserID = CurrentUser.ID,
                 Visibility = model.Visibility,
                 Type = model.Type,
                 ItemID = model.ID,
@@ -139,23 +140,24 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         Share_Item item = DB.Share_Item.FirstOrDefault(s => s.ID == id) ??
             throw new RequestException(ResultCodes.NoDataFound);
 
-        if (item.Visibility is ShareVisibility.Public && item.UserID != CurrentUser.ID)
-            throw new RequestException(ResultCodes.OnlyOwnerCanChangePublicity);
-        else if (item.UserID != CurrentUser.ID)
-        {
-            Guid userID = item.Type == ShareType.Entry
-                ? Exist_SharedItem(DB.Structure_Entry, item.ItemID)
-                : item.Type == ShareType.Template
-                ? Exist_SharedItem(DB.Structure_Template, item.ItemID)
-                : throw new RequestException(ResultCodes.DataIsInvalid);
-            if (userID != CurrentUser.ID)
-                throw new RequestException(ResultCodes.YouDontOwnTheData);
-        }
+        Guid userID = GetOwnerID(item.ID, item.Type);
+
+        if (userID != CurrentUser.ID)
+            throw new RequestException(ResultCodes.YouDontOwnTheData);
 
         DB.Share_Item.Remove(item);
         DB.SaveChanges();
     }
 
+    private Guid GetOwnerID(Guid id, ShareType type)
+    {
+        Guid userID = type == ShareType.Entry
+                ? Exist_SharedItem(DB.Structure_Entry, id)
+                : type == ShareType.Template
+                ? Exist_SharedItem(DB.Structure_Template, id)
+                : throw new RequestException(ResultCodes.DataIsInvalid);
+        return userID;
+    }
     /// <summary>
     /// Return the user Id from the item creator if it exists
     /// </summary>
