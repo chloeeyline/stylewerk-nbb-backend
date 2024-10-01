@@ -16,8 +16,6 @@ namespace StyleWerk.NBB.Helper;
 /// <param name="logger">The logger instance to log exceptions.</param>
 public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
 {
-    private static readonly JsonSerializerOptions _options = new();
-
     /// <summary>
     /// Invokes the middleware to handle the HTTP request and catch any exceptions.
     /// </summary>
@@ -67,6 +65,7 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
         }
 
         // Serialize the response to JSON
+        JsonSerializerOptions _options = new();
         _options.Converters.Add(new JsonStringEnumConverter());
         string result = JsonSerializer.Serialize(response, _options);
         return context.Response.WriteAsync(result);
