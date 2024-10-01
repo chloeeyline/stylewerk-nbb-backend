@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 using StyleWerk.NBB.AWS;
@@ -19,7 +18,7 @@ using UAParser;
 
 namespace StyleWerk.NBB.Authentication;
 
-public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, string UserAgent, IOptions<SecretData> SecretData) : BaseQueries(DB, CurrentUser)
+public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, string UserAgent, SecretData SecretData) : BaseQueries(DB, CurrentUser)
 {
     #region Fixed Values
     private const int KeySize = 256;
@@ -73,12 +72,12 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         if (user.StatusCode == UserStatus.PasswordReset)
             throw new RequestException(ResultCodes.PasswordResetWasRequested);
 
-        SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(SecretData.Value.JwtKey));
+        SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(SecretData.JwtKey));
         SigningCredentials credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
 
         Claim[] claims = [new Claim(ClaimTypes.Sid, user.ID.ToString())];
 
-        JwtSecurityToken token = new(SecretData.Value.JwtIssuer, SecretData.Value.JwtAudience, claims, expires: DateTimeOffset.FromUnixTimeMilliseconds(LoginTokenDuration).DateTime, signingCredentials: credentials);
+        JwtSecurityToken token = new(SecretData.JwtIssuer, SecretData.JwtAudience, claims, expires: DateTimeOffset.FromUnixTimeMilliseconds(LoginTokenDuration).DateTime, signingCredentials: credentials);
         string loginToken = new JwtSecurityTokenHandler().WriteToken(token);
 
         return new Model_Token(loginToken, LoginTokenDuration);
@@ -370,7 +369,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
             salt = GenerateRandomKey();
         return salt;
     }
-    private string HashPassword(string password, string salt) => ComputeHash(password, salt, SecretData.Value.PasswortPepper, 5);
+    private string HashPassword(string password, string salt) => ComputeHash(password, salt, SecretData.PasswortPepper, 5);
 
     private static string ComputeHash(string password, string salt, string pepper, int iteration)
     {
@@ -456,7 +455,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     private bool SendMail_EmailVeification(string email, string token)
     {
         string content = SimpleEmailService.AccessEmailTemplate("EmailVerification.html");
-        string url = $"{SecretData.Value.FrontendUrl}/User/EmailVerification?id={token}";
+        string url = $"{SecretData.FrontendUrl}/User/EmailVerification?id={token}";
         content = content.Replace("YOUR_VERIFICATION_LINK_HERE", url);
         return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
     }
@@ -464,7 +463,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     private bool SendMail_PasswordReset(string email, string token)
     {
         string content = SimpleEmailService.AccessEmailTemplate("ResetPassword.html");
-        string url = $"{SecretData.Value.FrontendUrl}/User/EmailVerification?id={token}";
+        string url = $"{SecretData.FrontendUrl}/User/EmailVerification?id={token}";
         content = content.Replace("YOUR_VERIFICATION_LINK_HERE", url);
         return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
     }

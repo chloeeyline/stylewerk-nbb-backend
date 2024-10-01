@@ -13,7 +13,7 @@ namespace StyleWerk.NBB.Controllers;
 
 public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : BaseController(db)
 {
-    public AuthQueries Authentication => new(DB, CurrentUser, Request.Headers.UserAgent.ToString(), SecretData);
+    public AuthQueries Authentication => new(DB, CurrentUser, Request.Headers.UserAgent.ToString(), SecretData.Value);
 
     #region Login
     [ApiExplorerSettings(GroupName = "Login")]

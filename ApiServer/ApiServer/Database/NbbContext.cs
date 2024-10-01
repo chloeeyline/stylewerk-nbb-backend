@@ -12,16 +12,47 @@ namespace StyleWerk.NBB.Database;
 
 public class DbContextFactory : IDesignTimeDbContextFactory<NbbContext>
 {
-    public NbbContext CreateDbContext(string[] args)
+    public NbbContext CreateDbContext(string[] args) => NbbContext.Create();
+}
+
+public record ApplicationUser
+{
+    public ApplicationUser()
     {
-        SecretData secretData = AmazonSecretsManager.GetData() ?? throw new Exception();
-        string connectionString = secretData.GetConnectionString();
-
-        DbContextOptionsBuilder<NbbContext> builder = new();
-        builder.UseNpgsql(connectionString);
-
-        return new NbbContext(builder.Options);
+        Instantiated = false;
+        Login = new()
+        {
+            ID = Guid.Empty,
+            Email = string.Empty,
+            EmailNormalized = string.Empty,
+            Username = string.Empty,
+            UsernameNormalized = string.Empty,
+            PasswordSalt = string.Empty,
+            PasswordHash = string.Empty,
+            Admin = false,
+        };
+        Information = new()
+        {
+            ID = Guid.Empty,
+            FirstName = string.Empty,
+            LastName = string.Empty,
+            Gender = UserGender.NotSpecified,
+            Birthday = new DateTimeOffset(new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day)).ToUnixTimeMilliseconds(),
+        };
     }
+
+    public ApplicationUser(User_Login login, User_Information information)
+    {
+        Login = login ?? throw new ArgumentNullException(nameof(login));
+        Information = information ?? throw new ArgumentNullException(nameof(information));
+        ID = login.ID;
+        Instantiated = true;
+    }
+
+    public bool Instantiated { get; init; }
+    public Guid ID { get; init; }
+    public User_Login Login { get; init; }
+    public User_Information Information { get; init; }
 }
 
 public partial class NbbContext : DbContext
@@ -106,5 +137,22 @@ public partial class NbbContext : DbContext
         }
 
         return base.SaveChanges();
+    }
+
+    public ApplicationUser GetUser(Guid? id)
+    {
+        User_Login? login = User_Login.FirstOrDefault(s => s.ID == id);
+        User_Information? information = User_Information.FirstOrDefault(s => s.ID == id);
+        return id is null || login is null || information is null ?
+            new ApplicationUser() :
+            new ApplicationUser(login, information);
+    }
+
+    public static NbbContext Create()
+    {
+        SecretData secretData = SecretData.GetData();
+        DbContextOptionsBuilder<NbbContext> builder = new();
+        builder.UseNpgsql(secretData.ConnectionString);
+        return new NbbContext(builder.Options);
     }
 }
