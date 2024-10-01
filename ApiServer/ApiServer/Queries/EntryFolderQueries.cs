@@ -123,10 +123,6 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         if (folder.UserID != CurrentUser.ID)
             throw new RequestException(ResultCodes.YouDontOwnTheData);
 
-        List<Structure_Entry> entries = [.. DB.Structure_Entry.Where(s => s.FolderID == id)];
-        foreach (Structure_Entry? entry in entries)
-            entry.FolderID = null;
-
         DB.Structure_Entry_Folder.Remove(folder);
         DB.SaveChanges();
     }

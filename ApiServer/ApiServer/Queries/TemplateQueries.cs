@@ -184,27 +184,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             ?? throw new RequestException(ResultCodes.NoDataFound);
         if (template.UserID != CurrentUser.ID)
             throw new RequestException(ResultCodes.YouDontOwnTheData);
-
-        List<Structure_Entry> entries = [.. DB.Structure_Entry.Where(e => e.TemplateID == id)];
-        foreach (Structure_Entry entry in entries)
-        {
-            List<Structure_Entry_Row> entryRows = [.. DB.Structure_Entry_Row
-                .Where(t => t.EntryID == entry.ID)
-                .Include(s => s.O_Cells)];
-            foreach (Structure_Entry_Row row in entryRows)
-                DB.Structure_Entry_Cell.RemoveRange(row.O_Cells);
-            DB.Structure_Entry_Row.RemoveRange(entryRows);
-        }
-        DB.Structure_Entry.RemoveRange(entries);
-
-        List<Structure_Template_Row> rows = [.. DB.Structure_Template_Row
-            .Where(t => t.TemplateID == id)
-            .Include(s => s.O_Cells)];
-
-        foreach (Structure_Template_Row row in rows)
-            DB.Structure_Template_Cell.RemoveRange(row.O_Cells);
-
-        DB.Structure_Template_Row.RemoveRange(rows);
         DB.Structure_Template.Remove(template);
 
         DB.SaveChanges();
