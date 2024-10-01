@@ -44,11 +44,11 @@ public class TemplateController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<string>());
     }
 
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Template>))]
     [HttpPost(nameof(Copy))]
     public IActionResult Copy(Guid? id)
     {
-        Query.Copy(id);
-        return Ok(new Model_Result<string>());
+        Model_Template result = Query.Copy(id);
+        return Ok(new Model_Result<Model_Template>(result));
     }
 }

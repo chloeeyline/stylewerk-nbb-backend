@@ -225,6 +225,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             template.Tags = model.Tags;
         }
 
+        List<Guid> rowIDs = [];
         int rowSortOrder = 0;
         foreach (Model_TemplateRow rowItem in model.Items)
         {
@@ -250,8 +251,9 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
                 rowTemplate.CanRepeat = rowItem.CanRepeat;
                 rowTemplate.HideOnNoInput = rowItem.HideOnNoInput;
             }
-
+            rowIDs.Add(rowTemplate.ID);
             int cellSortOrder = 0;
+            List<Guid> cellIDs = [];
             foreach (Model_TemplateCell cell in rowItem.Items)
             {
                 Structure_Template_Cell? cellTemplate = DB.Structure_Template_Cell.SingleOrDefault(c => c.ID == cell.ID);
@@ -280,14 +282,17 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
                     cellTemplate.Text = cell.Text;
                     cellTemplate.MetaData = cell.MetaData;
                 }
+                cellIDs.Add(cellTemplate.ID);
             }
+            DB.Structure_Template_Cell.RemoveRange(DB.Structure_Template_Cell.Where(s => !cellIDs.Contains(s.ID) && s.RowID == rowTemplate.ID));
         }
+        DB.Structure_Template_Row.RemoveRange(DB.Structure_Template_Row.Where(s => !rowIDs.Contains(s.ID) && s.TemplateID == template.ID));
 
         DB.SaveChanges();
         return Details(template.ID);
     }
 
-    public void Copy(Guid? id)
+    public Model_Template Copy(Guid? id)
     {
         if (id is null || id == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -337,5 +342,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         }
 
         DB.SaveChanges();
+        return Details(template.ID);
     }
 }
