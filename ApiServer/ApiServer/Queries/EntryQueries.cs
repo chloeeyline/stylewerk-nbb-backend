@@ -34,7 +34,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             entry.TemplateID equals template.ID
         join sgu in DB.Share_GroupUser on
             new { si.ToWhom, si.Visibility } equals
-            new { ToWhom = (Guid?) sgu.GroupID, Visibility = ShareVisibility.Group }
+            new { ToWhom = (Guid?)sgu.GroupID, Visibility = ShareVisibility.Group }
             into groupJoin
         from sharedGroup in groupJoin.DefaultIfEmpty()
         join sg in DB.Share_Group on
@@ -79,9 +79,9 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             CanEdit = true,
             CanDelete = true,
             folderName = folderData.Name,
-            whoSharedUsername = (string?) null,
-            whoSharedUsernameNormalized = (string?) null,
-            groupName = (string?) null,
+            whoSharedUsername = (string?)null,
+            whoSharedUsernameNormalized = (string?)null,
+            groupName = (string?)null,
         };
 
         // Combine the two queries (shared + owned) using Union
@@ -165,12 +165,39 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         Structure_Entry item = DB.Structure_Entry.FirstOrDefault(e => e.ID == id)
             ?? throw new RequestException(ResultCodes.NoDataFound);
 
-        List<Structure_Template_Row> itemRows = [.. DB.Structure_Template_Row
-            .Where(s => s.TemplateID == item.TemplateID)
-            .OrderBy(s => s.SortOrder)];
+        List<Model_EntryItem> list =
+        [
+            .. DB.Structure_Entry
+                .Include(s => s.O_Folder)
+                .Include(s => s.O_Template)
+                .Include(s => s.O_User)
+                .Where(s => s.FolderID == id)
+                .Select(s => new Model_EntryItem(s, null)),
+        ];
 
-        List<Model_EntryRow> rows = [];
-        foreach (Structure_Template_Row row in itemRows)
+        return list;
+    }
+
+    /// <summary>
+    /// update or add folder
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
+    /// <exception cref="RequestException"></exception>
+    public Model_EntryFolders UpdateFolder(Model_EntryFolders? model)
+    {
+        if (model is null || string.IsNullOrWhiteSpace(model.Name))
+            throw new RequestException(ResultCodes.DataIsInvalid);
+
+        int sortOrder = !DB.Structure_Entry_Folder.Any() ? 1 :
+            (DB.Structure_Entry_Folder.Where(s => s.UserID == CurrentUser.ID)
+            .Max(f => f.SortOrder) + 1);
+
+        Structure_Entry_Folder? item = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == model.ID);
+        if (DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID && s.Name == model.Name))
+            throw new RequestException(ResultCodes.FolderNameAlreadyExists);
+
+        if (item is null)
         {
             List<Model_EntryCell> cells = [];
             List<Structure_Template_Cell> itemCells = [.. DB.Structure_Template_Cell
