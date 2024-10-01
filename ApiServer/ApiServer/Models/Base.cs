@@ -1,17 +1,15 @@
 ﻿namespace StyleWerk.NBB.Models;
 
 
-public record ShareTypes(bool Group, bool Public, bool Directly);
-
 /// <summary>
 /// The default Model to always wrap the results of a requests from the frontend
 /// </summary>
 public record Model_Result<T>(int Code, ResultCodes CodeName, T? Data)
 {
-    public Model_Result() : this((int)ResultCodes.Success, ResultCodes.Success, default) { }
-    public Model_Result(T? data) : this((int)ResultCodes.SuccessReturnData, ResultCodes.SuccessReturnData, data) { }
-    public Model_Result(ResultCodes code) : this((int)code, code, default) { }
-    public Model_Result(ResultCodes code, T? data) : this((int)code, code, data) { }
+    public Model_Result() : this((int) ResultCodes.Success, ResultCodes.Success, default) { }
+    public Model_Result(T? data) : this((int) ResultCodes.SuccessReturnData, ResultCodes.SuccessReturnData, data) { }
+    public Model_Result(ResultCodes code) : this((int) code, code, default) { }
+    public Model_Result(ResultCodes code, T? data) : this((int) code, code, data) { }
 }
 
 [Serializable]

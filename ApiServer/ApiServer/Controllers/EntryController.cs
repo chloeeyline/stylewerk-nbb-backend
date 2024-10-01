@@ -12,104 +12,15 @@ public class EntryController(NbbContext db) : BaseController(db)
 {
     public EntryQueries Query => new(DB, CurrentUser);
 
-    #region Folder
-    /// <summary>
-    /// Get all folders and entries
-    /// </summary>
-    /// <returns></returns>
-    [ApiExplorerSettings(GroupName = "Folder")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
-    [HttpGet(nameof(GetFolders))]
-    public IActionResult GetFolders()
-    {
-        List<Model_EntryFolders> result = Query.GetFolders();
-        return Ok(new Model_Result<List<Model_EntryFolders>>(result));
-    }
-
-    /// <summary>
-    /// Get all items in a folder
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    [ApiExplorerSettings(GroupName = "Folder")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
-    [HttpGet(nameof(GetFolderContent))]
-    public IActionResult GetFolderContent(Guid? id)
-    {
-        List<Model_EntryItem> result = Query.GetFolderContent(id);
-        return Ok(new Model_Result<List<Model_EntryItem>>(result));
-    }
-
-    /// <summary>
-    /// Change folder name or add a folder
-    /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    [ApiExplorerSettings(GroupName = "Folder")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_EntryFolders>))]
-    [HttpPost(nameof(UpdateFolder))]
-    public IActionResult UpdateFolder(Model_EntryFolders? model)
-    {
-        Model_EntryFolders result = Query.UpdateFolder(model);
-        return Ok(new Model_Result<Model_EntryFolders>(result));
-    }
-
-    /// <summary>
-    /// Remove a folder but preserve all the items that were in it
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    [ApiExplorerSettings(GroupName = "Folder")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
-    [HttpPost(nameof(RemoveFolder))]
-    public IActionResult RemoveFolder(Guid? id)
-    {
-        Query.RemoveFolder(id);
-        return Ok(new Model_Result<string>());
-    }
-
-    /// <summary>
-    /// Change the order of a folder
-    /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    [ApiExplorerSettings(GroupName = "Folder")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
-    [HttpPost(nameof(ReorderFolders))]
-    public IActionResult ReorderFolders([FromBody] List<Guid>? model)
-    {
-        Query.ReorderFolders(model);
-        return Ok(new Model_Result<string>());
-    }
-    #endregion
-
-    #region Entries
     /// <summary>
     /// Load all entries and filter them
     /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    [ApiExplorerSettings(GroupName = "Entries")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryItem>>))]
-    [HttpPost(nameof(FilterEntries))]
-    public IActionResult FilterEntries([FromBody] Model_FilterEntry? model)
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFilterItem>>))]
+    [HttpGet(nameof(List))]
+    public IActionResult List(string? name, string? username, string? templateName, string? tags, bool? publicShared, bool? groupShared, bool? directlyShared, bool? directUser)
     {
-        List<Model_EntryItem> result = Query.FilterEntries(model);
-        return Ok(new Model_Result<List<Model_EntryItem>>(result));
-    }
-
-    /// <summary>
-    /// Get the structure of the entry based on the selected template
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    [ApiExplorerSettings(GroupName = "Entries")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedEntry>))]
-    [HttpGet(nameof(GetEntryFromTemplate))]
-    public IActionResult GetEntryFromTemplate(Guid? id)
-    {
-        Model_DetailedEntry result = Query.GetEntryFromTemplate(id);
-        return Ok(new Model_Result<Model_DetailedEntry>(result));
+        List<Model_EntryFilterItem> result = Query.List(name, username, templateName, tags, publicShared, groupShared, directlyShared, directUser);
+        return base.Ok(new Model_Result<List<Model_EntryFilterItem>>(result));
     }
 
     /// <summary>
@@ -117,22 +28,40 @@ public class EntryController(NbbContext db) : BaseController(db)
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [ApiExplorerSettings(GroupName = "Entries")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedEntry>))]
-    [HttpGet(nameof(GetEntry))]
-    public IActionResult GetEntry(Guid? id)
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Entry>))]
+    [HttpGet(nameof(Details))]
+    public IActionResult Details(Guid? id)
     {
-        Model_DetailedEntry result = Query.GetEntry(id);
-        return Ok(new Model_Result<Model_DetailedEntry>(result));
+        Model_Entry result = Query.Details(id);
+        return Ok(new Model_Result<Model_Entry>(result));
     }
 
-    [ApiExplorerSettings(GroupName = "Entries")]
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_DetailedEntry>))]
-    [HttpPost(nameof(UpdateEntry))]
-    public IActionResult UpdateEntry([FromBody] Model_DetailedEntry? model)
+    /// <summary>
+    /// Get the structure of the entry based on the selected template
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Entry>))]
+    [HttpGet(nameof(GetFromTemplate))]
+    public IActionResult GetFromTemplate(Guid? id)
     {
-        Model_DetailedEntry result = Query.UpdateEntry(model);
-        return Ok(new Model_Result<Model_DetailedEntry>(result));
+        Model_Entry result = Query.GetFromTemplate(id);
+        return Ok(new Model_Result<Model_Entry>(result));
     }
-    #endregion
+
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [HttpPost(nameof(Remove))]
+    public IActionResult Remove(Guid? id)
+    {
+        Query.Remove(id);
+        return Ok(new Model_Result<string>());
+    }
+
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Entry>))]
+    [HttpPost(nameof(Update))]
+    public IActionResult Update([FromBody] Model_Entry? model)
+    {
+        Model_Entry result = Query.Update(model);
+        return Ok(new Model_Result<Model_Entry>(result));
+    }
 }

@@ -24,7 +24,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     #region Fixed Values
     private const int KeySize = 256;
     private static long StatusTokenDuration => new DateTimeOffset(DateTime.UtcNow.AddDays(1)).ToUnixTimeMilliseconds();
-    private static long LoginTokenDuration => new DateTimeOffset(DateTime.UtcNow.AddHours(1)).ToUnixTimeMilliseconds();
+    private static long LoginTokenDuration => new DateTimeOffset(DateTime.UtcNow.AddHours(3)).ToUnixTimeMilliseconds();
     private static long RefreshTokenShortDuration => new DateTimeOffset(DateTime.UtcNow.AddHours(4)).ToUnixTimeMilliseconds();
     private static long RefreshTokenDuration => new DateTimeOffset(DateTime.UtcNow.AddDays(7)).ToUnixTimeMilliseconds();
     private static long Now => new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
@@ -78,7 +78,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
 
         Claim[] claims = [new Claim(ClaimTypes.Sid, user.ID.ToString())];
 
-        JwtSecurityToken token = new(SecretData.Value.JwtIssuer, SecretData.Value.JwtAudience, claims, expires: DateTimeOffset.FromUnixTimeMilliseconds(LoginTokenDuration).Date, signingCredentials: credentials);
+        JwtSecurityToken token = new(SecretData.Value.JwtIssuer, SecretData.Value.JwtAudience, claims, expires: DateTimeOffset.FromUnixTimeMilliseconds(LoginTokenDuration).DateTime, signingCredentials: credentials);
         string loginToken = new JwtSecurityTokenHandler().WriteToken(token);
 
         return new Model_Token(loginToken, LoginTokenDuration);

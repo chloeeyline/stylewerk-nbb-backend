@@ -7,11 +7,10 @@
     <RootNamespace>StyleWerk.NBB</RootNamespace>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	<NoWarn>$(NoWarn);1591</NoWarn><!-- Suppresses warnings about missing XML docs -->
+	<AWSProjectType>Lambda</AWSProjectType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>$(DefineConstants);Local</DefineConstants>
-  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />
 
   <ItemGroup>
     <None Remove="AWS\EmailTemplates\EmailChange.html" />
