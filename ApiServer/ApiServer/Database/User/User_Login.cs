@@ -119,12 +119,14 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
             .WithOne(s => s.O_User)
             .IsRequired(false)
             .HasForeignKey<User_Information>(s => s.ID)
-            .HasConstraintName("Information");
+            .HasConstraintName("Information")
+            .OnDelete(DeleteBehavior.Cascade);
         b.HasMany(s => s.O_Token)
             .WithOne(s => s.O_User)
             .IsRequired(false)
             .HasForeignKey(s => s.ID)
-            .HasConstraintName("Token");
+            .HasConstraintName("Token")
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 
