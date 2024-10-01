@@ -1,6 +1,4 @@
-﻿using Xunit;
-
-namespace StyleWerk.NBB.Tests
+﻿namespace ApiServerTest.Tests
 {
     public class ShareTest
     {
