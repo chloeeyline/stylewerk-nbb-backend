@@ -4,7 +4,6 @@ using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
-using System.Diagnostics;
 
 namespace ApiServerTest.Tests
 {
@@ -29,10 +28,9 @@ namespace ApiServerTest.Tests
             Guid id = Guid.Parse(userGuid);
             User_Login? login = DB.User_Login.FirstOrDefault(s => s.ID == id);
             User_Information? information = DB.User_Information.FirstOrDefault(s => s.ID == id);
-            string[] rights = [.. DB.User_Right.Where(s => s.ID == id).Select(s => s.Name)];
             CurrentUser = login is null || information is null ?
                 new ApplicationUser() :
-                new ApplicationUser(login, information, rights);
+                new ApplicationUser(login, information);
 
             EntryFolderQueries query = new(DB, CurrentUser);
             return query;
@@ -42,18 +40,18 @@ namespace ApiServerTest.Tests
         public void AddFolder()
         {
             EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_EntryFolders newFolder = new(null, $"TestFolder1", new Model_EntryItem[0]);
+            Model_EntryFolders newFolder = new(null, $"TestFolder1", []);
 
             Model_EntryFolders response = query.Update(newFolder);
 
             Assert.IsType<Model_EntryFolders>(response);
         }
 
-        private Model_EntryFolders CreateFolderForAnotherUser(string folderName)
+        private static Model_EntryFolders CreateFolderForAnotherUser(string folderName)
         {
             EntryFolderQueries query = ReturnQuery("6e4a61db-8c61-4594-a643-feae632caba2");
 
-            Model_EntryFolders newFolderOtherUser = new(null, folderName, new Model_EntryItem[0]);
+            Model_EntryFolders newFolderOtherUser = new(null, folderName, []);
             Model_EntryFolders responseOtherUser = query.Update(newFolderOtherUser);
 
             return responseOtherUser;
@@ -64,20 +62,20 @@ namespace ApiServerTest.Tests
         {
             Model_EntryFolders responseOtherUser = CreateFolderForAnotherUser("TestFolder2");
             EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_EntryFolders folder = new(responseOtherUser.ID, "TestFolder3", new Model_EntryItem[0]);
+            Model_EntryFolders folder = new(responseOtherUser.ID, "TestFolder3", []);
 
-            Func<Model_EntryFolders> action = () => query.Update(folder);
+            Model_EntryFolders action() => query.Update(folder);
 
-            RequestException exception = Assert.Throws<RequestException>(action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>)action);
             RequestException result = new(ResultCodes.MissingRight);
             Assert.Equal(result.Code, exception.Code);
         }
 
-        private Model_EntryFolders CreateFolderForUser(string folderName)
+        private static Model_EntryFolders CreateFolderForUser(string folderName)
         {
             EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
 
-            Model_EntryFolders newFolderUser = new(null, folderName, new Model_EntryItem[0]);
+            Model_EntryFolders newFolderUser = new(null, folderName, []);
             Model_EntryFolders responseUser = query.Update(newFolderUser);
 
             return responseUser;
@@ -88,11 +86,11 @@ namespace ApiServerTest.Tests
         {
             Model_EntryFolders folderUser = CreateFolderForUser("TestFolder3");
             EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_EntryFolders folder = new(folderUser.ID, "TestFolder1", new Model_EntryItem[0]);
+            Model_EntryFolders folder = new(folderUser.ID, "TestFolder1", []);
 
-            Func<Model_EntryFolders> action = () => query.Update(folder);
+            Model_EntryFolders action() => query.Update(folder);
 
-            RequestException exception = Assert.Throws<RequestException>(action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>)action);
             RequestException result = new(ResultCodes.NameMustBeUnique);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -101,11 +99,11 @@ namespace ApiServerTest.Tests
         public void DataInvalid()
         {
             EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_EntryFolders newFolder = new(null, null, new Model_EntryItem[0]);
+            Model_EntryFolders newFolder = new(null, null, []);
 
-            Func<Model_EntryFolders> action = () => query.Update(newFolder);
+            Model_EntryFolders action() => query.Update(newFolder);
 
-            RequestException exception = Assert.Throws<RequestException>(action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>)action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -165,12 +163,10 @@ namespace ApiServerTest.Tests
         {
             EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_EntryFolders folder = CreateFolderForUser("TestFolder4");
-            bool passed = false;
 
             query.Remove(folder.ID);
 
-            passed = true;
-            Assert.True(passed);
+            Assert.True(true);
         }
 
         [Fact]
@@ -183,7 +179,7 @@ namespace ApiServerTest.Tests
             Assert.IsType<List<Model_EntryFolders>>(folders);
         }
 
-        private List<Model_EntryFolders> LoadFolders()
+        private static List<Model_EntryFolders> LoadFolders()
         {
             EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             return query.List();
@@ -194,8 +190,7 @@ namespace ApiServerTest.Tests
         {
             EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             List<Model_EntryFolders> folders = LoadFolders();
-            List<Guid> guids = new();
-            bool passed = false;
+            List<Guid> guids = [];
 
             foreach (Model_EntryFolders folder in folders)
             {
@@ -203,23 +198,15 @@ namespace ApiServerTest.Tests
                     guids.Add(folder.ID.Value);
             }
 
-            try
-            {
-                query.Reorder(guids);
-            }
-            catch (RequestException ex)
-            {
-                Debug.WriteLine(ex.Code);
-            }
+            query.Reorder(guids);
 
-            passed = true;
-            Assert.True(passed);
+            Assert.True(true);
         }
 
         [Fact]
         public void ReorderNoDataFound()
         {
-            List<Guid> guids = new();
+            List<Guid> guids = [];
 
             for (int i = 0; i < 3; i++)
             {
@@ -243,7 +230,7 @@ namespace ApiServerTest.Tests
         public void ReorderDataInvalid()
         {
             EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            List<Guid> emptyGuids = new();
+            List<Guid> emptyGuids = [];
 
             try
             {
@@ -261,9 +248,9 @@ namespace ApiServerTest.Tests
         {
             EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             EntryFolderQueries queryOtherUser = ReturnQuery("6e4a61db-8c61-4594-a643-feae632caba2");
-            List<Guid> guidsOtherUser = new();
+            List<Guid> guidsOtherUser = [];
 
-            Model_EntryFolders newFolderOtheruser = CreateFolderForAnotherUser("TestFolder5");
+            CreateFolderForAnotherUser("TestFolder5");
             List<Model_EntryFolders> foldersOtherUser = queryOtherUser.List();
             foreach (Model_EntryFolders folder in foldersOtherUser)
             {

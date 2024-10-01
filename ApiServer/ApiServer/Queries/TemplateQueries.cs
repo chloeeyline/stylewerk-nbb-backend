@@ -22,7 +22,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         join owner in DB.User_Login on template.UserID equals owner.ID
         join sgu in DB.Share_GroupUser on
             new { si.ToWhom, si.Visibility } equals
-            new { ToWhom = (Guid?) sgu.GroupID, Visibility = ShareVisibility.Group }
+            new { ToWhom = (Guid?)sgu.GroupID, Visibility = ShareVisibility.Group }
             into groupJoin
         from sharedGroup in groupJoin.DefaultIfEmpty()
         join sg in DB.Share_Group on sharedGroup.GroupID equals sg.ID into groupDataJoin
@@ -129,7 +129,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         int tCount = orderedQuery.Count();
         if (perPage < 20)
             perPage = 20;
-        int maxPages = (int) Math.Ceiling(tCount / (double) perPage);
+        int maxPages = (int)Math.Ceiling(tCount / (double)perPage);
         if (page > maxPages)
             page = 0;
 
@@ -175,6 +175,11 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         return model;
     }
 
+    /// <summary>
+    /// Remove a Template, all its rows, cells and entries where the template was used
+    /// </summary>
+    /// <param name="id"></param>
+    /// <exception cref="RequestException"></exception>
     public void Remove(Guid? id)
     {
         if (id is null || id == Guid.Empty)
@@ -188,7 +193,11 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
 
         DB.SaveChanges();
     }
-
+    /// <summary>
+    /// update or add template
+    /// </summary>
+    /// <param name="model"></param>
+    /// <exception cref="RequestException"></exception>
     public Model_Template Update(Model_Template? model)
     {
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
