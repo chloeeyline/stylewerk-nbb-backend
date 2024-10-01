@@ -12,19 +12,19 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
     /// <summary>
     /// Load all Entries that are available for User and filter them by the specified filters
     /// </summary>
-    public List<Model_EntryItem> List(string? name, string? username, string? templateName, string? tags, bool? publicShared, bool? groupShared, bool? directlyShared, bool? directUser)
+    public List<Model_EntryItem> List(string? name, string? username, string? templateName, string? tags, bool? publicShared, bool? shared, bool? includeOwned, bool? directUser)
     {
         // Normalize the username for comparison
         username = username?.Normalize().ToLower();
 
-        // Define the query with filters applied before the select
+        // Query for shared entries (both directly and group-shared)
         var query =
         from si in DB.Share_Item
         where si.Type == ShareType.Entry
         join entry in DB.Structure_Entry on
             si.ItemID equals entry.ID
-        join owner in DB.User_Login on
-            entry.UserID equals owner.ID
+        join owner in DB.User_Login on entry.UserID
+            equals owner.ID
         join template in DB.Structure_Template on
             entry.TemplateID equals template.ID
         join sgu in DB.Share_GroupUser on
@@ -38,46 +38,56 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         where (si.ToWhom == CurrentUser.ID || sharedGroup.UserID == CurrentUser.ID)
         select new
         {
-            entry,
-            si.Visibility,
+            entry.ID,
+            entry.Name,
+            entry.IsEncrypted,
+            entry.Tags,
+            entry.CreatedAt,
+            entry.LastUpdatedAt,
+            templateName = template.Name,
             ownerUsername = owner.Username,
-            ownerUsernameNormalized = owner.UsernameNormalized,
-            templateName = template.Name
+            si.Visibility
         };
 
-        // Query to get entries owned by the current user
-        var ownedQuery =
-        from entry in DB.Structure_Entry
-        join owner in DB.User_Login on
-            entry.UserID equals owner.ID
-        join template in DB.Structure_Template on
-            entry.TemplateID equals template.ID
-        where entry.UserID == CurrentUser.ID
-        select new
+        if (includeOwned is true)
         {
-            entry,
-            Visibility = ShareVisibility.None,
-            ownerUsername = owner.Username,
-            ownerUsernameNormalized = owner.UsernameNormalized,
-            templateName = template.Name
-        };
+            // Query for owned entries
+            var ownedQuery =
+            from entry in DB.Structure_Entry
+            join owner in DB.User_Login on
+                entry.UserID equals owner.ID
+            join template in DB.Structure_Template on
+                entry.TemplateID equals template.ID
+            where entry.UserID == CurrentUser.ID
+            select new
+            {
+                entry.ID,
+                entry.Name,
+                entry.IsEncrypted,
+                entry.Tags,
+                entry.CreatedAt,
+                entry.LastUpdatedAt,
+                templateName = template.Name,
+                ownerUsername = owner.Username,
+                Visibility = ShareVisibility.None // Mark as owned
+            };
 
-        // Combine the two queries (shared + owned) using Union
-        query = query.Union(ownedQuery);
+            // Combine the two queries (shared + owned) using Union
+            query = query.Union(ownedQuery);
+        }
 
         // Apply visibility filters based on the model
         query = from s in query
                 where
-                (publicShared == true && s.Visibility == ShareVisibility.Public) ||
-                (groupShared == true && s.Visibility == ShareVisibility.Group) ||
-                (directlyShared == true && s.Visibility == ShareVisibility.Directly) ||
-                s.Visibility == ShareVisibility.None
+                    (includeOwned == true && s.Visibility == ShareVisibility.None) || // Include owned items if filter is true
+                    (publicShared == true && s.Visibility == ShareVisibility.Public) ||
+                    (shared == true && (s.Visibility == ShareVisibility.Directly || s.Visibility == ShareVisibility.Group))
                 select s;
 
-        // Apply filters prior to select
+        // Apply additional filters prior to grouping
         if (!string.IsNullOrWhiteSpace(name))
             query = from s in query
-                    where s.entry.Name.Contains(name)
+                    where s.Name.Contains(name)
                     select s;
 
         if (!string.IsNullOrWhiteSpace(templateName))
@@ -87,40 +97,50 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
 
         if (!string.IsNullOrWhiteSpace(tags))
             query = from s in query
-                    where !string.IsNullOrWhiteSpace(s.entry.Tags) && tags.Contains(s.entry.Tags)
+                    where !string.IsNullOrWhiteSpace(s.Tags) && tags.Contains(s.Tags)
                     select s;
 
         if (!string.IsNullOrWhiteSpace(username) && directUser is false)
             query = from s in query
-                    where s.ownerUsernameNormalized.Contains(username)
+                    where s.ownerUsername.Contains(username)
                     select s;
 
         if (!string.IsNullOrWhiteSpace(username) && directUser is true)
             query = from s in query
-                    where s.ownerUsernameNormalized == username
+                    where s.ownerUsername == username
                     select s;
 
-        // Apply ordering before final select
-        query = from s in query
-                orderby s.Visibility, s.entry.LastUpdatedAt, s.entry.Name
-                select s;
+        // Group entries by ID, giving priority to owned entries over shared and public entries
+        var groupedQuery =
+        from s in query
+        group s by s.ID into g
+        select new
+        {
+            Entry = g.FirstOrDefault(x => x.Visibility == ShareVisibility.None) ?? // Highest priority: owned
+                    g.FirstOrDefault(x => x.Visibility == ShareVisibility.Directly) ?? // Second priority: directly shared
+                    g.FirstOrDefault(x => x.Visibility == ShareVisibility.Group) ??    // Third priority: group shared
+                    g.FirstOrDefault(x => x.Visibility == ShareVisibility.Public)      // Lowest priority: public
+        };
 
-        // Final select to map data to ShareEntryResult
-        IQueryable<Model_EntryItem> finalQuery = query.Select(s => new Model_EntryItem
+        // Apply ordering before final selection
+        IQueryable<Model_EntryItem> orderedQuery =
+        from g in groupedQuery
+        orderby g.Entry.Visibility, g.Entry.LastUpdatedAt, g.Entry.Name
+        select new Model_EntryItem
         (
-            s.entry.ID,
-            s.entry.Name,
-            s.entry.IsEncrypted,
-            s.entry.Tags,
-            s.entry.CreatedAt,
-            s.entry.LastUpdatedAt,
-            s.templateName,
-            s.ownerUsername,
-            s.Visibility
-        ));
+            g.Entry.ID,
+            g.Entry.Name,
+            g.Entry.IsEncrypted,
+            g.Entry.Tags,
+            g.Entry.CreatedAt,
+            g.Entry.LastUpdatedAt,
+            g.Entry.templateName,
+            g.Entry.ownerUsername,
+            g.Entry.Visibility
+        );
 
-        // Execute the query and return distinct results
-        return [.. finalQuery];
+        // Execute the query and return the results
+        return [.. orderedQuery];
     }
 
     /// <summary>
