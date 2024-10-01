@@ -210,7 +210,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         DB.SaveChanges();
     }
 
-    public void Update(Model_Template? model)
+    public Model_Template Update(Model_Template? model)
     {
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -296,6 +296,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         }
 
         DB.SaveChanges();
+        return Details(template.ID);
     }
 
     public void Copy(Guid? id)
