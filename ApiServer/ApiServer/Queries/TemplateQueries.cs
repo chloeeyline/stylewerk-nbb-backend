@@ -35,9 +35,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             si.Visibility,
             ownerUsername = owner.Username,
             ownerUsernameNormalized = owner.UsernameNormalized,
-            si.CanShare,
-            si.CanEdit,
-            si.CanDelete,
             whoSharedUsername = whoShared.Username,
             whoSharedUsernameNormalized = whoShared.UsernameNormalized,
             groupName = groupData.Name
@@ -54,9 +51,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             Visibility = ShareVisibility.None,
             ownerUsername = owner.Username,
             ownerUsernameNormalized = owner.UsernameNormalized,
-            CanShare = true,
-            CanEdit = true,
-            CanDelete = true,
             whoSharedUsername = (string?) null,
             whoSharedUsernameNormalized = (string?) null,
             groupName = (string?) null
@@ -123,9 +117,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             s.template.LastUpdatedAt,
             s.ownerUsername,
             s.Visibility,
-            s.CanShare,
-            s.CanEdit,
-            s.CanDelete,
             s.whoSharedUsername,
             s.groupName
         ));

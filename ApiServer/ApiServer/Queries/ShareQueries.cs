@@ -76,36 +76,8 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             ? Exist_SharedItem(DB.Structure_Template, model.ID)
             : throw new RequestException(ResultCodes.DataIsInvalid);
 
-        bool canShare = userID == CurrentUser.ID;
-        if (canShare)
-        {
-            canShare = DB.Share_Item.FirstOrDefault(s => s.ToWhom == CurrentUser.ID &&
-                        s.Visibility == ShareVisibility.Directly &&
-                        s.ItemID == model.ID &&
-                        s.Type == model.Type)
-                        is not null;
-
-            if (!canShare)
-            {
-                List<Share_Group> groupsImPartOf = [..
-                    DB.Share_GroupUser.Where(s => s.UserID == CurrentUser.ID)
-                    .Include(s => s.O_Group)
-                    .Select(s => s.O_Group)];
-
-                foreach (Share_Group group in groupsImPartOf)
-                {
-                    canShare = DB.Share_Item.FirstOrDefault(s => s.ToWhom == group.ID &&
-                        s.Visibility == ShareVisibility.Group &&
-                        s.ItemID == model.ID &&
-                        s.Type == model.Type)?.CanShare is true;
-                    if (canShare)
-                        break;
-                }
-            }
-        }
-
-        if (!canShare)
-            throw new RequestException(ResultCodes.MissingRight);
+        if (userID != CurrentUser.ID)
+            throw new RequestException(ResultCodes.YouDontOwnTheData);
 
         Guid? toWhom = null;
 
@@ -145,19 +117,10 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
                 Visibility = model.Visibility,
                 Type = model.Type,
                 ItemID = model.ID,
-                ToWhom = toWhom,
-                CanShare = model.CanShare,
-                CanDelete = model.CanDelete,
-                CanEdit = model.CanEdit
+                ToWhom = toWhom
             };
 
             DB.Share_Item.Add(item);
-        }
-        else
-        {
-            item.CanShare = model.CanShare;
-            item.CanEdit = model.CanEdit;
-            item.CanDelete = model.CanDelete;
         }
         DB.SaveChanges();
     }

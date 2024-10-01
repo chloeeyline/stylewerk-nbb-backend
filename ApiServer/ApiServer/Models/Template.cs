@@ -27,9 +27,6 @@ public record Model_TemplateItem(
     long LastUpdatedAt,
     string OwnerUsername,
     ShareVisibility Visibility,
-    bool CanShare,
-    bool CanEdit,
-    bool CanDelete,
     string? SharedByUsername,
     string? GroupName);
 

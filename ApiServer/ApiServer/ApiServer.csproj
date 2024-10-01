@@ -10,7 +10,9 @@
 	<AWSProjectType>Lambda</AWSProjectType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants);Local</DefineConstants>
+  </PropertyGroup>
 
   <ItemGroup>
     <None Remove="AWS\EmailTemplates\EmailChange.html" />
