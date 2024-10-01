@@ -1,29 +1,65 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Moq;
-using StyleWerk.NBB.Controllers;
+﻿using Microsoft.EntityFrameworkCore;
+using StyleWerk.NBB.AWS;
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
+using StyleWerk.NBB.Queries;
 
 namespace StyleWerk.NBB.Tests
 {
     public class EntryTest
     {
-        [Fact]
-        public void AddFolder()
+        private NbbContext CreateDbContext()
         {
-            Mock<NbbContext> folder = new();
-            EntryController controller = new(folder.Object);
+            SecretData secretData = AmazonSecretsManager.GetData() ?? throw new Exception();
+            string connectionString = secretData.GetConnectionString();
 
-            Model_EntryFolders newFolder = new(null, "TestFolder", 1, new Model_EntryItem[0]);
-            IActionResult result = controller.UpdateFolder(newFolder);
+            DbContextOptionsBuilder<NbbContext> builder = new();
+            builder.UseNpgsql(connectionString);
 
-            Assert.NotNull(result);
+            return new NbbContext(builder.Options);
         }
 
         [Fact]
-        public void ChangeFolder()
+        public void AddFolder()
         {
+            Database.NbbContext DB = CreateDbContext();
+            ApplicationUser CurrentUser = new();
+            Guid id = Guid.Parse("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            User_Login? login = DB.User_Login.FirstOrDefault(s => s.ID == id);
+            User_Information? information = DB.User_Information.FirstOrDefault(s => s.ID == id);
+            string[] rights = [.. DB.User_Right.Where(s => s.ID == id).Select(s => s.Name)];
+            CurrentUser = login is null || information is null ?
+                new ApplicationUser() :
+                new ApplicationUser(login, information, rights);
 
+            EntryQueries query = new(DB, CurrentUser);
+            Model_EntryFolders newFolder = new(null, "TestFolder2", 1, new Model_EntryItem[0]);
+            Model_EntryFolders response = query.UpdateFolder(newFolder);
+
+            Assert.IsType<Model_EntryFolders>(response);
+        }
+
+        [Fact]
+        public void ChangeFolderException()
+        {
+            Database.NbbContext DB = CreateDbContext();
+            ApplicationUser CurrentUser = new();
+            Guid id = Guid.Parse("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            User_Login? login = DB.User_Login.FirstOrDefault(s => s.ID == id);
+            User_Information? information = DB.User_Information.FirstOrDefault(s => s.ID == id);
+            string[] rights = [.. DB.User_Right.Where(s => s.ID == id).Select(s => s.Name)];
+            CurrentUser = login is null || information is null ?
+                new ApplicationUser() :
+                new ApplicationUser(login, information, rights);
+
+            EntryQueries query = new(DB, CurrentUser);
+            Model_EntryFolders newFolder = new(new Guid("b735f46a-a732-441f-9607-4c3a51f89434"), "TestFolder", 1, new Model_EntryItem[0]);
+            Func<Model_EntryFolders> action = () => query.UpdateFolder(newFolder);
+
+            RequestException exception = Assert.Throws<RequestException>(action);
+            RequestException result = new(ResultCodes.FolderNameAlreadyExists);
+            Assert.Equal(result.Message, exception.Message);
         }
 
         [Fact]
@@ -53,7 +89,26 @@ namespace StyleWerk.NBB.Tests
         [Fact]
         public void DeleteFolder()
         {
+            Database.NbbContext DB = CreateDbContext();
+            ApplicationUser CurrentUser = new();
+            Guid id = Guid.Parse("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            User_Login? login = DB.User_Login.FirstOrDefault(s => s.ID == id);
+            User_Information? information = DB.User_Information.FirstOrDefault(s => s.ID == id);
+            string[] rights = [.. DB.User_Right.Where(s => s.ID == id).Select(s => s.Name)];
+            CurrentUser = login is null || information is null ?
+                new ApplicationUser() :
+                new ApplicationUser(login, information, rights);
 
+            EntryQueries query = new(DB, CurrentUser);
+            try
+            {
+                query.RemoveFolder(new Guid("b735f46a-a732-441f-9607-4c3a51f89431"));
+            }
+            catch (Exception ex)
+            {
+                RequestException result = new(ResultCodes.NoDataFound);
+                Assert.Equal(result.Message, ex.Message);
+            }
         }
 
         [Fact]

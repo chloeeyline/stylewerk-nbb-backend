@@ -79,9 +79,6 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : SharedIt
             (DB.Structure_Entry_Folder.Where(s => s.UserID == CurrentUser.ID)
             .Max(f => f.SortOrder) + 1);
 
-        if (DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID && s.Name == model.Name))
-            throw new RequestException(ResultCodes.DataIsInvalid);
-
         Structure_Entry_Folder? item = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == model.ID);
         if (DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID && s.Name == model.Name))
             throw new RequestException(ResultCodes.FolderNameAlreadyExists);
