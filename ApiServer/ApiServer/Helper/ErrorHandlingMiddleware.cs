@@ -67,6 +67,7 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
         // Serialize the response to JSON
         JsonSerializerOptions _options = new();
         _options.Converters.Add(new JsonStringEnumConverter());
+        _options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         string result = JsonSerializer.Serialize(response, _options);
         return context.Response.WriteAsync(result);
     }
