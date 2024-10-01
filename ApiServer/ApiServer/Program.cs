@@ -28,7 +28,7 @@ try
 
     builder.AddJWT(secretData);
     builder.AddSwagger();
-
+#if Local
     builder.Services.AddCors(options =>
     {
         options.AddDefaultPolicy(options =>
@@ -36,6 +36,7 @@ try
             .AllowAnyMethod()
             .AllowAnyHeader());
     });
+#endif
 
     builder.Logging.SetMinimumLevel(LogLevel.Information);
     builder.Logging.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);
