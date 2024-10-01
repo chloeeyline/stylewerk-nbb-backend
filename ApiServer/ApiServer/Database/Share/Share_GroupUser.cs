@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using StyleWerk.NBB.Database.Core;
 using StyleWerk.NBB.Database.User;
@@ -54,6 +55,7 @@ public class Share_GroupUser : IConnectedEntity<Share_GroupUser>, IEntity_User
         b.HasOne(s => s.O_Group)
             .WithMany(s => s.O_GroupUser)
             .HasForeignKey(s => s.GroupID)
-            .IsRequired(true);
+            .IsRequired(true)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

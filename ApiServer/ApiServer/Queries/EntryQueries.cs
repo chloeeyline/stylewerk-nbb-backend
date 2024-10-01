@@ -239,14 +239,6 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
 
         if (entry.UserID != CurrentUser.ID)
             throw new RequestException(ResultCodes.YouDontOwnTheData);
-
-        List<Structure_Entry_Row> entryRows = [.. DB.Structure_Entry_Row
-                .Where(t => t.EntryID == entry.ID)
-                .Include(s => s.O_Cells)];
-
-        foreach (Structure_Entry_Row row in entryRows)
-            DB.Structure_Entry_Cell.RemoveRange(row.O_Cells);
-        DB.Structure_Entry_Row.RemoveRange(entryRows);
         DB.Structure_Entry.Remove(entry);
 
         DB.SaveChanges();

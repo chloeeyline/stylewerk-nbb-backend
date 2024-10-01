@@ -136,7 +136,6 @@ public class ShareGroupQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
             throw new RequestException(ResultCodes.YouDontOwnTheData);
 
         DB.Share_Group.Remove(item);
-        DB.Share_GroupUser.RemoveRange(DB.Share_GroupUser.Where(s => s.GroupID == id));
         DB.Share_Item.RemoveRange(DB.Share_Item.Where(s => s.Visibility == ShareVisibility.Group && s.ToWhom == item.ID));
         DB.SaveChanges();
     }
