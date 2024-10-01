@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
@@ -21,10 +22,9 @@ public abstract class BaseController(NbbContext db) : Controller
         {
             User_Login? login = DB.User_Login.FirstOrDefault(s => s.ID == id);
             User_Information? information = DB.User_Information.FirstOrDefault(s => s.ID == id);
-            string[] rights = [.. DB.User_Right.Where(s => s.ID == id).Select(s => s.Name)];
             CurrentUser = login is null || information is null ?
                 new ApplicationUser() :
-                new ApplicationUser(login, information, rights);
+                new ApplicationUser(login, information);
         }
     }
 

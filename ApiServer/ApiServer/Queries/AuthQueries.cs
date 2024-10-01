@@ -121,9 +121,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
             .FirstOrDefault(s => s.ID == id)
             ?? throw new RequestException(ResultCodes.NoUserFound);
 
-        string[] rights = [.. DB.User_Right.Where(s => s.ID == id).Select(s => s.Name)];
-
-        return new AuthenticationResult(accessToken, refreshToken, user.StatusCode, consistOverSession is true, user.Username, user.Admin, rights);
+        return new AuthenticationResult(accessToken, refreshToken, user.StatusCode, consistOverSession is true, user.Username, user.Admin);
     }
 
     public AuthenticationResult Login(Model_Login? model)
