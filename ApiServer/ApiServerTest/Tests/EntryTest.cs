@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+
 using StyleWerk.NBB.AWS;
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.User;
@@ -58,7 +59,7 @@ namespace StyleWerk.NBB.Tests
             Func<Model_EntryFolders> action = () => query.UpdateFolder(newFolder);
 
             RequestException exception = Assert.Throws<RequestException>(action);
-            RequestException result = new(ResultCodes.FolderNameAlreadyExists);
+            RequestException result = new(ResultCodes.NameMustBeUnique);
             Assert.Equal(result.Message, exception.Message);
         }
 

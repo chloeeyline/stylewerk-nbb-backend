@@ -26,7 +26,6 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         [
             .. DB.Structure_Entry
                 .Where(s => s.UserID == CurrentUser.ID && s.FolderID == null)
-                .Include(s => s.O_Folder)
                 .Include(s => s.O_Template)
                 .Include(s => s.O_User)
                 .Select(s => new Model_EntryItem(s.ID, s.Name, s.O_User.Username, s.O_Template.Name, s.Tags, s.CreatedAt, s.LastUpdatedAt)),
@@ -52,7 +51,6 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         List<Model_EntryItem> list =
         [
             .. DB.Structure_Entry
-                .Include(s => s.O_Folder)
                 .Include(s => s.O_Template)
                 .Include(s => s.O_User)
                 .Where(s => s.FolderID == id)
@@ -77,12 +75,9 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
             (DB.Structure_Entry_Folder.Where(s => s.UserID == CurrentUser.ID)
             .Max(f => f.SortOrder) + 1);
 
-        if (DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID && s.Name == model.Name))
-            throw new RequestException(ResultCodes.DataIsInvalid);
-
         Structure_Entry_Folder? item = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == model.ID);
         if (DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID && s.Name == model.Name))
-            throw new RequestException(ResultCodes.FolderNameAlreadyExists);
+            throw new RequestException(ResultCodes.NameMustBeUnique);
 
         if (item is null)
         {
@@ -123,6 +118,9 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         Structure_Entry_Folder folder = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == id)
            ?? throw new RequestException(ResultCodes.NoDataFound);
 
+        if (folder.UserID != CurrentUser.ID)
+            throw new RequestException(ResultCodes.YouDontOwnTheData);
+
         List<Structure_Entry> entries = [.. DB.Structure_Entry.Where(s => s.FolderID == id)];
         foreach (Structure_Entry? entry in entries)
             entry.FolderID = null;
@@ -144,9 +142,11 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         int sortOrder = 1;
         foreach (Guid id in model)
         {
-            Structure_Entry_Folder temp = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == id)
+            Structure_Entry_Folder folder = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == id)
                 ?? throw new RequestException(ResultCodes.NoDataFound);
-            temp.SortOrder = sortOrder++;
+            if (folder.UserID != CurrentUser.ID)
+                throw new RequestException(ResultCodes.YouDontOwnTheData);
+            folder.SortOrder = sortOrder++;
         }
         DB.SaveChanges();
     }

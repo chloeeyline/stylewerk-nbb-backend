@@ -186,7 +186,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
                 ? Exist_SharedItem(DB.Structure_Template, item.ItemID)
                 : throw new RequestException(ResultCodes.DataIsInvalid);
             if (userID != CurrentUser.ID)
-                throw new RequestException(ResultCodes.DontOwnGroup);
+                throw new RequestException(ResultCodes.YouDontOwnTheData);
         }
 
         DB.Share_Item.Remove(item);

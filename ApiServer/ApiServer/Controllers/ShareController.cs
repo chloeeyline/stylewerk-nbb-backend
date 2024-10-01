@@ -49,7 +49,7 @@ public class ShareController(NbbContext db) : BaseController(db)
     /// <param name="id"></param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
-    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.DontOwnGroup)]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.YouDontOwnTheData)]
     [HttpPost(nameof(Remove))]
     public IActionResult Remove(Guid? id)
     {

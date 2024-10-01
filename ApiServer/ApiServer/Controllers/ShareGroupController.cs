@@ -58,7 +58,7 @@ public class ShareGroupController(NbbContext db) : BaseController(db)
     /// <param name="model"></param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Group>))]
-    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.GroupNameAlreadyExists, ResultCodes.DontOwnGroup)]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.NameMustBeUnique, ResultCodes.YouDontOwnTheData)]
     [HttpPost(nameof(Update))]
     public IActionResult Update([FromBody] Model_Group? model)
     {
@@ -72,7 +72,7 @@ public class ShareGroupController(NbbContext db) : BaseController(db)
     /// <param name="id"></param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
-    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.DontOwnGroup)]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.YouDontOwnTheData)]
     [HttpPost(nameof(Remove))]
     public IActionResult Remove(Guid? id)
     {

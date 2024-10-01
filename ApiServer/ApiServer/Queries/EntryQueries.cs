@@ -207,6 +207,9 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         Structure_Template item = DB.Structure_Template.FirstOrDefault(e => e.ID == id)
             ?? throw new RequestException(ResultCodes.NoDataFound);
 
+        if (item.UserID != CurrentUser.ID)
+            throw new RequestException(ResultCodes.YouDontOwnTheData);
+
         List<Structure_Template_Row> itemRows = [.. DB.Structure_Template_Row
             .Where(s => s.TemplateID == item.ID)
             .OrderBy(s => s.SortOrder)];
@@ -241,6 +244,10 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
 
         Structure_Entry entry = DB.Structure_Entry.FirstOrDefault(t => t.ID == id)
             ?? throw new RequestException(ResultCodes.NoDataFound);
+
+        if (entry.UserID != CurrentUser.ID)
+            throw new RequestException(ResultCodes.YouDontOwnTheData);
+
         List<Structure_Entry_Row> entryRows = [.. DB.Structure_Entry_Row
                 .Where(t => t.EntryID == entry.ID)
                 .Include(s => s.O_Cells)];
@@ -267,10 +274,10 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         Structure_Entry? entry = DB.Structure_Entry.FirstOrDefault(s => s.ID == model.ID);
 
         if (!DB.Structure_Template.Any(s => s.ID == model.TemplateID && s.UserID == CurrentUser.ID))
-            throw new RequestException(ResultCodes.NoDataFound);
+            throw new RequestException(ResultCodes.NotYourTemplate);
 
         if (DB.Structure_Entry.Any(s => s.Name == model.Name && s.UserID == CurrentUser.ID))
-            throw new RequestException(ResultCodes.EntryNameAlreadyExists);
+            throw new RequestException(ResultCodes.NameMustBeUnique);
 
         if (model.FolderID is not null)
         {
@@ -294,8 +301,10 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         }
         else
         {
+            if (entry.UserID != CurrentUser.ID)
+                throw new RequestException(ResultCodes.YouDontOwnTheData);
             if (entry.TemplateID != model.TemplateID)
-                throw new RequestException(ResultCodes.DataIsInvalid);
+                throw new RequestException(ResultCodes.TemplateDoesntMatch);
 
             entry.ID = Guid.NewGuid();
             entry.UserID = CurrentUser.ID;

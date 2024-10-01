@@ -174,6 +174,11 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         if (id is null || id == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
 
+        Structure_Template? template = DB.Structure_Template.FirstOrDefault(t => t.ID == id)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
+        if (template.UserID != CurrentUser.ID)
+            throw new RequestException(ResultCodes.YouDontOwnTheData);
+
         List<Structure_Entry> entries = [.. DB.Structure_Entry.Where(e => e.TemplateID == id)];
         foreach (Structure_Entry entry in entries)
         {
@@ -186,8 +191,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         }
         DB.Structure_Entry.RemoveRange(entries);
 
-        Structure_Template? template = DB.Structure_Template.FirstOrDefault(t => t.ID == id)
-            ?? throw new RequestException(ResultCodes.NoDataFound);
         List<Structure_Template_Row> rows = [.. DB.Structure_Template_Row
             .Where(t => t.TemplateID == id)
             .Include(s => s.O_Cells)];
@@ -221,6 +224,8 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         }
         else
         {
+            if (template.UserID != CurrentUser.ID)
+                throw new RequestException(ResultCodes.YouDontOwnTheData);
             template.Name = model.Name;
             template.Description = model.Description;
             template.Tags = model.Tags;

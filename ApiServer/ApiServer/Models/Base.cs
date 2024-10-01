@@ -34,6 +34,8 @@ public enum ResultCodes
     DataIsInvalid = 1101,
     NoDataFound = 1102,
     MissingRight = 1103,
+    YouDontOwnTheData = 1104,
+    NameMustBeUnique = 1105,
 
     #region Authentication
     EmailInvalid = 1210,
@@ -69,21 +71,17 @@ public enum ResultCodes
     #endregion
 
     #region Share
-    GroupNameAlreadyExists = 1301,
-    DontOwnGroup = 1302,
     OnlyOwnerCanChangePublicity = 1303,
     #endregion
 
     #region Entry
-    EntryNameAlreadyExists = 1401,
-
+    TemplateDoesntMatch = 1400,
     #endregion
 
     #region Folder
-    FolderNameAlreadyExists = 1501,
     #endregion
 
     #region Template
-    TemplateNameAlreadyExists = 1601,
+    NotYourTemplate = 1600
     #endregion
 }
