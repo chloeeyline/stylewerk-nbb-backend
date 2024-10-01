@@ -63,6 +63,7 @@ public class User_Token : IConnectedEntity<User_Token>, IEntity_GuidID
             .WithMany(s => s.O_Token)
             .IsRequired(true)
             .HasForeignKey(s => s.ID)
-            .HasConstraintName("User");
+            .HasConstraintName("User")
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

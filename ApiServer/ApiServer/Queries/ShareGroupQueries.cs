@@ -29,17 +29,16 @@ public class ShareGroupQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
     /// <param name="id"></param>
     /// <returns></returns>
     /// <exception cref="RequestException"></exception>
-    public List<Model_GroupUser> Details(Guid? id)
+    public List<string> Details(Guid? id)
     {
         if (id is null || id == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
 
-        List<Model_GroupUser> list = [..
+        List<string> list = [..
             DB.Share_GroupUser
             .Where(s => s.GroupID == id)
             .Include(s => s.O_User)
-            .Include(s => s.O_WhoAdded)
-            .Select(s => new Model_GroupUser(s.O_User.Username, s.GroupID, s.CanAddUsers, s.CanRemoveUsers, s.O_WhoAdded.Username))];
+            .Select(s => s.O_User.Username)];
         return list;
     }
 
@@ -137,7 +136,6 @@ public class ShareGroupQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
             throw new RequestException(ResultCodes.YouDontOwnTheData);
 
         DB.Share_Group.Remove(item);
-        DB.Share_GroupUser.RemoveRange(DB.Share_GroupUser.Where(s => s.GroupID == id));
         DB.Share_Item.RemoveRange(DB.Share_Item.Where(s => s.Visibility == ShareVisibility.Group && s.ToWhom == item.ID));
         DB.SaveChanges();
     }
@@ -162,6 +160,9 @@ public class ShareGroupQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
         User_Login? user = DB.User_Login.FirstOrDefault(s => s.UsernameNormalized == model.Username) ??
             throw new RequestException(ResultCodes.NoUserFound);
 
+        if (user.ID == CurrentUser.ID)
+            throw new RequestException(ResultCodes.CantShareWithYourself);
+
         Share_GroupUser? item = DB.Share_GroupUser.Include(s => s.O_User)
             .FirstOrDefault(s => s.GroupID == group.ID && s.O_User.UsernameNormalized == model.Username);
 
@@ -171,20 +172,9 @@ public class ShareGroupQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
             {
                 GroupID = group.ID,
                 UserID = user.ID,
-                WhoAdded = CurrentUser.ID,
-                CanAddUsers = model.CanAddUsers,
-                CanRemoveUsers = model.CanRemoveUsers,
             };
 
             DB.Share_GroupUser.Add(item);
-        }
-        else
-        {
-            if (group.UserID != CurrentUser.ID || item.CanAddUsers)
-                throw new RequestException(ResultCodes.MissingRight);
-
-            item.CanAddUsers = model.CanAddUsers;
-            item.CanRemoveUsers = model.CanRemoveUsers;
         }
 
         DB.SaveChanges();
@@ -215,8 +205,8 @@ public class ShareGroupQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
             .FirstOrDefault(s => s.GroupID == group.ID && s.UserID == user.ID) ??
             throw new RequestException(ResultCodes.NoDataFound);
 
-        if (group.UserID != CurrentUser.ID || item.CanRemoveUsers)
-            throw new RequestException(ResultCodes.MissingRight);
+        if (group.UserID != CurrentUser.ID)
+            throw new RequestException(ResultCodes.YouDontOwnTheData);
 
         DB.Share_GroupUser.Remove(item);
         DB.SaveChanges();

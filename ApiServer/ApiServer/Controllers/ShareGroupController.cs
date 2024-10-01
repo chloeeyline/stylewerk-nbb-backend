@@ -29,13 +29,13 @@ public class ShareGroupController(NbbContext db) : BaseController(db)
     /// </summary>
     /// <param name="id">The ID of the group from which zou want to load the users</param>
     /// <returns></returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_GroupUser>>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<string>>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid)]
     [HttpGet(nameof(Details))]
     public IActionResult Details(Guid? id)
     {
-        List<Model_GroupUser> list = Query.Details(id);
-        return Ok(new Model_Result<List<Model_GroupUser>>(list));
+        List<string> list = Query.Details(id);
+        return Ok(new Model_Result<List<string>>(list));
     }
 
     /// <summary>

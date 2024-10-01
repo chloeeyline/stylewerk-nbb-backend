@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using StyleWerk.NBB.Database.Core;
 using StyleWerk.NBB.Database.User;
@@ -35,7 +36,13 @@ public class Structure_Template : IConnectedEntity<Structure_Template>, IEntity_
 
     public static void Connect(EntityTypeBuilder<Structure_Template> b)
     {
-        b.HasMany(s => s.O_EntryList).WithOne(s => s.O_Template).HasForeignKey(s => s.TemplateID);
-        b.HasMany(s => s.O_Rows).WithOne(s => s.O_Template).HasForeignKey(s => s.TemplateID);
+        b.HasMany(s => s.O_EntryList)
+            .WithOne(s => s.O_Template)
+            .HasForeignKey(s => s.TemplateID)
+            .OnDelete(DeleteBehavior.Cascade);
+        b.HasMany(s => s.O_Rows)
+            .WithOne(s => s.O_Template)
+            .HasForeignKey(s => s.TemplateID)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

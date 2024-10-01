@@ -28,14 +28,12 @@ public record ApplicationUser
             Gender = UserGender.NotSpecified,
             Birthday = new DateTimeOffset(new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day)).ToUnixTimeMilliseconds(),
         };
-        Rights = [];
     }
 
-    public ApplicationUser(User_Login login, User_Information information, string[] rights)
+    public ApplicationUser(User_Login login, User_Information information)
     {
         Login = login ?? throw new ArgumentNullException(nameof(login));
         Information = information ?? throw new ArgumentNullException(nameof(information));
-        Rights = rights;
         ID = login.ID;
         Instantiated = true;
     }
@@ -44,7 +42,6 @@ public record ApplicationUser
     public Guid ID { get; init; }
     public User_Login Login { get; init; }
     public User_Information Information { get; init; }
-    public string[] Rights { get; init; }
 }
 
 public record Model_UserData(string Username, string Email, string FirstName, string LastName, UserGender Gender, long Birthday);
@@ -60,6 +57,6 @@ public record Model_ValidateIdentification(string ToValidate);
 public record Model_StatusToken(string Token);
 
 #region Result
-public record AuthenticationResult(Model_Token AccessToken, Model_Token RefreshToken, UserStatus? StatusCode, bool ConsistOverSession, string Username, bool Admin, string[] Rights);
+public record AuthenticationResult(Model_Token AccessToken, Model_Token RefreshToken, UserStatus? StatusCode, bool ConsistOverSession, string Username, bool Admin);
 public record Model_Token(string Token, long ExpireTime);
 #endregion

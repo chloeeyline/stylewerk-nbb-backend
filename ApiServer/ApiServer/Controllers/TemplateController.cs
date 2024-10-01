@@ -28,12 +28,12 @@ public class TemplateController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<Model_Template>(result));
     }
 
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Template>))]
     [HttpPost(nameof(Update))]
     public IActionResult Update([FromBody] Model_Template model)
     {
-        Query.Update(model);
-        return Ok(new Model_Result<string>());
+        Model_Template result = Query.Update(model);
+        return Ok(new Model_Result<Model_Template>(result));
     }
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]

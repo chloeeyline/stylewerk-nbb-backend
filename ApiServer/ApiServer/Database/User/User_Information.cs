@@ -67,7 +67,8 @@ public class User_Information : IConnectedEntity<User_Information>, IEntity_Guid
             .WithOne(s => s.O_Information)
             .IsRequired(true)
             .HasForeignKey<User_Information>(s => s.ID)
-            .HasConstraintName("User");
+            .HasConstraintName("User")
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 

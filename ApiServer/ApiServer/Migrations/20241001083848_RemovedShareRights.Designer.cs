@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StyleWerk.NBB.Database;
@@ -11,9 +12,11 @@ using StyleWerk.NBB.Database;
 namespace StyleWerk.NBB.Migrations
 {
     [DbContext(typeof(NbbContext))]
-    partial class NbbContextModelSnapshot : ModelSnapshot
+    [Migration("20241001083848_RemovedShareRights")]
+    partial class RemovedShareRights
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -99,9 +102,20 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<Guid>("UserID")
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("CanAddUsers")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("CanRemoveUsers")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("WhoAdded")
+                        .HasColumnType("uuid");
+
                     b.HasKey("GroupID", "UserID");
 
                     b.HasIndex("UserID");
+
+                    b.HasIndex("WhoAdded");
 
                     b.ToTable("Share_GroupUser", (string)null);
                 });
@@ -122,10 +136,15 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<byte>("Type")
                         .HasColumnType("smallint");
 
+                    b.Property<Guid>("UserID")
+                        .HasColumnType("uuid");
+
                     b.Property<byte>("Visibility")
                         .HasColumnType("smallint");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("UserID");
 
                     b.ToTable("Share_Item", (string)null);
                 });
@@ -356,6 +375,16 @@ namespace StyleWerk.NBB.Migrations
                     b.ToTable("Structure_Template_Row", (string)null);
                 });
 
+            modelBuilder.Entity("StyleWerk.NBB.Database.User.Right", b =>
+                {
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.HasKey("Name");
+
+                    b.ToTable("Right");
+                });
+
             modelBuilder.Entity("StyleWerk.NBB.Database.User.User_Information", b =>
                 {
                     b.Property<Guid>("ID")
@@ -453,6 +482,23 @@ namespace StyleWerk.NBB.Migrations
                     b.ToTable("User_Login", (string)null);
                 });
 
+            modelBuilder.Entity("StyleWerk.NBB.Database.User.User_Right", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .HasColumnType("uuid")
+                        .HasColumnName("ID");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("ID", "Name");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("User_Right", (string)null);
+                });
+
             modelBuilder.Entity("StyleWerk.NBB.Database.User.User_Token", b =>
                 {
                     b.Property<Guid>("ID")
@@ -502,7 +548,26 @@ namespace StyleWerk.NBB.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("StyleWerk.NBB.Database.User.User_Login", "O_WhoAdded")
+                        .WithMany()
+                        .HasForeignKey("WhoAdded")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("O_Group");
+
+                    b.Navigation("O_User");
+
+                    b.Navigation("O_WhoAdded");
+                });
+
+            modelBuilder.Entity("StyleWerk.NBB.Database.Share.Share_Item", b =>
+                {
+                    b.HasOne("StyleWerk.NBB.Database.User.User_Login", "O_User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("O_User");
                 });
@@ -511,8 +576,7 @@ namespace StyleWerk.NBB.Migrations
                 {
                     b.HasOne("StyleWerk.NBB.Database.Structure.Structure_Entry_Folder", "O_Folder")
                         .WithMany("O_EntryList")
-                        .HasForeignKey("FolderID")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("FolderID");
 
                     b.HasOne("StyleWerk.NBB.Database.Structure.Structure_Template", "O_Template")
                         .WithMany("O_EntryList")
@@ -627,6 +691,26 @@ namespace StyleWerk.NBB.Migrations
                     b.Navigation("O_User");
                 });
 
+            modelBuilder.Entity("StyleWerk.NBB.Database.User.User_Right", b =>
+                {
+                    b.HasOne("StyleWerk.NBB.Database.User.User_Login", "O_User")
+                        .WithMany("O_Right")
+                        .HasForeignKey("ID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("User");
+
+                    b.HasOne("StyleWerk.NBB.Database.User.Right", "O_Right")
+                        .WithMany("O_User")
+                        .HasForeignKey("Name")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("O_Right");
+
+                    b.Navigation("O_User");
+                });
+
             modelBuilder.Entity("StyleWerk.NBB.Database.User.User_Token", b =>
                 {
                     b.HasOne("StyleWerk.NBB.Database.User.User_Login", "O_User")
@@ -671,10 +755,17 @@ namespace StyleWerk.NBB.Migrations
                     b.Navigation("O_Cells");
                 });
 
+            modelBuilder.Entity("StyleWerk.NBB.Database.User.Right", b =>
+                {
+                    b.Navigation("O_User");
+                });
+
             modelBuilder.Entity("StyleWerk.NBB.Database.User.User_Login", b =>
                 {
                     b.Navigation("O_Information")
                         .IsRequired();
+
+                    b.Navigation("O_Right");
 
                     b.Navigation("O_Token");
                 });

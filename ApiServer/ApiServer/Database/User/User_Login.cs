@@ -74,11 +74,6 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
     public virtual User_Information O_Information { get; set; }
 
     /// <summary>
-    /// Navigation property for the user's rights.
-    /// </summary>
-    public virtual List<User_Right> O_Right { get; set; }
-
-    /// <summary>
     /// Navigation property for the user's authentication tokens.
     /// </summary>
     public virtual List<User_Token> O_Token { get; set; }
@@ -124,17 +119,14 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
             .WithOne(s => s.O_User)
             .IsRequired(false)
             .HasForeignKey<User_Information>(s => s.ID)
-            .HasConstraintName("Information");
-        b.HasMany(s => s.O_Right)
-            .WithOne(s => s.O_User)
-            .IsRequired(false)
-            .HasForeignKey(s => s.ID)
-            .HasConstraintName("Right");
+            .HasConstraintName("Information")
+            .OnDelete(DeleteBehavior.Cascade);
         b.HasMany(s => s.O_Token)
             .WithOne(s => s.O_User)
             .IsRequired(false)
             .HasForeignKey(s => s.ID)
-            .HasConstraintName("Token");
+            .HasConstraintName("Token")
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 

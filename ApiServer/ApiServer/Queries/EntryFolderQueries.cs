@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
 
@@ -28,7 +29,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
                 .Where(s => s.UserID == CurrentUser.ID && s.FolderID == null)
                 .Include(s => s.O_Template)
                 .Include(s => s.O_User)
-                .Select(s => new Model_EntryItem(s.ID, s.Name, s.O_User.Username, s.O_Template.Name, s.Tags, s.CreatedAt, s.LastUpdatedAt)),
+                .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsEncrypted, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, ShareVisibility.None)),
         ];
         entryFolders.Insert(0, new Model_EntryFolders(null, null, result));
         return entryFolders;
@@ -52,9 +53,10 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         [
             .. DB.Structure_Entry
                 .Include(s => s.O_Template)
+                .Include(s => s.O_Folder)
                 .Include(s => s.O_User)
                 .Where(s => s.FolderID == id)
-                .Select(s => new Model_EntryItem(s.ID, s.Name, s.O_User.Username, s.O_Template.Name, s.Tags, s.CreatedAt, s.LastUpdatedAt)),
+                .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsEncrypted, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, ShareVisibility.None)),
         ];
 
         return list;
@@ -71,7 +73,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
             throw new RequestException(ResultCodes.DataIsInvalid);
 
-        int sortOrder = !DB.Structure_Entry_Folder.Any() ? 1 :
+        int sortOrder = !DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID) ? 1 :
             (DB.Structure_Entry_Folder.Where(s => s.UserID == CurrentUser.ID)
             .Max(f => f.SortOrder) + 1);
 
@@ -120,10 +122,6 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
 
         if (folder.UserID != CurrentUser.ID)
             throw new RequestException(ResultCodes.YouDontOwnTheData);
-
-        List<Structure_Entry> entries = [.. DB.Structure_Entry.Where(s => s.FolderID == id)];
-        foreach (Structure_Entry? entry in entries)
-            entry.FolderID = null;
 
         DB.Structure_Entry_Folder.Remove(folder);
         DB.SaveChanges();

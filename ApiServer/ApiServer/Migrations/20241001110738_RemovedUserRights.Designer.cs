@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StyleWerk.NBB.Database;
@@ -11,9 +12,11 @@ using StyleWerk.NBB.Database;
 namespace StyleWerk.NBB.Migrations
 {
     [DbContext(typeof(NbbContext))]
-    partial class NbbContextModelSnapshot : ModelSnapshot
+    [Migration("20241001110738_RemovedUserRights")]
+    partial class RemovedUserRights
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -511,8 +514,7 @@ namespace StyleWerk.NBB.Migrations
                 {
                     b.HasOne("StyleWerk.NBB.Database.Structure.Structure_Entry_Folder", "O_Folder")
                         .WithMany("O_EntryList")
-                        .HasForeignKey("FolderID")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("FolderID");
 
                     b.HasOne("StyleWerk.NBB.Database.Structure.Structure_Template", "O_Template")
                         .WithMany("O_EntryList")

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 using StyleWerk.NBB.Database.Core;
 
@@ -27,7 +28,13 @@ public class Structure_Entry_Cell : IConnectedEntity<Structure_Entry_Cell>, IEnt
 
     public static void Connect(EntityTypeBuilder<Structure_Entry_Cell> b)
     {
-        b.HasOne(s => s.O_Row).WithMany(s => s.O_Cells).HasForeignKey(e => e.RowID);
-        b.HasOne(s => s.O_Template).WithMany().HasForeignKey(e => e.TemplateID);
+        b.HasOne(s => s.O_Row)
+            .WithMany(s => s.O_Cells)
+            .HasForeignKey(e => e.RowID)
+            .OnDelete(DeleteBehavior.Cascade);
+        b.HasOne(s => s.O_Template)
+            .WithMany()
+            .HasForeignKey(e => e.TemplateID)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

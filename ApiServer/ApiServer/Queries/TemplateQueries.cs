@@ -9,7 +9,7 @@ namespace StyleWerk.NBB.Queries;
 
 public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
-    public Model_TemplatePaging List(int page, int perPage, string? name, string? username, string? description, string? tags, bool? publicShared, bool? groupShared, bool? directlyShared, bool? directUser)
+    public Model_TemplatePaging List(int page, int perPage, string? name, string? username, string? description, string? tags, bool? publicShared, bool? shared, bool? includeOwned, bool? directUser)
     {
         // Normalize the username for comparison
         username = username?.Normalize().ToLower();
@@ -19,7 +19,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         from si in DB.Share_Item
         where si.Type == ShareType.Template
         join template in DB.Structure_Template on si.ItemID equals template.ID
-        join whoShared in DB.User_Login on si.UserID equals whoShared.ID
         join owner in DB.User_Login on template.UserID equals owner.ID
         join sgu in DB.Share_GroupUser on
             new { si.ToWhom, si.Visibility } equals
@@ -31,107 +30,114 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         where (si.ToWhom == CurrentUser.ID || sharedGroup.UserID == CurrentUser.ID)
         select new
         {
-            template,
-            si.Visibility,
+            template.ID,
+            template.Name,
+            template.Description,
+            template.Tags,
+            template.CreatedAt,
+            template.LastUpdatedAt,
             ownerUsername = owner.Username,
-            ownerUsernameNormalized = owner.UsernameNormalized,
-            si.CanShare,
-            si.CanEdit,
-            si.CanDelete,
-            whoSharedUsername = whoShared.Username,
-            whoSharedUsernameNormalized = whoShared.UsernameNormalized,
-            groupName = groupData.Name
+            si.Visibility
         };
 
-        // Query to get templates owned by the current user
-        var ownedQuery =
-        from template in DB.Structure_Template
-        join owner in DB.User_Login on template.UserID equals owner.ID
-        where template.UserID == CurrentUser.ID
-        select new
+        if (includeOwned is true)
         {
-            template,
-            Visibility = ShareVisibility.None,
-            ownerUsername = owner.Username,
-            ownerUsernameNormalized = owner.UsernameNormalized,
-            CanShare = true,
-            CanEdit = true,
-            CanDelete = true,
-            whoSharedUsername = (string?) null,
-            whoSharedUsernameNormalized = (string?) null,
-            groupName = (string?) null
-        };
+            // Query for owned templates
+            var ownedQuery =
+            from template in DB.Structure_Template
+            join owner in DB.User_Login on template.UserID equals owner.ID
+            where template.UserID == CurrentUser.ID
+            select new
+            {
+                template.ID,
+                template.Name,
+                template.Description,
+                template.Tags,
+                template.CreatedAt,
+                template.LastUpdatedAt,
+                ownerUsername = owner.Username,
+                Visibility = ShareVisibility.None // Mark as owned
+            };
 
-        // Combine the two queries (shared + owned) using Union
-        query = query.Union(ownedQuery);
+            // Combine the two queries (shared + owned) using Union
+            query = query.Union(ownedQuery);
+        }
 
         // Apply visibility filters based on the model
         query = from s in query
                 where
-                (publicShared == true && s.Visibility == ShareVisibility.Public) ||
-                (groupShared == true && s.Visibility == ShareVisibility.Group) ||
-                (directlyShared == true && s.Visibility == ShareVisibility.Directly) ||
-                s.Visibility == ShareVisibility.None
+                    (includeOwned == true && s.Visibility == ShareVisibility.None) || // Include owned templates if filter is true
+                    (publicShared == true && s.Visibility == ShareVisibility.Public) ||
+                    (shared == true && (s.Visibility == ShareVisibility.Directly || s.Visibility == ShareVisibility.Group))
                 select s;
 
-        // Apply filters prior to select
+        // Apply filters prior to grouping
         if (!string.IsNullOrWhiteSpace(name))
             query = from s in query
-                    where s.template.Name.Contains(name)
+                    where s.Name.Contains(name)
                     select s;
 
         if (!string.IsNullOrWhiteSpace(description))
             query = from s in query
-                    where !string.IsNullOrWhiteSpace(s.template.Description) && s.template.Description.Contains(description)
+                    where !string.IsNullOrWhiteSpace(s.Description) && s.Description.Contains(description)
                     select s;
 
         if (!string.IsNullOrWhiteSpace(tags))
             query = from s in query
-                    where !string.IsNullOrWhiteSpace(s.template.Tags) && tags.Contains(s.template.Tags)
+                    where !string.IsNullOrWhiteSpace(s.Tags) && tags.Contains(s.Tags)
                     select s;
 
         if (!string.IsNullOrWhiteSpace(username) && directUser is false)
             query = from s in query
-                    where s.ownerUsernameNormalized.Contains(username)
+                    where s.ownerUsername.Contains(username)
                     select s;
 
         if (!string.IsNullOrWhiteSpace(username) && directUser is true)
             query = from s in query
-                    where s.ownerUsernameNormalized == username
+                    where s.ownerUsername == username
                     select s;
 
-        // Apply ordering before final select
-        query = from s in query
-                orderby s.Visibility, s.template.LastUpdatedAt, s.template.Name
-                select s;
+        // Group templates by ID, giving priority to owned templates over shared and public templates
+        var groupedQuery =
+        from s in query
+        group s by s.ID into g
+        select new
+        {
+            Template = g.FirstOrDefault(x => x.Visibility == ShareVisibility.None) ?? // Highest priority: owned
+                       g.FirstOrDefault(x => x.Visibility == ShareVisibility.Directly) ?? // Second priority: directly shared
+                       g.FirstOrDefault(x => x.Visibility == ShareVisibility.Group) ??    // Third priority: group shared
+                       g.FirstOrDefault(x => x.Visibility == ShareVisibility.Public)      // Lowest priority: public
+        };
 
-        int tCount = query.Count();
+        // Apply ordering before final selection
+        IQueryable<Model_TemplateItem> orderedQuery =
+        from g in groupedQuery
+        orderby g.Template.Visibility, g.Template.LastUpdatedAt, g.Template.Name
+        select new Model_TemplateItem
+        (
+            g.Template.ID,
+            g.Template.Name,
+            g.Template.Description,
+            g.Template.Tags,
+            g.Template.CreatedAt,
+            g.Template.LastUpdatedAt,
+            g.Template.ownerUsername,
+            g.Template.Visibility
+        );
+
+        // Calculate pagination
+        int tCount = orderedQuery.Count();
         if (perPage < 20)
             perPage = 20;
-        int maxPages = tCount / perPage;
+        int maxPages = (int) Math.Ceiling(tCount / (double) perPage);
         if (page > maxPages)
             page = 0;
 
-        // Final select to map data to TemplateResult
-        IQueryable<Model_TemplateItem> finalQuery = query.Skip(page * perPage).Take(perPage).Select(s => new Model_TemplateItem
-        (
-            s.template.ID,
-            s.template.Name,
-            s.template.Description,
-            s.template.Tags,
-            s.template.CreatedAt,
-            s.template.LastUpdatedAt,
-            s.ownerUsername,
-            s.Visibility,
-            s.CanShare,
-            s.CanEdit,
-            s.CanDelete,
-            s.whoSharedUsername,
-            s.groupName
-        ));
+        // Apply pagination
+        List<Model_TemplateItem> pagedQuery = [.. orderedQuery.Skip(page * perPage).Take(perPage)];
 
-        // Execute the query and return distinct results
-        Model_TemplatePaging paging = new(tCount, page, maxPages, perPage, [.. finalQuery]);
+        // Return the final paginated result
+        Model_TemplatePaging paging = new(tCount, page, maxPages, perPage, pagedQuery);
         return paging;
     }
 
@@ -178,33 +184,12 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             ?? throw new RequestException(ResultCodes.NoDataFound);
         if (template.UserID != CurrentUser.ID)
             throw new RequestException(ResultCodes.YouDontOwnTheData);
-
-        List<Structure_Entry> entries = [.. DB.Structure_Entry.Where(e => e.TemplateID == id)];
-        foreach (Structure_Entry entry in entries)
-        {
-            List<Structure_Entry_Row> entryRows = [.. DB.Structure_Entry_Row
-                .Where(t => t.EntryID == entry.ID)
-                .Include(s => s.O_Cells)];
-            foreach (Structure_Entry_Row row in entryRows)
-                DB.Structure_Entry_Cell.RemoveRange(row.O_Cells);
-            DB.Structure_Entry_Row.RemoveRange(entryRows);
-        }
-        DB.Structure_Entry.RemoveRange(entries);
-
-        List<Structure_Template_Row> rows = [.. DB.Structure_Template_Row
-            .Where(t => t.TemplateID == id)
-            .Include(s => s.O_Cells)];
-
-        foreach (Structure_Template_Row row in rows)
-            DB.Structure_Template_Cell.RemoveRange(row.O_Cells);
-
-        DB.Structure_Template_Row.RemoveRange(rows);
         DB.Structure_Template.Remove(template);
 
         DB.SaveChanges();
     }
 
-    public void Update(Model_Template? model)
+    public Model_Template Update(Model_Template? model)
     {
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -267,7 +252,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
                     cellTemplate = new()
                     {
                         ID = Guid.NewGuid(),
-                        RowID = rowItem.ID,
+                        RowID = rowTemplate.ID,
                         SortOrder = cellSortOrder++,
                         InputHelper = cell.InputHelper,
                         HideOnEmpty = cell.HideOnEmpty,
@@ -290,6 +275,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         }
 
         DB.SaveChanges();
+        return Details(template.ID);
     }
 
     public void Copy(Guid? id)

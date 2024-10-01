@@ -33,8 +33,6 @@ public partial class NbbContext : DbContext
     public virtual DbSet<User_Login> User_Login { get; set; }
     public virtual DbSet<User_Token> User_Token { get; set; }
     public virtual DbSet<User_Information> User_Information { get; set; }
-    public virtual DbSet<User_Right> User_Right { get; set; }
-    public virtual DbSet<Right> Right { get; set; }
 
     public virtual DbSet<Share_Group> Share_Group { get; set; }
     public virtual DbSet<Share_GroupUser> Share_GroupUser { get; set; }
@@ -59,8 +57,6 @@ public partial class NbbContext : DbContext
         _ = modelBuilder.Entity<User_Login>(User.User_Login.Build);
         _ = modelBuilder.Entity<User_Token>(User.User_Token.Build);
         _ = modelBuilder.Entity<User_Information>(User.User_Information.Build);
-        _ = modelBuilder.Entity<User_Right>(User.User_Right.Build);
-        _ = modelBuilder.Entity<Right>(User.Right.Build);
 
         _ = modelBuilder.Entity<Share_Group>(Share.Share_Group.Build);
         _ = modelBuilder.Entity<Share_GroupUser>(Share.Share_GroupUser.Build);
@@ -81,8 +77,6 @@ public partial class NbbContext : DbContext
         _ = modelBuilder.Entity<User_Login>(User.User_Login.Connect);
         _ = modelBuilder.Entity<User_Token>(User.User_Token.Connect);
         _ = modelBuilder.Entity<User_Information>(User.User_Information.Connect);
-        _ = modelBuilder.Entity<User_Right>(User.User_Right.Connect);
-        _ = modelBuilder.Entity<Right>(User.Right.Connect);
 
         _ = modelBuilder.Entity<Share_Group>(Share.Share_Group.Connect);
         _ = modelBuilder.Entity<Share_GroupUser>(Share.Share_GroupUser.Connect);

@@ -71,6 +71,7 @@ public enum ResultCodes
     #endregion
 
     #region Share
+    CantShareWithYourself = 1302,
     OnlyOwnerCanChangePublicity = 1303,
     #endregion
 
