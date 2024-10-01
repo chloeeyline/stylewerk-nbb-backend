@@ -73,7 +73,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
             throw new RequestException(ResultCodes.DataIsInvalid);
 
-        int sortOrder = !DB.Structure_Entry_Folder.Any() ? 1 :
+        int sortOrder = !DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID) ? 1 :
             (DB.Structure_Entry_Folder.Where(s => s.UserID == CurrentUser.ID)
             .Max(f => f.SortOrder) + 1);
 

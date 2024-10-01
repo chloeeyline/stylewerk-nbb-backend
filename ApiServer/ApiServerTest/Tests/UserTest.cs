@@ -1,4 +1,4 @@
-﻿namespace StyleWerk.NBB.Tests
+﻿namespace ApiServerTest.Tests
 {
     public class UserTest
     {
