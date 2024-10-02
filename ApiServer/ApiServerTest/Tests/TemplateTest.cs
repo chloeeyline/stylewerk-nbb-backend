@@ -217,7 +217,46 @@ namespace ApiServerTest.Tests
             }
             catch (RequestException ex)
             {
+                RequestException result = new(ResultCodes.NoDataFound);
+                Assert.Equal(result.Code, ex.Code);
+            }
+        }
+
+        [Fact]
+        public void Details()
+        {
+            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            Model_Template template = CreateTemplateUserOwn("TestTemplate10");
+            Model_Template detailTemplate = query.Details(template.ID);
+            Assert.True(detailTemplate.Items.Count > 0);
+        }
+
+        [Fact]
+        public void DetailsDataIsInvalid()
+        {
+            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            try
+            {
+                query.Details(null);
+            }
+            catch (RequestException ex)
+            {
                 RequestException result = new(ResultCodes.DataIsInvalid);
+                Assert.Equal(result.Code, ex.Code);
+            }
+        }
+
+        [Fact]
+        public void DetailsNoDataFound()
+        {
+            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            try
+            {
+                query.Details(Guid.NewGuid());
+            }
+            catch (RequestException ex)
+            {
+                RequestException result = new(ResultCodes.NoDataFound);
                 Assert.Equal(result.Code, ex.Code);
             }
         }
