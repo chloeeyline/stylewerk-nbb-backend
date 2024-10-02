@@ -134,7 +134,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             page = 0;
 
         // Apply pagination
-        List<Model_TemplateItem> pagedQuery = [.. orderedQuery.Skip(page.Value * perPage.Value).Take(perPage)];
+        List<Model_TemplateItem> pagedQuery = [.. orderedQuery.Skip(page.Value * perPage.Value).Take(perPage.Value)];
 
         // Return the final paginated result
         Model_TemplatePaging paging = new(new Paging(tCount, page.Value, maxPages, perPage.Value), pagedQuery);
