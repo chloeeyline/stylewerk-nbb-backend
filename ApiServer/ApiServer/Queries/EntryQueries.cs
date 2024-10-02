@@ -30,7 +30,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             entry.TemplateID equals template.ID
         join sgu in DB.Share_GroupUser on
             new { si.ToWhom, si.Visibility } equals
-            new { ToWhom = (Guid?)sgu.GroupID, Visibility = ShareVisibility.Group }
+            new { ToWhom = (Guid?) sgu.GroupID, Visibility = ShareVisibility.Group }
             into groupJoin
         from sharedGroup in groupJoin.DefaultIfEmpty()
         join sg in DB.Share_Group on
@@ -258,20 +258,24 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
 
         Structure_Entry? entry = DB.Structure_Entry.FirstOrDefault(s => s.ID == model.ID);
 
-        if (!DB.Structure_Template.Any(s => s.ID == model.TemplateID && s.UserID == CurrentUser.ID))
-            throw new RequestException(ResultCodes.NotYourTemplate);
+        Structure_Template template = DB.Structure_Template.FirstOrDefault(s => s.ID == model.TemplateID)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
+        if (template.UserID != CurrentUser.ID)
+            throw new RequestException(ResultCodes.YouDontOwnTheData);
 
-        if (DB.Structure_Entry.Any(s => s.Name == model.Name && s.UserID == CurrentUser.ID))
-            throw new RequestException(ResultCodes.NameMustBeUnique);
-
-        if (model.FolderID is not null)
+        if (model.FolderID is not null && model.FolderID != Guid.Empty)
         {
-            if (!DB.Structure_Entry_Folder.Any(s => s.ID == model.FolderID && s.UserID == CurrentUser.ID))
-                throw new RequestException(ResultCodes.NoDataFound);
+            Structure_Entry_Folder? folder = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == model.FolderID)
+                ?? throw new RequestException(ResultCodes.NoDataFound);
+            if (folder.UserID != CurrentUser.ID)
+                throw new RequestException(ResultCodes.YouDontOwnTheData);
         }
 
         if (entry is null)
         {
+            if (DB.Structure_Entry.Any(s => s.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
+
             entry = new()
             {
                 ID = Guid.NewGuid(),
@@ -289,6 +293,9 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         {
             if (entry.UserID != CurrentUser.ID)
                 throw new RequestException(ResultCodes.YouDontOwnTheData);
+            if (entry.Name != model.Name && DB.Structure_Entry.Any(s => s.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) &&
+                s.UserID == CurrentUser.ID))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
             if (entry.TemplateID != model.TemplateID)
                 throw new RequestException(ResultCodes.TemplateDoesntMatch);
 

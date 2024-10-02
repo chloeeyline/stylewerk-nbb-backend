@@ -78,11 +78,11 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
             .Max(f => f.SortOrder) + 1);
 
         Structure_Entry_Folder? item = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == model.ID);
-        if (DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID && s.Name == model.Name))
-            throw new RequestException(ResultCodes.NameMustBeUnique);
 
         if (item is null)
         {
+            if (DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID && s.Name == model.Name))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
             item = new()
             {
                 ID = Guid.NewGuid(),
@@ -97,7 +97,8 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         {
             if (item.UserID != CurrentUser.ID)
                 throw new RequestException(ResultCodes.MissingRight);
-
+            if (item.Name != model.Name && DB.Structure_Entry_Folder.Any(s => s.UserID == CurrentUser.ID && s.Name == model.Name))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
             item.Name = model.Name;
         }
 

@@ -211,6 +211,8 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         Structure_Template? template = DB.Structure_Template.FirstOrDefault(s => s.ID == model.ID);
         if (template is null)
         {
+            if (DB.Structure_Template.Any(s => s.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
             template = new()
             {
                 ID = Guid.NewGuid(),
@@ -225,6 +227,8 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         {
             if (template.UserID != CurrentUser.ID)
                 throw new RequestException(ResultCodes.YouDontOwnTheData);
+            if (template.Name != model.Name && DB.Structure_Template.Any(s => s.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
             template.Name = model.Name;
             template.Description = string.IsNullOrWhiteSpace(model.Description) ? null : model.Description;
             template.Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower();
