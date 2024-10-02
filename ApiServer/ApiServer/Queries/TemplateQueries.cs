@@ -15,6 +15,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             includeOwned = true;
         // Normalize the username for comparison
         username = username?.Normalize().ToLower();
+        tags = tags?.Normalize().ToLower();
 
         // Query for shared templates
         var query =
@@ -215,8 +216,8 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
                 ID = Guid.NewGuid(),
                 UserID = CurrentUser.ID,
                 Name = model.Name,
-                Description = model.Description,
-                Tags = model.Tags,
+                Description = string.IsNullOrWhiteSpace(model.Description) ? null : model.Description,
+                Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower(),
             };
             DB.Structure_Template.Add(template);
         }
@@ -225,8 +226,8 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             if (template.UserID != CurrentUser.ID)
                 throw new RequestException(ResultCodes.YouDontOwnTheData);
             template.Name = model.Name;
-            template.Description = model.Description;
-            template.Tags = model.Tags;
+            template.Description = string.IsNullOrWhiteSpace(model.Description) ? null : model.Description;
+            template.Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower();
         }
 
         List<Guid> rowIDs = [];

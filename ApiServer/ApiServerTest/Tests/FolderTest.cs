@@ -152,7 +152,8 @@ namespace ApiServerTest.Tests
         public void ListFolder()
         {
             EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-
+            CreateFolderForUser("TestFolder5");
+            CreateFolderForUser("TestFolder6");
             List<Model_EntryFolders> folders = query.List();
 
             Assert.IsType<List<Model_EntryFolders>>(folders);

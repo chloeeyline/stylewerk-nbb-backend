@@ -16,6 +16,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
     {
         // Normalize the username for comparison
         username = username?.Normalize().ToLower();
+        tags = tags?.Normalize().ToLower();
 
         // Query for shared entries (both directly and group-shared)
         var query =
@@ -29,7 +30,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             entry.TemplateID equals template.ID
         join sgu in DB.Share_GroupUser on
             new { si.ToWhom, si.Visibility } equals
-            new { ToWhom = (Guid?) sgu.GroupID, Visibility = ShareVisibility.Group }
+            new { ToWhom = (Guid?)sgu.GroupID, Visibility = ShareVisibility.Group }
             into groupJoin
         from sharedGroup in groupJoin.DefaultIfEmpty()
         join sg in DB.Share_Group on
@@ -278,6 +279,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
                 FolderID = model.FolderID,
                 TemplateID = model.TemplateID,
                 Name = model.Name,
+                Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower(),
                 IsEncrypted = model.IsEncrypted,
             };
 
@@ -294,6 +296,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             entry.UserID = CurrentUser.ID;
             entry.FolderID = model.FolderID;
             entry.Name = model.Name;
+            entry.Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower();
             entry.IsEncrypted = model.IsEncrypted;
         }
 
