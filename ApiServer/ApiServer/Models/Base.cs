@@ -1,5 +1,6 @@
 ﻿namespace StyleWerk.NBB.Models;
 
+public record Paging(int Count, int Page, int MaxPage, int PerPage);
 
 /// <summary>
 /// The default Model to always wrap the results of a requests from the frontend

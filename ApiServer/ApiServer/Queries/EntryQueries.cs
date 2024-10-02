@@ -171,7 +171,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
 
             foreach (Structure_Template_Cell cell in itemCells)
             {
-                Model_TemplateCell cellModelTemplate = new(cell.ID, cell.RowID, cell.InputHelper, cell.HideOnEmpty, cell.IsRequired, cell.Text, cell.MetaData);
+                Model_TemplateCell cellModelTemplate = new(cell.ID, cell.InputHelper, cell.HideOnEmpty, cell.IsRequired, cell.Text, cell.MetaData);
                 Model_EntryCell cellModel = new(null, cell.ID, cellModelTemplate, null);
                 cells.Add(cellModel);
             }
@@ -216,7 +216,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
 
             foreach (Structure_Template_Cell cell in itemCells)
             {
-                Model_TemplateCell cellModelTemplate = new(cell.ID, cell.RowID, cell.InputHelper, cell.HideOnEmpty, cell.IsRequired, cell.Text, cell.MetaData);
+                Model_TemplateCell cellModelTemplate = new(cell.ID, cell.InputHelper, cell.HideOnEmpty, cell.IsRequired, cell.Text, cell.MetaData);
                 Model_EntryCell cellModel = new(null, cell.ID, cellModelTemplate, null);
                 cells.Add(cellModel);
             }

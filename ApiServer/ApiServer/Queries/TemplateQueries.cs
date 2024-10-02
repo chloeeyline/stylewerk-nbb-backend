@@ -9,7 +9,7 @@ namespace StyleWerk.NBB.Queries;
 
 public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
-    public Model_TemplatePaging List(int page, int perPage, string? name, string? username, string? description, string? tags, bool? publicShared, bool? shared, bool? includeOwned, bool? directUser)
+    public Model_TemplatePaging List(int? page, int? perPage, string? name, string? username, string? description, string? tags, bool? publicShared, bool? shared, bool? includeOwned, bool? directUser)
     {
         // Normalize the username for comparison
         username = username?.Normalize().ToLower();
@@ -22,7 +22,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         join owner in DB.User_Login on template.UserID equals owner.ID
         join sgu in DB.Share_GroupUser on
             new { si.ToWhom, si.Visibility } equals
-            new { ToWhom = (Guid?)sgu.GroupID, Visibility = ShareVisibility.Group }
+            new { ToWhom = (Guid?) sgu.GroupID, Visibility = ShareVisibility.Group }
             into groupJoin
         from sharedGroup in groupJoin.DefaultIfEmpty()
         join sg in DB.Share_Group on sharedGroup.GroupID equals sg.ID into groupDataJoin
@@ -127,17 +127,17 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
 
         // Calculate pagination
         int tCount = orderedQuery.Count();
-        if (perPage < 20)
+        if (!perPage.HasValue || perPage < 20)
             perPage = 20;
-        int maxPages = (int)Math.Ceiling(tCount / (double)perPage);
-        if (page > maxPages)
+        int maxPages = (int) Math.Ceiling(tCount / (double) perPage);
+        if (!page.HasValue || page > maxPages)
             page = 0;
 
         // Apply pagination
-        List<Model_TemplateItem> pagedQuery = [.. orderedQuery.Skip(page * perPage).Take(perPage)];
+        List<Model_TemplateItem> pagedQuery = [.. orderedQuery.Skip(page.Value * perPage.Value).Take(perPage)];
 
         // Return the final paginated result
-        Model_TemplatePaging paging = new(tCount, page, maxPages, perPage, pagedQuery);
+        Model_TemplatePaging paging = new(new Paging(tCount, page.Value, maxPages, perPage.Value), pagedQuery);
         return paging;
     }
 
@@ -163,7 +163,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
 
             foreach (Structure_Template_Cell cell in cellTemplate)
             {
-                Model_TemplateCell cellModel = new(cell.ID, cell.RowID, cell.InputHelper, cell.HideOnEmpty, cell.IsRequired, cell.Text, cell.MetaData);
+                Model_TemplateCell cellModel = new(cell.ID, cell.InputHelper, cell.HideOnEmpty, cell.IsRequired, cell.Text, cell.MetaData);
                 cells.Add(cellModel);
             }
 

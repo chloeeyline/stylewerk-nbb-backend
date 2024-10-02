@@ -2,12 +2,7 @@ using StyleWerk.NBB.Database.Share;
 
 namespace StyleWerk.NBB.Models;
 
-public record Model_TemplatePaging(
-    int Count,
-    int Page,
-    int MaxPage,
-    int PerPage,
-    List<Model_TemplateItem> Items);
+public record Model_TemplatePaging(Paging Paging, List<Model_TemplateItem> Items);
 public record Model_TemplateItem(
     Guid ID,
     string Name,
@@ -25,14 +20,13 @@ public record Model_Template(
     string? Description,
     string? Tags,
     List<Model_TemplateRow> Items);
-public record Model_TemplateRow(Guid ID,
+public record Model_TemplateRow(Guid? ID,
     bool CanWrapCells,
     bool CanRepeat,
     bool HideOnNoInput,
     List<Model_TemplateCell> Items);
 public record Model_TemplateCell(
-    Guid ID,
-    Guid RowID,
+    Guid? ID,
     int InputHelper,
     bool HideOnEmpty,
     bool IsRequired,
