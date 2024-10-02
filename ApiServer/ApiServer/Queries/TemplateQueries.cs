@@ -22,7 +22,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         join owner in DB.User_Login on template.UserID equals owner.ID
         join sgu in DB.Share_GroupUser on
             new { si.ToWhom, si.Visibility } equals
-            new { ToWhom = (Guid?) sgu.GroupID, Visibility = ShareVisibility.Group }
+            new { ToWhom = (Guid?)sgu.GroupID, Visibility = ShareVisibility.Group }
             into groupJoin
         from sharedGroup in groupJoin.DefaultIfEmpty()
         join sg in DB.Share_Group on sharedGroup.GroupID equals sg.ID into groupDataJoin
@@ -37,6 +37,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             template.CreatedAt,
             template.LastUpdatedAt,
             ownerUsername = owner.Username,
+            ownerUsernameNormalized = owner.UsernameNormalized,
             si.Visibility
         };
 
@@ -56,6 +57,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
                 template.CreatedAt,
                 template.LastUpdatedAt,
                 ownerUsername = owner.Username,
+                ownerUsernameNormalized = owner.UsernameNormalized,
                 Visibility = ShareVisibility.None // Mark as owned
             };
 
@@ -84,17 +86,17 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
 
         if (!string.IsNullOrWhiteSpace(tags))
             query = from s in query
-                    where !string.IsNullOrWhiteSpace(s.Tags) && tags.Contains(s.Tags)
+                    where !string.IsNullOrWhiteSpace(s.Tags) && s.Tags.Contains(tags)
                     select s;
 
         if (!string.IsNullOrWhiteSpace(username) && directUser is false)
             query = from s in query
-                    where s.ownerUsername.Contains(username)
+                    where s.ownerUsernameNormalized.Contains(username)
                     select s;
 
         if (!string.IsNullOrWhiteSpace(username) && directUser is true)
             query = from s in query
-                    where s.ownerUsername == username
+                    where s.ownerUsernameNormalized == username
                     select s;
 
         // Group templates by ID, giving priority to owned templates over shared and public templates
@@ -111,26 +113,26 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
 
         // Apply ordering before final selection
         IQueryable<Model_TemplateItem> orderedQuery =
-        from g in groupedQuery
-        orderby g.Template.Visibility, g.Template.LastUpdatedAt, g.Template.Name
+        from g in query
+        orderby g.Visibility, g.LastUpdatedAt, g.Name
         select new Model_TemplateItem
         (
-            g.Template.ID,
-            g.Template.Name,
-            g.Template.Description,
-            g.Template.Tags,
-            g.Template.CreatedAt,
-            g.Template.LastUpdatedAt,
-            g.Template.ownerUsername,
-            g.Template.Visibility
+            g.ID,
+            g.Name,
+            g.Description,
+            g.Tags,
+            g.CreatedAt,
+            g.LastUpdatedAt,
+            g.ownerUsername,
+            g.Visibility
         );
 
         // Calculate pagination
         int tCount = orderedQuery.Count();
         if (!perPage.HasValue || perPage < 20)
             perPage = 20;
-        int maxPages = (int) Math.Ceiling(tCount / (double) perPage);
-        if (!page.HasValue || page > maxPages)
+        int maxPages = (int)Math.Ceiling(tCount / (double)perPage);
+        if (!page.HasValue || page >= maxPages || page < 0)
             page = 0;
 
         // Apply pagination

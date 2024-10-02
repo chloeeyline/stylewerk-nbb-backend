@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using StyleWerk.NBB.AWS;
-using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Database.User;
+﻿using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
@@ -9,30 +6,12 @@ namespace ApiServerTest.Tests
 {
     public class FolderTest
     {
-        private static NbbContext CreateDbContext()
-        {
-            SecretData secretData = AmazonSecretsManager.GetData() ?? throw new Exception();
-            string connectionString = secretData.GetConnectionString();
-
-            DbContextOptionsBuilder<NbbContext> builder = new();
-            builder.UseNpgsql(connectionString);
-
-            return new NbbContext(builder.Options);
-        }
 
         private static EntryFolderQueries ReturnQuery(string userGuid)
         {
-            NbbContext DB = CreateDbContext();
-
-            ApplicationUser CurrentUser = new();
-            Guid id = Guid.Parse(userGuid);
-            User_Login? login = DB.User_Login.FirstOrDefault(s => s.ID == id);
-            User_Information? information = DB.User_Information.FirstOrDefault(s => s.ID == id);
-            CurrentUser = login is null || information is null ?
-                new ApplicationUser() :
-                new ApplicationUser(login, information);
-
-            EntryFolderQueries query = new(DB, CurrentUser);
+            NbbContext DB = NbbContext.Create();
+            ApplicationUser user = DB.GetUser(new Guid(userGuid));
+            EntryFolderQueries query = new(DB, user);
             return query;
         }
 

@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using StyleWerk.NBB.AWS;
-using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Database.User;
+﻿using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
@@ -9,30 +6,12 @@ namespace ApiServerTest.Tests
 {
     public class TemplateTest
     {
-        private static NbbContext CreateDbContext()
-        {
-            SecretData secretData = AmazonSecretsManager.GetData() ?? throw new Exception();
-            string connectionString = secretData.GetConnectionString();
-
-            DbContextOptionsBuilder<NbbContext> builder = new();
-            builder.UseNpgsql(connectionString);
-
-            return new NbbContext(builder.Options);
-        }
-
         private static TemplateQueries ReturnQuery(string userGuid)
         {
-            NbbContext DB = CreateDbContext();
+            NbbContext DB = NbbContext.Create();
+            ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
-            ApplicationUser CurrentUser = new();
-            Guid id = Guid.Parse(userGuid);
-            User_Login? login = DB.User_Login.FirstOrDefault(s => s.ID == id);
-            User_Information? information = DB.User_Information.FirstOrDefault(s => s.ID == id);
-            CurrentUser = login is null || information is null ?
-                new ApplicationUser() :
-                new ApplicationUser(login, information);
-
-            TemplateQueries query = new(DB, CurrentUser);
+            TemplateQueries query = new(DB, user);
             return query;
         }
 
@@ -43,9 +22,9 @@ namespace ApiServerTest.Tests
             Guid rowId = Guid.NewGuid();
             List<Model_TemplateCell> cells =
             [
-                new Model_TemplateCell(Guid.NewGuid(), rowId, 1, false, false, "Test", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), rowId, 1, false, false, "Test1", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), rowId, 1, false, false, "Test2", "Test")
+                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test", "Test"),
+                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test1", "Test"),
+                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test2", "Test")
             ];
 
             List<Model_TemplateRow> rows =
@@ -79,9 +58,9 @@ namespace ApiServerTest.Tests
             Guid rowId = Guid.NewGuid();
             List<Model_TemplateCell> cells =
             [
-                new Model_TemplateCell(Guid.NewGuid(), rowId, 1, false, false, "Test", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), rowId, 1, false, false, "Test1", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), rowId, 1, false, false, "Test2", "Test")
+                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test", "Test"),
+                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test1", "Test"),
+                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test2", "Test")
             ];
 
             List<Model_TemplateRow> rows =
@@ -114,9 +93,9 @@ namespace ApiServerTest.Tests
             Guid rowId = Guid.NewGuid();
             List<Model_TemplateCell> cells =
             [
-                new Model_TemplateCell(Guid.NewGuid(), rowId, 1, false, false, "Test", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), rowId, 1, false, false, "Test1", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), rowId, 1, false, false, "Test2", "Test")
+                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test", "Test"),
+                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test1", "Test"),
+                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test2", "Test")
             ];
 
             List<Model_TemplateRow> rows =
@@ -241,31 +220,6 @@ namespace ApiServerTest.Tests
                 RequestException result = new(ResultCodes.DataIsInvalid);
                 Assert.Equal(result.Code, ex.Code);
             }
-        }
-
-        [Fact]
-        public void GetTemplate()
-        {
-
-        }
-
-        [Fact]
-        public void FilterTemplate()
-        {
-
-        }
-
-
-        [Fact]
-        public void GetTemplates()
-        {
-
-        }
-
-        [Fact]
-        public void GetTemplatePreview()
-        {
-
         }
     }
 }
