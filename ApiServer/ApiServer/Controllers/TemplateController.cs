@@ -14,9 +14,9 @@ public class TemplateController(NbbContext db) : BaseController(db)
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_TemplatePaging>))]
     [HttpGet(nameof(List))]
-    public IActionResult List(int page, int perPage, string? name, string? username, string? description, string? tags, bool? common, bool? directly, bool? group, bool? directUser)
+    public IActionResult List(int page, int perPage, string? name, string? username, string? description, string? tags, bool? publicShared, bool? shared, bool? includeOwned, bool? directUser)
     {
-        Model_TemplatePaging result = Query.List(page, perPage, name, username, description, tags, common, directly, group, directUser);
+        Model_TemplatePaging result = Query.List(page, perPage, name, username, description, tags, publicShared, shared, includeOwned, directUser);
         return Ok(new Model_Result<Model_TemplatePaging>(result));
     }
 
