@@ -41,8 +41,8 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     [HttpPost(nameof(Registration))]
     public IActionResult Registration([FromBody] Model_Registration? model)
     {
-        Authentication.Registration(model);
-        return Ok(new Model_Result<string>());
+        string? result = Authentication.Registration(model);
+        return Ok(new Model_Result<string>(result));
     }
 
     [ApiExplorerSettings(GroupName = "Registration")]
@@ -61,8 +61,8 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     [HttpPost(nameof(RequestPasswordReset))]
     public IActionResult RequestPasswordReset([FromBody] string email)
     {
-        Authentication.RequestPasswordReset(email);
-        return Ok(new Model_Result<string>());
+        string? result = Authentication.RequestPasswordReset(email);
+        return Ok(new Model_Result<string>(result));
     }
 
     [ApiExplorerSettings(GroupName = "Forgot Password")]
@@ -101,8 +101,8 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     [HttpPost(nameof(UpdateEmail)), Authorize]
     public IActionResult UpdateEmail(string? email)
     {
-        Authentication.UpdateEmail(email);
-        return Ok(new Model_Result<string>());
+        string? result = Authentication.UpdateEmail(email);
+        return Ok(new Model_Result<string>(result));
     }
 
     [ApiExplorerSettings(GroupName = "Change Email")]

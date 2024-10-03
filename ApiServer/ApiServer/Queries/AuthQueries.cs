@@ -145,7 +145,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     #endregion
 
     #region Registration
-    public void Registration(Model_Registration? model)
+    public string? Registration(Model_Registration? model)
     {
         if (model is null ||
             string.IsNullOrWhiteSpace(model.Username) ||
@@ -194,6 +194,12 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         DB.SaveChanges();
 
         SendMail_EmailVeification(email, user.StatusToken);
+
+#if Local
+        return user.StatusToken;
+#else
+        return "";
+#endif
     }
 
     public void VerifyEmail(string? token)
@@ -203,7 +209,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
 
         User_Login? user = DB.User_Login.FirstOrDefault(s => s.StatusToken == token)
             ?? throw new RequestException(ResultCodes.StatusTokenNotFound);
-        if (user.StatusCode is not UserStatus.EmailVerification)
+        if (user.StatusCode != UserStatus.EmailVerification)
             throw new RequestException(ResultCodes.WrongStatusCode);
         if (Now >= user.StatusTokenExpireTime)
             throw new RequestException(ResultCodes.StatusTokenExpired);
@@ -216,15 +222,15 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     #endregion
 
     #region Forgot Password
-    public void RequestPasswordReset(string email)
+    public string? RequestPasswordReset(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
             throw new RequestException(ResultCodes.DataIsInvalid);
 
         email = email.ToLower().Normalize();
-        User_Login? user = DB.User_Login.Include(s => s.O_Token).FirstOrDefault(s => s.EmailNormalized == email && s.StatusCode != null)
+        User_Login? user = DB.User_Login.Include(s => s.O_Token).FirstOrDefault(s => s.EmailNormalized == email)
             ?? throw new RequestException(ResultCodes.NoUserFound);
-        if (user.StatusCode is UserStatus.EmailVerification)
+        if (user.StatusCode == UserStatus.EmailVerification)
             throw new RequestException(ResultCodes.EmailIsNotVerified);
 
         DB.User_Token.RemoveRange(user.O_Token);
@@ -234,6 +240,11 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         DB.SaveChanges();
 
         SendMail_PasswordReset(email, user.StatusToken);
+#if Local
+        return user.StatusToken;
+#else
+        return "";
+#endif
     }
 
     public void ResetPassword(Model_ResetPassword? model)
@@ -247,7 +258,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         ValidatePassword(model.Password);
         if (user is null)
             throw new RequestException(ResultCodes.StatusTokenNotFound);
-        if (user.StatusCode is not UserStatus.PasswordReset)
+        if (CurrentUser.Login.StatusCode is null || user.StatusCode is not UserStatus.PasswordReset)
             throw new RequestException(ResultCodes.WrongStatusCode);
         if (Now >= user.StatusTokenExpireTime)
             throw new RequestException(ResultCodes.RefreshTokenExpired);
@@ -275,12 +286,12 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     #endregion
 
     #region Change Email
-    public void UpdateEmail(string? email)
+    public string? UpdateEmail(string? email)
     {
         if (string.IsNullOrWhiteSpace(email))
             throw new RequestException(ResultCodes.DataIsInvalid);
 
-        if (CurrentUser.Login.StatusCode is UserStatus.PasswordReset)
+        if (CurrentUser.Login.StatusCode is null || CurrentUser.Login.StatusCode is UserStatus.PasswordReset)
             throw new RequestException(ResultCodes.PasswordResetWasRequested);
 
         CurrentUser.Login.NewEmail = email;
@@ -290,6 +301,12 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         DB.SaveChanges();
 
         SendMail_EmailChange(email, CurrentUser.Login.StatusToken);
+
+#if Local
+        return CurrentUser.Login.StatusToken;
+#else
+        return "";
+#endif
     }
 
     public void VerifyUpdatedEmail(string? token)
@@ -299,7 +316,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
 
         if (string.IsNullOrEmpty(CurrentUser.Login.StatusToken) || !token.Equals(CurrentUser.Login.StatusToken))
             throw new RequestException(ResultCodes.EmailChangeCodeWrong);
-        if (CurrentUser.Login.StatusCode is not UserStatus.EmailChange)
+        if (CurrentUser.Login.StatusCode is null || CurrentUser.Login.StatusCode is not UserStatus.EmailChange)
             throw new RequestException(ResultCodes.WrongStatusCode);
         if (string.IsNullOrWhiteSpace(CurrentUser.Login.NewEmail))
             throw new RequestException(ResultCodes.WrongStatusCode);
@@ -457,6 +474,9 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         string content = SimpleEmailService.AccessEmailTemplate("EmailVerification.html");
         string url = $"{SecretData.FrontendUrl}/User/EmailVerification?id={token}";
         content = content.Replace("YOUR_VERIFICATION_LINK_HERE", url);
+#if Local
+        return true;
+#endif
         return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
     }
 
@@ -465,6 +485,9 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         string content = SimpleEmailService.AccessEmailTemplate("ResetPassword.html");
         string url = $"{SecretData.FrontendUrl}/User/EmailVerification?id={token}";
         content = content.Replace("YOUR_VERIFICATION_LINK_HERE", url);
+#if Local
+        return true;
+#endif
         return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
     }
 
@@ -472,6 +495,9 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     {
         string content = SimpleEmailService.AccessEmailTemplate("EmailChange.html");
         content = content.Replace("YOUR_VERIFICATION_LINK_HERE", status);
+#if Local
+        return true;
+#endif
         return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
     }
     #endregion
