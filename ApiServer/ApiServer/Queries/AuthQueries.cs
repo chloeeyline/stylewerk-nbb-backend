@@ -1,16 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+
 using StyleWerk.NBB.AWS;
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
+
 using UAParser;
 
 namespace StyleWerk.NBB.Authentication;
@@ -190,7 +193,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         DB.User_Information.Add(userInformation);
         DB.SaveChanges();
 
-        SendMail_EmailVeification(email, user.StatusToken);
+        SendMail_VerifyEmail(email, user.StatusToken);
 
 #if Local
         return user.StatusToken;
@@ -236,7 +239,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         user.StatusTokenExpireTime = StatusTokenDuration;
         DB.SaveChanges();
 
-        SendMail_PasswordReset(email, user.StatusToken);
+        SendMail_ResetPassword(email, user.StatusToken);
 #if Local
         return user.StatusToken;
 #else
@@ -297,7 +300,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         CurrentUser.Login.StatusTokenExpireTime = StatusTokenDuration;
         DB.SaveChanges();
 
-        SendMail_EmailChange(email, CurrentUser.Login.StatusToken);
+        SendMail_UpdateEmail(email, CurrentUser.Login.StatusToken);
 
 #if Local
         return CurrentUser.Login.StatusToken;
@@ -466,10 +469,10 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     #endregion
 
     #region Email
-    private bool SendMail_EmailVeification(string email, string token)
+    private bool SendMail_VerifyEmail(string email, string token)
     {
         string content = SimpleEmailService.AccessEmailTemplate("EmailVerification.html");
-        string url = $"{SecretData.FrontendUrl}/User/EmailVerification?id={token}";
+        string url = $"{SecretData.FrontendUrl}/user/verify-email?id={token}";
         content = content.Replace("YOUR_VERIFICATION_LINK_HERE", url);
 #if Local
         return true;
@@ -477,10 +480,10 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
     }
 
-    private bool SendMail_PasswordReset(string email, string token)
+    private bool SendMail_ResetPassword(string email, string token)
     {
         string content = SimpleEmailService.AccessEmailTemplate("ResetPassword.html");
-        string url = $"{SecretData.FrontendUrl}/User/EmailVerification?id={token}";
+        string url = $"{SecretData.FrontendUrl}/user/reset-password?id={token}";
         content = content.Replace("YOUR_VERIFICATION_LINK_HERE", url);
 #if Local
         return true;
@@ -488,7 +491,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
     }
 
-    private static bool SendMail_EmailChange(string email, string status)
+    private static bool SendMail_UpdateEmail(string email, string status)
     {
         string content = SimpleEmailService.AccessEmailTemplate("EmailChange.html");
         content = content.Replace("YOUR_VERIFICATION_LINK_HERE", status);
