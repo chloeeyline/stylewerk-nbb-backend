@@ -44,7 +44,7 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_EntryFolders>))]
     [HttpPost(nameof(Update))]
-    public IActionResult Update(Model_EntryFolders? model)
+    public IActionResult Update([FromBody] Model_EntryFolders? model)
     {
         Model_EntryFolders result = Query.Update(model);
         return Ok(new Model_Result<Model_EntryFolders>(result));
