@@ -16,7 +16,6 @@ namespace ApiServerTest.Tests
             NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
-            string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
             EntryQueries query = new(DB, user);
             return query;
         }
@@ -26,7 +25,6 @@ namespace ApiServerTest.Tests
             NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
-            string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
             TemplateQueries query = new(DB, user);
             return query;
         }
@@ -94,25 +92,41 @@ namespace ApiServerTest.Tests
             return result;
         }
 
+        private static void DeleteAll()
+        {
+            NbbContext context = NbbContext.Create();
+            List<Structure_Template> templates = [.. context.Structure_Template];
+            List<Structure_Entry> entries = [.. context.Structure_Entry];
+            if (templates.Count > 0)
+                context.Structure_Template.RemoveRange(templates);
+
+            if (entries.Count > 0)
+                context.Structure_Entry.RemoveRange(entries);
+
+            context.SaveChanges();
+        }
+
         #endregion
 
         #region UpdateEntry Function
         [Fact]
         public void UpdateEntry_CreateEntry()
         {
-            Model_Template template = CreateTemplate("DefaultTemplate1", DefaultUserGuid.ToString());
-            CreateEntry(DefaultUserGuid.ToString(), "Lieblingsbücher", "Books", null, template);
+            DeleteAll();
+            Model_Template template = CreateTemplate("TestTemplate", DefaultUserGuid.ToString());
+            CreateEntry(DefaultUserGuid.ToString(), "TestEntry", "Test", null, template);
             Assert.True(true);
         }
 
         [Fact]
         public void UpdateEntry_UpdateEntry()
         {
+            DeleteAll();
             EntryQueries query = ReturnQueryEntry(DefaultUserGuid.ToString());
-            Model_Template template = CreateTemplate("DefaultTemplate2", DefaultUserGuid.ToString());
-            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "Lieblingsfilme", "Movies", null, template);
+            Model_Template template = CreateTemplate("TestTemplate", DefaultUserGuid.ToString());
+            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestTemplate", "Test", null, template);
 
-            Model_Entry updateEntry = new(entry.ID, null, (Guid)template.ID, "Leselsite", "Books", false, entry.Items);
+            Model_Entry updateEntry = new(entry.ID, null, (Guid)template.ID, "DefaultTemplate", "Test123", false, entry.Items);
             Model_Entry updatedEntry = query.Update(updateEntry);
 
             Assert.NotEqual(entry.Name, updatedEntry.Name);
@@ -146,7 +160,8 @@ namespace ApiServerTest.Tests
                 new Model_EntryRow(Guid.NewGuid(), templateId,1, null, cells)
             ];
 
-            Model_Entry entry = new(Guid.NewGuid(), null, templateId, "Lieder", "Music", false, rows);
+            DeleteAll();
+            Model_Entry entry = new(Guid.NewGuid(), null, templateId, "TestTemplate", "Test", false, rows);
             Model_Entry action() => query.Update(entry);
 
             RequestException ex = Assert.Throws<RequestException>((Func<Model_Entry>)action);
@@ -158,8 +173,9 @@ namespace ApiServerTest.Tests
         public void UpdateEntry_YouDontOwnData_Template()
         {
             EntryQueries query = ReturnQueryEntry(DefaultUserGuid.ToString());
-            Model_Template template = CreateTemplate("DefaultTemplate3", OtherUserDefaultGuid.ToString());
-            Model_Entry entry = CreateEntry(OtherUserDefaultGuid.ToString(), "Leseliste", "Bücher", null, template);
+            DeleteAll();
+            Model_Template template = CreateTemplate("TestTemplate", OtherUserDefaultGuid.ToString());
+            Model_Entry entry = CreateEntry(OtherUserDefaultGuid.ToString(), "TestEntry", "Test", null, template);
 
             Model_Entry action() => query.Update(entry);
 
@@ -172,9 +188,10 @@ namespace ApiServerTest.Tests
         public void UpdateEntry_NoDataFound_Folder()
         {
             Guid folderId = Guid.NewGuid();
-            Model_Template template = CreateTemplate("DefaultTemplate4", DefaultUserGuid.ToString());
+            DeleteAll();
+            Model_Template template = CreateTemplate("TestTemplate", DefaultUserGuid.ToString());
 
-            Model_Entry action() => CreateEntry(DefaultUserGuid.ToString(), "Halligalli", "blabla", folderId, template);
+            Model_Entry action() => CreateEntry(DefaultUserGuid.ToString(), "TestEntry", "Test", folderId, template);
 
             RequestException ex = Assert.Throws<RequestException>((Func<Model_Entry>)action);
             RequestException result = new(ResultCodes.NoDataFound);
@@ -184,10 +201,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void UpdateEntry_YouDontOwnData_Folder()
         {
-            Model_EntryFolders folder = CreateFolder(OtherUserDefaultGuid.ToString(), "DefaultFolder1");
-            Model_Template template = CreateTemplate("DefaultTemplate5", OtherUserDefaultGuid.ToString());
+            DeleteAll();
+            Model_EntryFolders folder = CreateFolder(OtherUserDefaultGuid.ToString(), "TestFolder");
+            Model_Template template = CreateTemplate("TestTemplate", OtherUserDefaultGuid.ToString());
 
-            Model_Entry action() => CreateEntry(DefaultUserGuid.ToString(), "Halligalli", "blabla", folder.ID, template);
+            Model_Entry action() => CreateEntry(DefaultUserGuid.ToString(), "TestEntry", "Test", folder.ID, template);
 
             RequestException ex = Assert.Throws<RequestException>((Func<Model_Entry>)action);
             RequestException result = new(ResultCodes.YouDontOwnTheData);
@@ -197,10 +215,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void UpdateEntry_EntryNameUnique()
         {
-            Model_Template template = CreateTemplate("DefaultTemplate6", DefaultUserGuid.ToString());
-            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry1", null, null, template);
+            DeleteAll();
+            Model_Template template = CreateTemplate("TestTemplate", DefaultUserGuid.ToString());
+            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, null, template);
 
-            Model_Entry action() => CreateEntry(DefaultUserGuid.ToString(), "TestEntry1", null, null, template);
+            Model_Entry action() => CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, null, template);
 
             RequestException ex = Assert.Throws<RequestException>((Func<Model_Entry>)action);
             RequestException result = new(ResultCodes.NameMustBeUnique);
@@ -210,9 +229,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void UpdateEntry_YouDontOwnData_Entry()
         {
+            DeleteAll();
             EntryQueries query = ReturnQueryEntry(OtherUserDefaultGuid.ToString());
-            Model_Template template = CreateTemplate("DefaultTemplate7", DefaultUserGuid.ToString());
-            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry2", null, null, template);
+            Model_Template template = CreateTemplate("TestTemplate", DefaultUserGuid.ToString());
+            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, null, template);
 
             Model_Entry action() => query.Update(entry);
 
@@ -225,11 +245,12 @@ namespace ApiServerTest.Tests
         public void UpdateEntry_UpdateEntryName_EntryNameUnique()
         {
             EntryQueries query = ReturnQueryEntry(DefaultUserGuid.ToString());
-            Model_Template template = CreateTemplate("DefaultTemplate8", DefaultUserGuid.ToString());
-            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry3", null, null, template);
-            Model_Entry entry2 = CreateEntry(DefaultUserGuid.ToString(), "TestEntry4", null, null, template);
+            DeleteAll();
+            Model_Template template = CreateTemplate("TestTemplate", DefaultUserGuid.ToString());
+            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, null, template);
+            Model_Entry entry2 = CreateEntry(DefaultUserGuid.ToString(), "TestEntry1", null, null, template);
 
-            Model_Entry updateEntry = new(entry.ID, null, (Guid)template.ID, "TestEntry4", null, false, entry.Items);
+            Model_Entry updateEntry = new(entry.ID, null, (Guid)template.ID, "TestEntry1", null, false, entry.Items);
             Model_Entry action() => query.Update(updateEntry);
 
             RequestException ex = Assert.Throws<RequestException>((Func<Model_Entry>)action);
@@ -241,11 +262,12 @@ namespace ApiServerTest.Tests
         public void UpdateEntry_UpdateEntry_TemplateDoesntMatch()
         {
             EntryQueries query = ReturnQueryEntry(DefaultUserGuid.ToString());
-            Model_Template template = CreateTemplate("DefaultTemplate9", DefaultUserGuid.ToString());
-            Model_Template template2 = CreateTemplate("DefaultTemplate10", DefaultUserGuid.ToString());
-            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry5", null, null, template);
+            DeleteAll();
+            Model_Template template = CreateTemplate("TestTemplate", DefaultUserGuid.ToString());
+            Model_Template template2 = CreateTemplate("TestTemplate2", DefaultUserGuid.ToString());
+            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, null, template);
 
-            Model_Entry updateEntry = new(entry.ID, null, (Guid)template2.ID, "TestEntry4", null, false, entry.Items);
+            Model_Entry updateEntry = new(entry.ID, null, (Guid)template2.ID, "TestEntry1", null, false, entry.Items);
             Model_Entry action() => query.Update(updateEntry);
 
             RequestException ex = Assert.Throws<RequestException>((Func<Model_Entry>)action);
@@ -259,8 +281,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Remove()
         {
-            Model_Template template = CreateTemplate("DefaultTemplate11", DefaultUserGuid.ToString());
-            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry5", null, null, template);
+            DeleteAll();
+            Model_Template template = CreateTemplate("TestTemplate", DefaultUserGuid.ToString());
+            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, null, template);
 
             EntryQueries query = ReturnQueryEntry(DefaultUserGuid.ToString());
             query.Remove(entry.ID);
@@ -306,8 +329,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Remove_YouDontOwnData()
         {
-            Model_Template template = CreateTemplate("DefaultTemplate12", DefaultUserGuid.ToString());
-            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry6", null, null, template);
+            DeleteAll();
+            Model_Template template = CreateTemplate("TestTemplate", DefaultUserGuid.ToString());
+            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, null, template);
             EntryQueries query = ReturnQueryEntry(OtherUserDefaultGuid.ToString());
 
             try
@@ -327,8 +351,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void GetFromTemplate()
         {
-            Model_Template template = CreateTemplate("DefaultTemplate13", DefaultUserGuid.ToString());
-            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry7", null, null, template);
+            DeleteAll();
+            Model_Template template = CreateTemplate("TestTemplate", DefaultUserGuid.ToString());
+            Model_Entry entry = CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, null, template);
             EntryQueries query = ReturnQueryEntry(DefaultUserGuid.ToString());
             Model_Entry myEntry = query.GetFromTemplate(template.ID);
             Assert.Equal(entry.Name, myEntry.Name);
@@ -360,8 +385,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void GetFromTemplate_YouDontOwnData()
         {
-            Model_Template template = CreateTemplate("DefaultTempalte14", OtherUserDefaultGuid.ToString());
-            Model_Entry entry = CreateEntry(OtherUserDefaultGuid.ToString(), "TestEntry8", null, null, template);
+            DeleteAll();
+            Model_Template template = CreateTemplate("TestTemplate", OtherUserDefaultGuid.ToString());
+            Model_Entry entry = CreateEntry(OtherUserDefaultGuid.ToString(), "TestEntry", null, null, template);
 
             EntryQueries query = ReturnQueryEntry(DefaultUserGuid.ToString());
             Model_Entry action() => query.GetFromTemplate(template.ID);
@@ -377,8 +403,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Details()
         {
-            Model_Template template = CreateTemplate("DefaultTempalte15", OtherUserDefaultGuid.ToString());
-            Model_Entry entry = CreateEntry(OtherUserDefaultGuid.ToString(), "TestEntry9", null, null, template);
+            DeleteAll();
+            Model_Template template = CreateTemplate("TestTemplate", OtherUserDefaultGuid.ToString());
+            Model_Entry entry = CreateEntry(OtherUserDefaultGuid.ToString(), "TestEntry", null, null, template);
 
             EntryQueries query = ReturnQueryEntry(DefaultUserGuid.ToString());
             Model_Entry details = query.Details(entry.ID);
