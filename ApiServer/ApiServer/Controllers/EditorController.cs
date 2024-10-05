@@ -10,7 +10,7 @@ namespace StyleWerk.NBB.Controllers;
 [ApiController, Route("Editor"), Authorize]
 public class EditorController(NbbContext db) : BaseController(db)
 {
-    public EditorQuery Query => new(DB, CurrentUser);
+    public EditorQueries Query => new(DB, CurrentUser);
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Editor>))]
     [HttpGet(nameof(GetEntry))]

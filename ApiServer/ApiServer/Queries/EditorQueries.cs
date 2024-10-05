@@ -6,7 +6,7 @@ using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Queries;
 
-public class EditorQuery(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
+public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
     private List<EntryCell> CreateCellsFromTemplate(List<Structure_Template_Cell> list)
     {
