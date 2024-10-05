@@ -17,7 +17,6 @@ namespace StyleWerk.NBB.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("Npgsql:CollationDefinition:und-ci", "und,und,icu,False")
                 .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -43,14 +42,12 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("NameNormalized")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("ID");
 
@@ -70,14 +67,12 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("NameNormalized")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Code");
 
@@ -94,14 +89,12 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("NameNormalized")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<Guid>("UserID")
                         .HasColumnType("uuid");
@@ -175,14 +168,12 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("NameNormalized")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Tags")
                         .HasColumnType("text");
@@ -241,14 +232,12 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("NameNormalized")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
@@ -309,14 +298,12 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("NameNormalized")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Tags")
                         .HasColumnType("text");
@@ -443,14 +430,12 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("EmailNormalized")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("NewEmail")
                         .HasColumnType("text");
@@ -475,14 +460,12 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(30)");
 
                     b.Property<string>("UsernameNormalized")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
-                        .UseCollation("und-ci");
+                        .HasColumnType("character varying(30)");
 
                     b.HasKey("ID");
 

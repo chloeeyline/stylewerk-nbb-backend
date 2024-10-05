@@ -9,7 +9,7 @@ namespace StyleWerk.NBB.Queries;
 
 public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
-    private List<EntryCell> CreateCellsFromTemplate(List<Structure_Template_Cell> list)
+    private static List<EntryCell> CreateCellsFromTemplate(List<Structure_Template_Cell> list)
     {
         return [.. list.OrderBy(s => s.SortOrder).Select(s =>
             new EntryCell(

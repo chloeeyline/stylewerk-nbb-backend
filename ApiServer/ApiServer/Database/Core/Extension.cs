@@ -47,8 +47,8 @@ public static class Extension
     /// <param name="b">The builder used for entity type configuration.</param>
     public static void UseIEntity_Name<T>(this EntityTypeBuilder<T> b) where T : class, IEntity<T>, IEntity_Name
     {
-        b.Property(s => s.Name).IsRequired(true).HasMaxLength(100).UseCollation("und-ci");
-        b.Property(s => s.NameNormalized).IsRequired(true).HasMaxLength(100).UseCollation("und-ci");
+        b.Property(s => s.Name).IsRequired(true).HasMaxLength(100);
+        b.Property(s => s.NameNormalized).IsRequired(true).HasMaxLength(100);
     }
 
     /// <summary>

@@ -1,12 +1,11 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace StyleWerk.NBB.Migrations
 {
     /// <inheritdoc />
-    public partial class Version1 : Migration
+    public partial class Version2 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,14 +14,32 @@ namespace StyleWerk.NBB.Migrations
                 .Annotation("Npgsql:PostgresExtension:uuid-ossp", ",,");
 
             migrationBuilder.CreateTable(
-                name: "Right",
+                name: "Admin_ColorTheme",
                 columns: table => new
                 {
-                    Name = table.Column<string>(type: "text", nullable: false)
+                    ID = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    NameNormalized = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Base = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Data = table.Column<string>(type: "JSONB", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Right", x => x.Name);
+                    table.PrimaryKey("PK_Admin_ColorTheme", x => x.ID);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Admin_Language",
+                columns: table => new
+                {
+                    Code = table.Column<string>(type: "character varying(5)", maxLength: 5, nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    NameNormalized = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Data = table.Column<string>(type: "JSONB", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Admin_Language", x => x.Code);
                 });
 
             migrationBuilder.CreateTable(
@@ -30,14 +47,10 @@ namespace StyleWerk.NBB.Migrations
                 columns: table => new
                 {
                     ID = table.Column<Guid>(type: "uuid", nullable: false),
-                    WhoShared = table.Column<Guid>(type: "uuid", nullable: false),
-                    Group = table.Column<bool>(type: "boolean", nullable: false),
-                    ItemType = table.Column<byte>(type: "smallint", nullable: false),
+                    Visibility = table.Column<byte>(type: "smallint", nullable: false),
+                    Type = table.Column<byte>(type: "smallint", nullable: false),
                     ItemID = table.Column<Guid>(type: "uuid", nullable: false),
-                    ToWhom = table.Column<Guid>(type: "uuid", nullable: false),
-                    CanShare = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    CanEdit = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    CanDelete = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
+                    ToWhom = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -67,55 +80,13 @@ namespace StyleWerk.NBB.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Admin_ColorTheme",
-                columns: table => new
-                {
-                    ID = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserID = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Base = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Data = table.Column<string>(type: "JSONB", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Admin_ColorTheme", x => x.ID);
-                    table.ForeignKey(
-                        name: "FK_Admin_ColorTheme_User_Login_UserID",
-                        column: x => x.UserID,
-                        principalTable: "User_Login",
-                        principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Admin_Language",
-                columns: table => new
-                {
-                    Code = table.Column<string>(type: "character varying(5)", maxLength: 5, nullable: false),
-                    UserID = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Data = table.Column<string>(type: "JSONB", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Admin_Language", x => x.Code);
-                    table.ForeignKey(
-                        name: "FK_Admin_Language_User_Login_UserID",
-                        column: x => x.UserID,
-                        principalTable: "User_Login",
-                        principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Share_Group",
                 columns: table => new
                 {
                     ID = table.Column<Guid>(type: "uuid", nullable: false),
                     UserID = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    IsVisible = table.Column<bool>(type: "boolean", nullable: false),
-                    CanSeeOthers = table.Column<bool>(type: "boolean", nullable: false)
+                    NameNormalized = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -135,6 +106,7 @@ namespace StyleWerk.NBB.Migrations
                     ID = table.Column<Guid>(type: "uuid", nullable: false),
                     UserID = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    NameNormalized = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     SortOrder = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
@@ -155,7 +127,7 @@ namespace StyleWerk.NBB.Migrations
                     ID = table.Column<Guid>(type: "uuid", nullable: false),
                     UserID = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    IsPublic = table.Column<bool>(type: "boolean", nullable: false),
+                    NameNormalized = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     Tags = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<long>(type: "bigint", nullable: false),
@@ -194,30 +166,6 @@ namespace StyleWerk.NBB.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "User_Right",
-                columns: table => new
-                {
-                    ID = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_User_Right", x => new { x.ID, x.Name });
-                    table.ForeignKey(
-                        name: "FK_User_Right_Right_Name",
-                        column: x => x.Name,
-                        principalTable: "Right",
-                        principalColumn: "Name",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "User",
-                        column: x => x.ID,
-                        principalTable: "User_Login",
-                        principalColumn: "ID",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "User_Token",
                 columns: table => new
                 {
@@ -243,11 +191,7 @@ namespace StyleWerk.NBB.Migrations
                 columns: table => new
                 {
                     GroupID = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserID = table.Column<Guid>(type: "uuid", nullable: false),
-                    WhoAdded = table.Column<Guid>(type: "uuid", nullable: false),
-                    CanSeeUsers = table.Column<bool>(type: "boolean", nullable: false),
-                    CanAddUsers = table.Column<bool>(type: "boolean", nullable: false),
-                    CanRemoveUsers = table.Column<bool>(type: "boolean", nullable: false)
+                    UserID = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -272,10 +216,10 @@ namespace StyleWerk.NBB.Migrations
                 {
                     ID = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    NameNormalized = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     UserID = table.Column<Guid>(type: "uuid", nullable: false),
                     TemplateID = table.Column<Guid>(type: "uuid", nullable: false),
                     FolderID = table.Column<Guid>(type: "uuid", nullable: true),
-                    IsPublic = table.Column<bool>(type: "boolean", nullable: false),
                     IsEncrypted = table.Column<bool>(type: "boolean", nullable: false),
                     Tags = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<long>(type: "bigint", nullable: false),
@@ -288,7 +232,8 @@ namespace StyleWerk.NBB.Migrations
                         name: "FK_Structure_Entry_Structure_Entry_Folder_FolderID",
                         column: x => x.FolderID,
                         principalTable: "Structure_Entry_Folder",
-                        principalColumn: "ID");
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Structure_Entry_Structure_Template_TemplateID",
                         column: x => x.TemplateID,
@@ -403,19 +348,10 @@ namespace StyleWerk.NBB.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Admin_ColorTheme_UserID",
-                table: "Admin_ColorTheme",
-                column: "UserID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Admin_Language_UserID",
-                table: "Admin_Language",
-                column: "UserID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Share_Group_UserID",
+                name: "IX_Share_Group_UserID_NameNormalized",
                 table: "Share_Group",
-                column: "UserID");
+                columns: ["UserID", "NameNormalized"],
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Share_GroupUser_UserID",
@@ -433,9 +369,10 @@ namespace StyleWerk.NBB.Migrations
                 column: "TemplateID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Structure_Entry_UserID",
+                name: "IX_Structure_Entry_UserID_NameNormalized",
                 table: "Structure_Entry",
-                column: "UserID");
+                columns: ["UserID", "NameNormalized"],
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Structure_Entry_Cell_RowID",
@@ -448,9 +385,10 @@ namespace StyleWerk.NBB.Migrations
                 column: "TemplateID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Structure_Entry_Folder_UserID",
+                name: "IX_Structure_Entry_Folder_UserID_NameNormalized",
                 table: "Structure_Entry_Folder",
-                column: "UserID");
+                columns: ["UserID", "NameNormalized"],
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Structure_Entry_Row_EntryID",
@@ -463,9 +401,10 @@ namespace StyleWerk.NBB.Migrations
                 column: "TemplateID");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Structure_Template_UserID",
+                name: "IX_Structure_Template_UserID_NameNormalized",
                 table: "Structure_Template",
-                column: "UserID");
+                columns: ["UserID", "NameNormalized"],
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Structure_Template_Cell_RowID",
@@ -506,11 +445,6 @@ namespace StyleWerk.NBB.Migrations
                 table: "User_Login",
                 column: "UsernameNormalized",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_User_Right_Name",
-                table: "User_Right",
-                column: "Name");
         }
 
         /// <inheritdoc />
@@ -535,9 +469,6 @@ namespace StyleWerk.NBB.Migrations
                 name: "User_Information");
 
             migrationBuilder.DropTable(
-                name: "User_Right");
-
-            migrationBuilder.DropTable(
                 name: "User_Token");
 
             migrationBuilder.DropTable(
@@ -548,9 +479,6 @@ namespace StyleWerk.NBB.Migrations
 
             migrationBuilder.DropTable(
                 name: "Structure_Template_Cell");
-
-            migrationBuilder.DropTable(
-                name: "Right");
 
             migrationBuilder.DropTable(
                 name: "Structure_Entry");

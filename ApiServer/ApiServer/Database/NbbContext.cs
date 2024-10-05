@@ -85,7 +85,6 @@ public partial class NbbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("uuid-ossp");
-        modelBuilder.HasCollation("und-ci", locale: "und", provider: "icu", deterministic: false);
 
         _ = modelBuilder.Entity<User_Login>(User.User_Login.Build);
         _ = modelBuilder.Entity<User_Token>(User.User_Token.Build);

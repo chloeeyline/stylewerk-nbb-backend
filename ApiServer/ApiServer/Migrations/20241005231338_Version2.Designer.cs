@@ -12,8 +12,8 @@ using StyleWerk.NBB.Database;
 namespace StyleWerk.NBB.Migrations
 {
     [DbContext(typeof(NbbContext))]
-    [Migration("20241001110738_RemovedUserRights")]
-    partial class RemovedUserRights
+    [Migration("20241005231338_Version2")]
+    partial class Version2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,6 +47,11 @@ namespace StyleWerk.NBB.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("NameNormalized")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.HasKey("ID");
 
                     b.ToTable("Admin_ColorTheme", (string)null);
@@ -63,6 +68,11 @@ namespace StyleWerk.NBB.Migrations
                         .HasColumnType("JSONB");
 
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("NameNormalized")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -84,12 +94,18 @@ namespace StyleWerk.NBB.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("NameNormalized")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<Guid>("UserID")
                         .HasColumnType("uuid");
 
                     b.HasKey("ID");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("UserID", "NameNormalized")
+                        .IsUnique();
 
                     b.ToTable("Share_Group", (string)null);
                 });
@@ -157,6 +173,11 @@ namespace StyleWerk.NBB.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("NameNormalized")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("Tags")
                         .HasColumnType("text");
 
@@ -172,7 +193,8 @@ namespace StyleWerk.NBB.Migrations
 
                     b.HasIndex("TemplateID");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("UserID", "NameNormalized")
+                        .IsUnique();
 
                     b.ToTable("Structure_Entry", (string)null);
                 });
@@ -215,6 +237,11 @@ namespace StyleWerk.NBB.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("NameNormalized")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("integer");
 
@@ -223,7 +250,8 @@ namespace StyleWerk.NBB.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("UserID", "NameNormalized")
+                        .IsUnique();
 
                     b.ToTable("Structure_Entry_Folder", (string)null);
                 });
@@ -275,6 +303,11 @@ namespace StyleWerk.NBB.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("NameNormalized")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("Tags")
                         .HasColumnType("text");
 
@@ -283,7 +316,8 @@ namespace StyleWerk.NBB.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("UserID");
+                    b.HasIndex("UserID", "NameNormalized")
+                        .IsUnique();
 
                     b.ToTable("Structure_Template", (string)null);
                 });
@@ -514,7 +548,8 @@ namespace StyleWerk.NBB.Migrations
                 {
                     b.HasOne("StyleWerk.NBB.Database.Structure.Structure_Entry_Folder", "O_Folder")
                         .WithMany("O_EntryList")
-                        .HasForeignKey("FolderID");
+                        .HasForeignKey("FolderID")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("StyleWerk.NBB.Database.Structure.Structure_Template", "O_Template")
                         .WithMany("O_EntryList")

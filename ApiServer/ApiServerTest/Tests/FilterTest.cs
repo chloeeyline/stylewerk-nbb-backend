@@ -30,7 +30,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, true, false, false, false);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -38,7 +38,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, false, true, false, false);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -46,7 +46,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, false, false, false, true);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, true, false, false, false);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, false, true, false, false);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, false, false, false, true);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -126,7 +126,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, true, false, false, false);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -134,7 +134,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, false, true, false, false);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -142,7 +142,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, false, false, false, true);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -169,7 +169,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, true, false, false, false);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -177,7 +177,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, false, true, false, false);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -185,7 +185,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, false, false, false, true);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -211,7 +211,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", true, false, false, false);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -219,7 +219,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", false, true, false, false);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -227,7 +227,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", false, false, false, true);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
@@ -269,7 +269,7 @@ namespace ApiServerTest.Tests
         {
             TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
             Model_TemplatePaging templates = query.List(1, 2, "Test", "Test", "Test", "Test", false, false, false, false);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Equal(templates.Items, []);
         }
 
         [Fact]
