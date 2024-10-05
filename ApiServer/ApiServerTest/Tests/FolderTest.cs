@@ -1,4 +1,5 @@
 ﻿using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
@@ -7,6 +8,10 @@ namespace ApiServerTest.Tests
     public class FolderTest
     {
 
+        private Guid DefaultUserGuid = new("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+        private Guid OtherUserDefaultGuid = new("6e4a61db-8c61-4594-a643-feae632caba2");
+
+        #region Helpers
         private static EntryFolderQueries ReturnQuery(string userGuid)
         {
             NbbContext DB = NbbContext.Create();
@@ -15,33 +20,53 @@ namespace ApiServerTest.Tests
             return query;
         }
 
-        [Fact]
-        public void AddFolder()
+        private static Model_EntryFolders CreateFolder(string folderName, string user)
         {
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_EntryFolders newFolder = new(null, $"TestFolder1", []);
+            Model_EntryFolders newFolderOtherUser = new(Guid.NewGuid(), folderName, []);
+
+            EntryFolderQueries query = ReturnQuery(user);
+            Model_EntryFolders responseOtherUser = query.Update(newFolderOtherUser);
+
+            return responseOtherUser;
+        }
+
+        private static List<Model_EntryFolders> LoadFolders(string user)
+        {
+            EntryFolderQueries query = ReturnQuery(user);
+            return query.List();
+        }
+
+        private void DeleteAll()
+        {
+            NbbContext context = NbbContext.Create();
+            List<Structure_Entry_Folder> folders = [.. context.Structure_Entry_Folder];
+            if (folders.Count > 0)
+                context.Structure_Entry_Folder.RemoveRange(folders);
+
+            context.SaveChanges();
+        }
+        #endregion
+
+        #region Update Folder Function
+        [Fact]
+        public void Update_CreateFolder()
+        {
+            DeleteAll();
+            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Model_EntryFolders newFolder = new(null, $"TestFolder", []);
 
             Model_EntryFolders response = query.Update(newFolder);
 
             Assert.IsType<Model_EntryFolders>(response);
         }
 
-        private static Model_EntryFolders CreateFolderForAnotherUser(string folderName)
-        {
-            EntryFolderQueries query = ReturnQuery("6e4a61db-8c61-4594-a643-feae632caba2");
-
-            Model_EntryFolders newFolderOtherUser = new(null, folderName, []);
-            Model_EntryFolders responseOtherUser = query.Update(newFolderOtherUser);
-
-            return responseOtherUser;
-        }
-
         [Fact]
-        public void MissingRight()
+        public void Update_MissingRight()
         {
-            Model_EntryFolders responseOtherUser = CreateFolderForAnotherUser("TestFolder2");
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_EntryFolders folder = new(responseOtherUser.ID, "TestFolder3", []);
+            DeleteAll();
+            Model_EntryFolders responseOtherUser = CreateFolder("TestFolder", OtherUserDefaultGuid.ToString());
+            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Model_EntryFolders folder = new(responseOtherUser.ID, "TestFolder1", []);
 
             Model_EntryFolders action() => query.Update(folder);
 
@@ -50,21 +75,13 @@ namespace ApiServerTest.Tests
             Assert.Equal(result.Code, exception.Code);
         }
 
-        private static Model_EntryFolders CreateFolderForUser(string folderName)
-        {
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-
-            Model_EntryFolders newFolderUser = new(null, folderName, []);
-            Model_EntryFolders responseUser = query.Update(newFolderUser);
-
-            return responseUser;
-        }
-
         [Fact]
-        public void FolderNameExists()
+        public void Update_FolderNameExists()
         {
-            Model_EntryFolders folderUser = CreateFolderForUser("TestFolder3");
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            DeleteAll();
+            Model_EntryFolders folderUser = CreateFolder("TestFolder", DefaultUserGuid.ToString());
+            Model_EntryFolders folder2 = CreateFolder("TestFolder1", DefaultUserGuid.ToString());
+            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
             Model_EntryFolders folder = new(folderUser.ID, "TestFolder1", []);
 
             Model_EntryFolders action() => query.Update(folder);
@@ -75,9 +92,9 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void DataInvalid()
+        public void Update_DataInvalid()
         {
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
             Model_EntryFolders newFolder = new(null, null, []);
 
             Model_EntryFolders action() => query.Update(newFolder);
@@ -86,11 +103,13 @@ namespace ApiServerTest.Tests
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
+        #endregion
 
+        #region Remove Function
         [Fact]
-        public void RemoveDataNoFound()
+        public void Remove_DataNoFound()
         {
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
 
             try
             {
@@ -104,9 +123,9 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void RemoveDataInvalid()
+        public void Remove_DataInvalid()
         {
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
 
             try
             {
@@ -120,13 +139,14 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void RemoveDontOwnData()
+        public void Remove_DontOwnData()
         {
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_EntryFolders folderOtherUser = CreateFolderForAnotherUser("TestFolder6");
+            DeleteAll();
+            Model_EntryFolders folderOtherUser = CreateFolder("TestFolder", OtherUserDefaultGuid.ToString());
 
             try
             {
+                EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
                 query.Remove(folderOtherUser.ID);
             }
             catch (RequestException ex)
@@ -140,36 +160,42 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Remove()
         {
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_EntryFolders folder = CreateFolderForUser("TestFolder4");
+            DeleteAll();
+            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Model_EntryFolders folder = CreateFolder("TestFolder", DefaultUserGuid.ToString());
 
             query.Remove(folder.ID);
 
             Assert.True(true);
         }
 
+        #endregion
+
+        #region ListFolder Function
+
         [Fact]
         public void ListFolder()
         {
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            CreateFolderForUser("TestFolder5");
-            CreateFolderForUser("TestFolder6");
+            DeleteAll();
+            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            CreateFolder("TestFolder", DefaultUserGuid.ToString());
+            CreateFolder("TestFolder1", DefaultUserGuid.ToString());
             List<Model_EntryFolders> folders = query.List();
 
             Assert.IsType<List<Model_EntryFolders>>(folders);
         }
+        #endregion
 
-        private static List<Model_EntryFolders> LoadFolders()
-        {
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            return query.List();
-        }
-
+        #region Reorder Function
         [Fact]
         public void Reorder()
         {
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            List<Model_EntryFolders> folders = LoadFolders();
+            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            DeleteAll();
+            CreateFolder("TestFolder", DefaultUserGuid.ToString());
+            CreateFolder("TestFolder1", DefaultUserGuid.ToString());
+            CreateFolder("TestFolder2", DefaultUserGuid.ToString());
+            List<Model_EntryFolders> folders = LoadFolders(DefaultUserGuid.ToString());
             List<Guid> guids = [];
 
             foreach (Model_EntryFolders folder in folders)
@@ -184,7 +210,7 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void ReorderNoDataFound()
+        public void Reorder_NoDataFound()
         {
             List<Guid> guids = [];
 
@@ -193,7 +219,7 @@ namespace ApiServerTest.Tests
                 guids.Add(Guid.NewGuid());
             }
 
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
 
             try
             {
@@ -207,9 +233,9 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void ReorderDataInvalid()
+        public void Reorder_DataInvalid()
         {
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
             List<Guid> emptyGuids = [];
 
             try
@@ -224,13 +250,13 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void ReorderDontOwnData()
+        public void Reorder_DontOwnData()
         {
-            EntryFolderQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            EntryFolderQueries queryOtherUser = ReturnQuery("6e4a61db-8c61-4594-a643-feae632caba2");
+            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            EntryFolderQueries queryOtherUser = ReturnQuery(OtherUserDefaultGuid.ToString());
             List<Guid> guidsOtherUser = [];
-
-            CreateFolderForAnotherUser("TestFolder5");
+            DeleteAll();
+            CreateFolder("TestFolder", OtherUserDefaultGuid.ToString());
             List<Model_EntryFolders> foldersOtherUser = queryOtherUser.List();
             foreach (Model_EntryFolders folder in foldersOtherUser)
             {
@@ -248,5 +274,6 @@ namespace ApiServerTest.Tests
                 Assert.Equal(result.Code, ex.Code);
             }
         }
+        #endregion
     }
 }
