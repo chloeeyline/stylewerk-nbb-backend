@@ -6,6 +6,10 @@ namespace ApiServerTest.Tests
 {
     public class TemplateTest
     {
+        private Guid DefaultUserGuid = new("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+        private Guid OtherUserDefaultGuid = new("cd6c092d-0546-4f8b-b70c-352d2ca765a4");
+
+        #region Helpers
         private static TemplateQueries ReturnQuery(string userGuid)
         {
             NbbContext DB = NbbContext.Create();
@@ -15,10 +19,34 @@ namespace ApiServerTest.Tests
             return query;
         }
 
+        private static Model_Template CreateTemplate(string templateName, string user)
+        {
+            TemplateQueries query = ReturnQuery(user);
+            Guid rowId = Guid.NewGuid();
+            List<Model_TemplateCell> cells =
+            [
+                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test", "Test"),
+                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test1", "Test"),
+                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test2", "Test")
+            ];
+
+            List<Model_TemplateRow> rows =
+            [
+                new Model_TemplateRow(rowId, true, true, false, cells)
+            ];
+
+            Model_Template template = new(null, templateName, "TestDescription", "Test", rows);
+            Model_Template result = query.Update(template);
+
+            return result;
+        }
+        #endregion
+
+        #region Update Function
         [Fact]
         public void Add()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
             Guid rowId = Guid.NewGuid();
             List<Model_TemplateCell> cells =
             [
@@ -42,7 +70,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void AddDataInvalid()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
             Model_Template template = new(null, string.Empty, null, null, []);
 
             Model_Template action() => query.Update(template);
@@ -52,33 +80,11 @@ namespace ApiServerTest.Tests
             Assert.Equal(result.Code, exception.Code);
         }
 
-        private static Model_Template CreateTemplateOtherUser(string templateName)
-        {
-            TemplateQueries query = ReturnQuery("6e4a61db-8c61-4594-a643-feae632caba2");
-            Guid rowId = Guid.NewGuid();
-            List<Model_TemplateCell> cells =
-            [
-                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test1", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test2", "Test")
-            ];
-
-            List<Model_TemplateRow> rows =
-            [
-                new Model_TemplateRow(rowId, true, true, false, cells)
-            ];
-
-            Model_Template template = new(null, templateName, "TestDescription", "Test", rows);
-            Model_Template result = query.Update(template);
-
-            return result;
-        }
-
         [Fact]
         public void ChangeDontOwnData()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_Template templateOtherUser = CreateTemplateOtherUser("TestTemplate2");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Model_Template templateOtherUser = CreateTemplate("TestTemplate2", OtherUserDefaultGuid.ToString());
 
             Model_Template action() => query.Update(templateOtherUser);
 
@@ -87,46 +93,25 @@ namespace ApiServerTest.Tests
             Assert.Equal(result.Code, ex.Code);
         }
 
-        private static Model_Template CreateTemplateUserOwn(string templateName)
-        {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Guid rowId = Guid.NewGuid();
-            List<Model_TemplateCell> cells =
-            [
-                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test1", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test2", "Test")
-            ];
-
-            List<Model_TemplateRow> rows =
-            [
-                new Model_TemplateRow(rowId, true, true, false, cells)
-            ];
-
-            Model_Template template = new(null, templateName, "TestDescription", "Test", rows);
-            Model_Template result = query.Update(template);
-
-            return result;
-
-        }
-
         [Fact]
         public void Change()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_Template template = CreateTemplateUserOwn("TestTemplate3");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Model_Template template = CreateTemplate("TestTemplate3", DefaultUserGuid.ToString());
             Model_Template changes = new(template.ID, "TestTemplate4", null, null, template.Items);
 
             query.Update(changes);
 
             Assert.True(true);
         }
+        #endregion
 
+        #region Remove Function
         [Fact]
         public void Remove()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_Template template = CreateTemplateUserOwn("TestTemplate7");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Model_Template template = CreateTemplate("TestTemplate7", DefaultUserGuid.ToString());
 
             query.Remove(template.ID);
 
@@ -136,7 +121,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RemoveDataInvalid()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
 
             try
             {
@@ -152,7 +137,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RemoveNoDataFound()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
             try
             {
                 query.Remove(Guid.NewGuid());
@@ -167,8 +152,8 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RemoveDontOwnData()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_Template templateOtherUser = CreateTemplateOtherUser("TestTemplate6");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Model_Template templateOtherUser = CreateTemplate("TestTemplate6", OtherUserDefaultGuid.ToString());
 
             try
             {
@@ -181,11 +166,14 @@ namespace ApiServerTest.Tests
             }
         }
 
+        #endregion
+
+        #region Copy Function
         [Fact]
         public void Copy()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_Template templateOtherUser = CreateTemplateOtherUser("TestTemplate8");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Model_Template templateOtherUser = CreateTemplate("TestTemplate8", OtherUserDefaultGuid.ToString());
 
             query.Copy(templateOtherUser.ID);
 
@@ -195,7 +183,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void CopyDataInvalid()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
             try
             {
                 query.Copy(null);
@@ -210,7 +198,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void CopyNoDataFound()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
             try
             {
                 query.Copy(Guid.NewGuid());
@@ -222,11 +210,14 @@ namespace ApiServerTest.Tests
             }
         }
 
+        #endregion
+
+        #region Details Function
         [Fact]
         public void Details()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-            Model_Template template = CreateTemplateUserOwn("TestTemplate10");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Model_Template template = CreateTemplate("TestTemplate10", DefaultUserGuid.ToString());
             Model_Template detailTemplate = query.Details(template.ID);
             Assert.True(detailTemplate.Items.Count > 0);
         }
@@ -234,7 +225,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void DetailsDataIsInvalid()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
             try
             {
                 query.Details(null);
@@ -249,7 +240,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void DetailsNoDataFound()
         {
-            TemplateQueries query = ReturnQuery("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
             try
             {
                 query.Details(Guid.NewGuid());
@@ -260,5 +251,6 @@ namespace ApiServerTest.Tests
                 Assert.Equal(result.Code, ex.Code);
             }
         }
+        #endregion
     }
 }
