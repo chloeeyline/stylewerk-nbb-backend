@@ -4,7 +4,7 @@ using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
-    public class FilterTest
+    public class FilterTemplateTest
     {
         private Guid DefaultUserGuid = new("90865032-e4e8-4e2b-85e0-5db345f42a5b");
         private Guid OtherUserDefaultGuid = new("cd6c092d-0546-4f8b-b70c-352d2ca765a4");
