@@ -52,6 +52,7 @@ public interface IEntity_Name
     /// The name of the entity.
     /// </summary>
     string Name { get; set; }
+    string NameNormalized { get; set; }
 }
 
 /// <summary>

@@ -9,6 +9,7 @@ public class Admin_ColorTheme : IEntity<Admin_ColorTheme>, IEntity_GuidID, IEnti
 {
     public required Guid ID { get; set; }
     public required string Name { get; set; }
+    public required string NameNormalized { get; set; }
     public required string Base { get; set; }
     public required string Data { get; set; }
 

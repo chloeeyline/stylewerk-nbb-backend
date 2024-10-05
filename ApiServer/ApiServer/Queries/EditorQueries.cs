@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Core;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
 
@@ -133,7 +134,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
         Structure_Template? templateEntity = DB.Structure_Template.FirstOrDefault(s => s.ID == templateModel.ID);
         if (templateEntity is null)
         {
-            if (DB.Structure_Template.Any(s => s.Name.Equals(model.Template.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+            if (DB.Structure_Template.Any(s => s.NameNormalized == model.Template.Name && s.UserID == CurrentUser.ID))
                 throw new RequestException(ResultCodes.NameMustBeUnique);
 
             templateEntity = new()
@@ -141,6 +142,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
                 ID = Guid.NewGuid(),
                 UserID = CurrentUser.ID,
                 Name = templateModel.Name,
+                NameNormalized = templateModel.Name.NormalizeName(),
                 Description = string.IsNullOrWhiteSpace(templateModel.Description) ? null : templateModel.Description,
                 Tags = string.IsNullOrWhiteSpace(templateModel.Tags) ? null : templateModel.Tags.Normalize().ToLower(),
             };
@@ -264,6 +266,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
                 FolderID = model.FolderID,
                 TemplateID = model.TemplateID.Value,
                 Name = model.Name,
+                NameNormalized = model.Name.NormalizeName(),
                 Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags.Normalize().ToLower(),
                 IsEncrypted = model.IsEncrypted,
             };

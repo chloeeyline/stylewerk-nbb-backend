@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Design;
 
 using StyleWerk.NBB.AWS;
@@ -84,6 +85,7 @@ public partial class NbbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("uuid-ossp");
+        modelBuilder.HasCollation("und-ci", locale: "und", provider: "icu", deterministic: false);
 
         _ = modelBuilder.Entity<User_Login>(User.User_Login.Build);
         _ = modelBuilder.Entity<User_Token>(User.User_Token.Build);
@@ -124,16 +126,21 @@ public partial class NbbContext : DbContext
 
     public override int SaveChanges()
     {
-        IEnumerable<Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry> entries = ChangeTracker
-            .Entries()
-            .Where(e => e.Entity is IEntity_EditDate &&
-                        (e.State == EntityState.Modified || e.State == EntityState.Added));
+        IEnumerable<EntityEntry> entries = ChangeTracker.Entries().Where(e => e.Entity is IEntity_EditDate && (e.State == EntityState.Modified || e.State == EntityState.Added));
 
-        foreach (Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry? entry in entries)
+        foreach (EntityEntry entry in entries)
         {
             IEntity_EditDate temp = ((IEntity_EditDate) entry.Entity);
             if (entry.State == EntityState.Added) temp.CreatedAt = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             if (entry.State == EntityState.Modified) temp.LastUpdatedAt = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
+        }
+
+        entries = ChangeTracker.Entries().Where(e => e.Entity is IEntity_Name && (e.State == EntityState.Modified || e.State == EntityState.Added));
+
+        foreach (EntityEntry entry in entries)
+        {
+            IEntity_Name temp = ((IEntity_Name) entry.Entity);
+            temp.NameNormalized = temp.Name.NormalizeName();
         }
 
         return base.SaveChanges();

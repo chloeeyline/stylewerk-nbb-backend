@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Core;
 using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
@@ -218,6 +219,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
                 ID = Guid.NewGuid(),
                 UserID = CurrentUser.ID,
                 Name = model.Name,
+                NameNormalized = model.Name.NormalizeName(),
                 Description = string.IsNullOrWhiteSpace(model.Description) ? null : model.Description,
                 Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower(),
             };
@@ -314,6 +316,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             ID = Guid.NewGuid(),
             UserID = CurrentUser.ID,
             Name = $"{copyTemplate.Name} (Kopie)",
+            NameNormalized = $"{copyTemplate.Name} (Kopie)".NormalizeName(),
             Description = copyTemplate.Description,
             Tags = copyTemplate.Tags,
         };

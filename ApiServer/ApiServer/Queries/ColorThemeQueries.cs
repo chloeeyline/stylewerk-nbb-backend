@@ -1,5 +1,6 @@
 ﻿using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Admin;
+using StyleWerk.NBB.Database.Core;
 using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Queries;
@@ -54,6 +55,7 @@ public class ColorThemeQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
             {
                 ID = Guid.Empty,
                 Name = model.Name,
+                NameNormalized = model.Name.NormalizeName(),
                 Data = model.Data,
                 Base = model.Base
             };

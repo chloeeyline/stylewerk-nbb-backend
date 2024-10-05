@@ -10,6 +10,7 @@ public class Structure_Entry : IConnectedEntity<Structure_Entry>, IEntity_GuidID
 {
     public required Guid ID { get; set; }
     public required string Name { get; set; }
+    public required string NameNormalized { get; set; }
     public required Guid UserID { get; set; }
     public required Guid TemplateID { get; set; }
     public Guid? FolderID { get; set; }
@@ -31,6 +32,7 @@ public class Structure_Entry : IConnectedEntity<Structure_Entry>, IEntity_GuidID
         b.UseIEntity_GuidID();
         b.UseIEntity_User();
         b.UseIEntity_Name();
+        b.UseIEntity_UniqueName();
 
         b.Property(s => s.TemplateID).IsRequired(true);
         b.Property(s => s.FolderID).IsRequired(false);

@@ -47,7 +47,8 @@ public static class Extension
     /// <param name="b">The builder used for entity type configuration.</param>
     public static void UseIEntity_Name<T>(this EntityTypeBuilder<T> b) where T : class, IEntity<T>, IEntity_Name
     {
-        b.Property(s => s.Name).IsRequired(true).HasMaxLength(100);
+        b.Property(s => s.Name).IsRequired(true).HasMaxLength(100).UseCollation("und-ci");
+        b.Property(s => s.NameNormalized).IsRequired(true).HasMaxLength(100).UseCollation("und-ci");
     }
 
     /// <summary>
@@ -76,4 +77,11 @@ public static class Extension
         b.Property(s => s.UserID).IsRequired(true);
         b.HasOne(s => s.O_User).WithMany().HasForeignKey(s => s.UserID).IsRequired(true);
     }
+
+    public static void UseIEntity_UniqueName<T>(this EntityTypeBuilder<T> b) where T : class, IEntity<T>, IEntity_Name, IEntity_User
+    {
+        b.HasIndex(s => new { s.UserID, s.NameNormalized }).IsUnique(true);
+    }
+
+    public static string NormalizeName(this string name) => name.Trim().ToLower().Normalize();
 }

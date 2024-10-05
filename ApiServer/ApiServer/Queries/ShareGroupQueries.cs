@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Core;
 using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
@@ -98,6 +99,7 @@ public class ShareGroupQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
                 ID = Guid.NewGuid(),
                 UserID = CurrentUser.ID,
                 Name = model.Name,
+                NameNormalized = model.Name.NormalizeName(),
             };
             DB.Share_Group.Add(item);
             model = model with { ID = model.ID };

@@ -24,6 +24,7 @@ public class Share_Group : IConnectedEntity<Share_Group>, IEntity_GuidID, IEntit
     /// Name of the group.
     /// </summary>
     public required string Name { get; set; }
+    public required string NameNormalized { get; set; }
 
 #pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
     /// <summary>
@@ -47,6 +48,7 @@ public class Share_Group : IConnectedEntity<Share_Group>, IEntity_GuidID, IEntit
         b.UseIEntity_GuidID();
         b.UseIEntity_User();
         b.UseIEntity_Name();
+        b.UseIEntity_UniqueName();
     }
 
     /// <summary>

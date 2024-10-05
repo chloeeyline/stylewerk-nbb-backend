@@ -11,6 +11,7 @@ public class Structure_Entry_Folder : IConnectedEntity<Structure_Entry_Folder>, 
     public required Guid ID { get; set; }
     public required Guid UserID { get; set; }
     public required string Name { get; set; }
+    public required string NameNormalized { get; set; }
     public required int SortOrder { get; set; }
 
 #pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
@@ -24,6 +25,7 @@ public class Structure_Entry_Folder : IConnectedEntity<Structure_Entry_Folder>, 
         b.UseIEntity_GuidID();
         b.UseIEntity_User(); ;
         b.UseIEntity_Name();
+        b.UseIEntity_UniqueName();
 
         b.UseIEntity_SortOrder();
     }

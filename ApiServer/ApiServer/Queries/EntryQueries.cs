@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Core;
 using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
@@ -283,6 +284,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
                 FolderID = model.FolderID,
                 TemplateID = model.TemplateID,
                 Name = model.Name,
+                NameNormalized = model.Name.NormalizeName(),
                 Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower(),
                 IsEncrypted = model.IsEncrypted,
             };

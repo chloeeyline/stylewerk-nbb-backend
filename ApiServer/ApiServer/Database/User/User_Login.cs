@@ -88,10 +88,10 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
         b.UseTemplates();
         b.UseIEntity_GuidID();
 
-        b.Property(s => s.Username).IsRequired(true).HasMaxLength(30);
-        b.Property(s => s.UsernameNormalized).IsRequired(true).HasMaxLength(30);
-        b.Property(s => s.Email).IsRequired(true).HasMaxLength(100);
-        b.Property(s => s.EmailNormalized).IsRequired(true).HasMaxLength(100);
+        b.Property(s => s.Username).IsRequired(true).HasMaxLength(30).UseCollation("und-ci");
+        b.Property(s => s.UsernameNormalized).IsRequired(true).HasMaxLength(30).UseCollation("und-ci");
+        b.Property(s => s.Email).IsRequired(true).HasMaxLength(100).UseCollation("und-ci");
+        b.Property(s => s.EmailNormalized).IsRequired(true).HasMaxLength(100).UseCollation("und-ci");
 
         b.Property(s => s.PasswordHash).IsRequired(true);
         b.Property(s => s.PasswordSalt).IsRequired(true);

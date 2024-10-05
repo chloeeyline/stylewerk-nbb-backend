@@ -9,6 +9,7 @@ public class Admin_Language : IEntity<Admin_Language>, IEntity_Name
 {
     public required string Code { get; set; }
     public required string Name { get; set; }
+    public required string NameNormalized { get; set; }
     public required string Data { get; set; }
 
     public static void Build(EntityTypeBuilder<Admin_Language> b)

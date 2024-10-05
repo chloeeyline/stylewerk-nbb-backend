@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Core;
 using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
@@ -87,6 +88,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
             {
                 ID = Guid.NewGuid(),
                 Name = model.Name,
+                NameNormalized = model.Name.NormalizeName(),
                 SortOrder = sortOrder,
                 UserID = CurrentUser.ID
             };

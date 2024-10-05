@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 
 using StyleWerk.NBB.AWS;
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Core;
 using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
@@ -325,7 +326,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
 
         DB.User_Token.RemoveRange(DB.User_Token.Where(s => s.ID == CurrentUser.ID && s.Agent != UserAgent));
         CurrentUser.Login.Email = CurrentUser.Login.NewEmail;
-        CurrentUser.Login.EmailNormalized = CurrentUser.Login.NewEmail.ToLower().Normalize();
+        CurrentUser.Login.EmailNormalized = CurrentUser.Login.NewEmail.NormalizeName();
         CurrentUser.Login.NewEmail = null;
 
         CurrentUser.Login.StatusCode = null;
@@ -417,7 +418,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     #region Validate Password and Account Identifier
     public string ValidateEmail(string? email)
     {
-        email = email?.ToLower().Normalize();
+        email = email?.NormalizeName();
         return string.IsNullOrWhiteSpace(email) || !email.Contains('@') || !email.Contains('.')
             ? throw new RequestException(ResultCodes.EmailInvalid)
             : DB.User_Login.Any(s => s.EmailNormalized == email)
@@ -427,7 +428,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
 
     public string ValidateUsername(string? username)
     {
-        username = username?.ToLower().Normalize();
+        username = username?.NormalizeName();
         return string.IsNullOrWhiteSpace(username) || username.Length < 5
             ? throw new RequestException(ResultCodes.UnToShort)
             : username.Length > 50
