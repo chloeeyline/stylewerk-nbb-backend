@@ -10,7 +10,7 @@ namespace ApiServerTest.Tests
     {
         private Guid DefaultUserGuid = new("90865032-e4e8-4e2b-85e0-5db345f42a5b");
         private string DefaultPassword = "TestTest@123";
-        private string DefaultEmail = "schwammal55@gmail.com";
+        private string DefaultEmail = "";
         private string DefaultUser = "TestUser";
         private Guid OtherUserDefaultGuid = new("cd6c092d-0546-4f8b-b70c-352d2ca765a4");
 
