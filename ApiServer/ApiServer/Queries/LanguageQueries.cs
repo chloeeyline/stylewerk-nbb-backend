@@ -47,10 +47,13 @@ public class LanguageQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
     {
         if (model is null || string.IsNullOrWhiteSpace(model.Data))
             throw new RequestException(ResultCodes.DataIsInvalid);
+        string name = model.Name.NormalizeName();
         Admin_Language? item = DB.Admin_Language.FirstOrDefault(s => s.Code == model.Code);
 
         if (item is null)
         {
+            if (DB.Admin_Language.Any(s => s.NameNormalized == name))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
             item = new Admin_Language()
             {
                 Code = model.Code,
@@ -62,6 +65,8 @@ public class LanguageQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         }
         else
         {
+            if (item.NameNormalized != name && DB.Admin_Language.Any(s => s.NameNormalized == name))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
             item.Name = model.Name;
             item.Data = model.Data;
         }

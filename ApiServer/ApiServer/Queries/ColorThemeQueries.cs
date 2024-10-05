@@ -47,10 +47,13 @@ public class ColorThemeQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
     {
         if (model is null || string.IsNullOrWhiteSpace(model.Data))
             throw new RequestException(ResultCodes.DataIsInvalid);
+        string name = model.Name.NormalizeName();
         Admin_ColorTheme? item = DB.Admin_ColorTheme.FirstOrDefault(s => s.ID == model.ID);
 
         if (item is null)
         {
+            if (DB.Admin_ColorTheme.Any(s => s.NameNormalized == name))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
             item = new Admin_ColorTheme()
             {
                 ID = Guid.Empty,
@@ -63,6 +66,8 @@ public class ColorThemeQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
         }
         else
         {
+            if (item.NameNormalized != name && DB.Admin_ColorTheme.Any(s => s.NameNormalized == name))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
             item.Name = model.Name;
             item.Base = model.Base;
             item.Data = model.Data;

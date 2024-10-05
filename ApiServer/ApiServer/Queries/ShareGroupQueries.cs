@@ -87,11 +87,12 @@ public class ShareGroupQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
         if (model is null)
             throw new RequestException(ResultCodes.DataIsInvalid);
 
+        string name = model.Name.NormalizeName();
         Share_Group? item = DB.Share_Group.FirstOrDefault(s => s.ID == model.ID);
 
         if (item is null)
         {
-            if (DB.Share_Group.Any(s => s.Name.Equals(model.Name, StringComparison.CurrentCultureIgnoreCase)))
+            if (DB.Share_Group.Any(s => s.UserID == CurrentUser.ID && s.NameNormalized == name))
                 throw new RequestException(ResultCodes.NameMustBeUnique);
 
             item = new Share_Group()
@@ -109,8 +110,7 @@ public class ShareGroupQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
             if (item.UserID != CurrentUser.ID)
                 throw new RequestException(ResultCodes.YouDontOwnTheData);
 
-            if (!item.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) &&
-                DB.Share_Group.Any(s => s.Name.Equals(model.Name, StringComparison.CurrentCultureIgnoreCase)))
+            if (item.NameNormalized != name && DB.Share_Group.Any(s => s.UserID == CurrentUser.ID && s.NameNormalized == name))
                 throw new RequestException(ResultCodes.NameMustBeUnique);
 
             item.Name = model.Name;

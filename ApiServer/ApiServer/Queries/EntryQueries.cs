@@ -257,6 +257,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
             throw new RequestException(ResultCodes.DataIsInvalid);
 
+        string name = model.Name.NormalizeName();
         Structure_Entry? entry = DB.Structure_Entry.FirstOrDefault(s => s.ID == model.ID);
 
         Structure_Template template = DB.Structure_Template.FirstOrDefault(s => s.ID == model.TemplateID)
@@ -274,7 +275,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
 
         if (entry is null)
         {
-            if (DB.Structure_Entry.Any(s => s.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+            if (DB.Structure_Entry.Any(s => s.UserID == CurrentUser.ID && s.NameNormalized == name))
                 throw new RequestException(ResultCodes.NameMustBeUnique);
 
             entry = new()
@@ -295,8 +296,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         {
             if (entry.UserID != CurrentUser.ID)
                 throw new RequestException(ResultCodes.YouDontOwnTheData);
-            if (entry.Name != model.Name && DB.Structure_Entry.Any(s => s.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) &&
-                s.UserID == CurrentUser.ID))
+            if (entry.NameNormalized != name && DB.Structure_Entry.Any(s => s.UserID == CurrentUser.ID && s.NameNormalized == name))
                 throw new RequestException(ResultCodes.NameMustBeUnique);
             if (entry.TemplateID != model.TemplateID)
                 throw new RequestException(ResultCodes.TemplateDoesntMatch);

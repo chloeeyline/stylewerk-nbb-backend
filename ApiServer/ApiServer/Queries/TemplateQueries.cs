@@ -209,10 +209,11 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
             throw new RequestException(ResultCodes.DataIsInvalid);
 
+        string name = model.Name.NormalizeName();
         Structure_Template? template = DB.Structure_Template.FirstOrDefault(s => s.ID == model.ID);
         if (template is null)
         {
-            if (DB.Structure_Template.Any(s => s.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+            if (DB.Structure_Template.Any(s => s.UserID == CurrentUser.ID && s.NameNormalized == name))
                 throw new RequestException(ResultCodes.NameMustBeUnique);
             template = new()
             {
@@ -229,7 +230,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         {
             if (template.UserID != CurrentUser.ID)
                 throw new RequestException(ResultCodes.YouDontOwnTheData);
-            if (template.Name != model.Name && DB.Structure_Template.Any(s => s.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+            if (template.Name != name && DB.Structure_Template.Any(s => s.UserID == CurrentUser.ID && s.NameNormalized == name))
                 throw new RequestException(ResultCodes.NameMustBeUnique);
             template.Name = model.Name;
             template.Description = string.IsNullOrWhiteSpace(model.Description) ? null : model.Description;

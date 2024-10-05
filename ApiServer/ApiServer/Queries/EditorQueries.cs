@@ -130,11 +130,12 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
         if (model is null || model.Template is null || string.IsNullOrWhiteSpace(model.Template.Name))
             throw new RequestException(ResultCodes.DataIsInvalid);
 
+        string name = model.Template.Name.NormalizeName();
         Template templateModel = model.Template;
         Structure_Template? templateEntity = DB.Structure_Template.FirstOrDefault(s => s.ID == templateModel.ID);
         if (templateEntity is null)
         {
-            if (DB.Structure_Template.Any(s => s.NameNormalized == model.Template.Name && s.UserID == CurrentUser.ID))
+            if (DB.Structure_Template.Any(s => s.UserID == CurrentUser.ID && s.NameNormalized == name))
                 throw new RequestException(ResultCodes.NameMustBeUnique);
 
             templateEntity = new()
@@ -152,8 +153,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
         {
             if (templateEntity.UserID != CurrentUser.ID)
                 throw new RequestException(ResultCodes.YouDontOwnTheData);
-            if (templateEntity.Name != templateModel.Name &&
-                DB.Structure_Template.Any(s => s.Name.Equals(model.Template.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+            if (templateEntity.NameNormalized != name && DB.Structure_Template.Any(s => s.UserID == CurrentUser.ID && s.NameNormalized == name))
                 throw new RequestException(ResultCodes.NameMustBeUnique);
 
             templateEntity.Name = templateModel.Name;
@@ -239,6 +239,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
         if (model is null || string.IsNullOrWhiteSpace(model.Name) || model.TemplateID is null || model.TemplateID == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
 
+        string name = model.Name.NormalizeName();
         Structure_Entry? entryEntity = DB.Structure_Entry.FirstOrDefault(s => s.ID == model.ID);
 
         Structure_Template templateEntity = DB.Structure_Template.FirstOrDefault(s => s.ID == model.TemplateID)
@@ -256,7 +257,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
 
         if (entryEntity is null)
         {
-            if (DB.Structure_Entry.Any(s => s.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+            if (DB.Structure_Entry.Any(s => s.UserID == CurrentUser.ID && s.NameNormalized == name))
                 throw new RequestException(ResultCodes.NameMustBeUnique);
 
             entryEntity = new()
@@ -277,8 +278,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
         {
             if (entryEntity.UserID != CurrentUser.ID)
                 throw new RequestException(ResultCodes.YouDontOwnTheData);
-            if (entryEntity.Name != model.Name &&
-                DB.Structure_Entry.Any(s => s.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+            if (entryEntity.NameNormalized != name && DB.Structure_Entry.Any(s => s.UserID == CurrentUser.ID && s.NameNormalized == name))
                 throw new RequestException(ResultCodes.NameMustBeUnique);
             if (entryEntity.TemplateID != model.TemplateID)
                 throw new RequestException(ResultCodes.TemplateDoesntMatch);
