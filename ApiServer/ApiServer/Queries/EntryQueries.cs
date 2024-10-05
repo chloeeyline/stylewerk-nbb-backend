@@ -30,7 +30,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             entry.TemplateID equals template.ID
         join sgu in DB.Share_GroupUser on
             new { si.ToWhom, si.Visibility } equals
-            new { ToWhom = (Guid?) sgu.GroupID, Visibility = ShareVisibility.Group }
+            new { ToWhom = (Guid?)sgu.GroupID, Visibility = ShareVisibility.Group }
             into groupJoin
         from sharedGroup in groupJoin.DefaultIfEmpty()
         join sg in DB.Share_Group on
@@ -145,9 +145,9 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
     }
 
     /// <summary>
-    /// Get entry details based on entry id
+    /// Get entry details
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="id">EntryID</param>
     /// <returns></returns>
     /// <exception cref="RequestException"></exception>
     public Model_Entry Details(Guid? id)
@@ -230,6 +230,11 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         return result;
     }
 
+    /// <summary>
+    /// Removes an entry and all its Details
+    /// </summary>
+    /// <param name="id"></param>
+    /// <exception cref="RequestException"></exception>
     public void Remove(Guid? id)
     {
         if (id is null || id == Guid.Empty)
