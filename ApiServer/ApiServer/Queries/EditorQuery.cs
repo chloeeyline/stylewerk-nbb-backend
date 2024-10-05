@@ -1,0 +1,234 @@
+﻿using Microsoft.EntityFrameworkCore;
+
+using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Structure;
+using StyleWerk.NBB.Models;
+
+namespace StyleWerk.NBB.Queries;
+
+public class EditorQuery(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
+{
+    public Model_Editor GetEntry(Guid? id)
+    {
+        if (id is null || id == Guid.Empty)
+            throw new RequestException(ResultCodes.DataIsInvalid);
+
+        Structure_Entry eEntity = DB.Structure_Entry
+            .Include(s => s.O_Template)
+            .Include(s => s.O_Rows) // Load rows for the entry
+                .ThenInclude(s => s.O_Template) // Include template for each row
+            .Include(s => s.O_Rows) // Load cells for each row
+                .ThenInclude(s => s.O_Cells)
+                .ThenInclude(s => s.O_Template) // Include template for each cell
+            .FirstOrDefault(e => e.ID == id)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
+
+        Structure_Template tEntity = eEntity.O_Template ?? throw new RequestException(ResultCodes.NoDataFound);
+        List<Structure_Template_Row> tRowEntities = [.. tEntity.O_Rows.OrderBy(s => s.SortOrder)];
+
+        List<EntryRow> entryRows = [];
+        List<EntryCell> entryCells = [];
+        foreach (Structure_Template_Row tRowEntity in tRowEntities)
+        {
+            List<Structure_Entry_Row> eRowEntities = [.. eEntity.O_Rows
+                .Where(s => s.TemplateID == tRowEntity.TemplateID)
+                .OrderBy(s => s.SortOrder)];
+            TemplateRow tRowModel = new(tRowEntity.ID, tRowEntity.CanWrapCells, tRowEntity.CanRepeat, tRowEntity.HideOnNoInput);
+
+            if (eRowEntities.Count == 0)
+            {
+                List<EntryCell> cells = CreateCellsFromTemplate(tRowEntity.O_Cells);
+                EntryRow eRowModel = new(null, tRowEntity.ID, tRowModel, cells);
+                entryRows.Add(eRowModel);
+            }
+            else
+            {
+                foreach (Structure_Entry_Row eRowEntity in eRowEntities)
+                {
+                    List<Structure_Entry_Cell> eCellEntities = [.. eRowEntity.O_Cells.OrderBy(s => s.O_Template.SortOrder)];
+
+                    if (eCellEntities.Count == 0)
+                    {
+                        entryCells = CreateCellsFromTemplate(tRowEntity.O_Cells);
+                    }
+                    else
+                    {
+                        entryCells = [];
+                        foreach (Structure_Entry_Cell eCellEntity in eCellEntities)
+                        {
+                            Structure_Template_Cell tCellEntity = eCellEntity.O_Template;
+                            TemplateCell cellModelTemplate = new(tCellEntity.ID, tCellEntity.InputHelper, tCellEntity.HideOnEmpty, tCellEntity.IsRequired, tCellEntity.Text, tCellEntity.Description, tCellEntity.MetaData);
+                            EntryCell cellModel = new(eCellEntity.ID, tCellEntity.ID, eCellEntity.Data, cellModelTemplate);
+                            entryCells.Add(cellModel);
+                        }
+                    }
+                    EntryRow eRowModel = new(eRowEntity.ID, tRowEntity.ID, tRowModel, entryCells);
+                    entryRows.Add(eRowModel);
+                }
+            }
+        }
+
+        Template templateModel = new(tEntity.ID, tEntity.Name, tEntity.Description, tEntity.Description);
+        Model_Editor editorModel = new(eEntity.ID, eEntity.FolderID, tEntity.ID, eEntity.Name, eEntity.Tags, eEntity.IsEncrypted, templateModel, entryRows);
+
+        return editorModel;
+    }
+
+    public Model_Editor GetTemplate(Guid? id)
+    {
+        if (id is null || id == Guid.Empty)
+            throw new RequestException(ResultCodes.DataIsInvalid);
+
+        Structure_Template tEntity = DB.Structure_Template
+            .Include(s => s.O_Rows)
+                .ThenInclude(s => s.O_Cells)
+            .FirstOrDefault(e => e.ID == id)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
+
+        List<Structure_Template_Row> tRowEntities = [.. tEntity.O_Rows.OrderBy(s => s.SortOrder)];
+
+        List<EntryRow> entryRows = [];
+        foreach (Structure_Template_Row tRowEntity in tRowEntities)
+        {
+            List<Structure_Template_Cell> tCellEntities = [.. tRowEntity.O_Cells.OrderBy(cell => cell.SortOrder)];
+            List<EntryCell> entryCells = CreateCellsFromTemplate(tCellEntities);
+
+            TemplateRow tRowModel = new(tRowEntity.ID, tRowEntity.CanWrapCells, tRowEntity.CanRepeat, tRowEntity.HideOnNoInput);
+            EntryRow eRowModel = new(null, tRowEntity.ID, tRowModel, entryCells);
+            entryRows.Add(eRowModel);
+        }
+
+        Template templateModel = new(tEntity.ID, tEntity.Name, tEntity.Description, tEntity.Tags);
+        Model_Editor editorModel = new(null, null, tEntity.ID, null, null, false, templateModel, entryRows);
+
+        return editorModel;
+    }
+
+    private List<EntryCell> CreateCellsFromTemplate(List<Structure_Template_Cell> list)
+    {
+        return [.. list.OrderBy(s => s.SortOrder).Select(s =>
+            new EntryCell(
+                null,
+                s.ID,
+                null,
+                new TemplateCell(
+                    s.ID,
+                    s.InputHelper,
+                    s.HideOnEmpty,
+                    s.IsRequired,
+                    s.Text,
+                    s.Description,
+                    s.MetaData
+                )
+            )
+        )];
+    }
+
+    public Model_Editor UpdateTemplate(Model_Editor? model)
+    {
+        if (model is null || model.Template is null || string.IsNullOrWhiteSpace(model.Template.Name))
+            throw new RequestException(ResultCodes.DataIsInvalid);
+
+        Template templateModel = model.Template;
+        Structure_Template? templateEntity = DB.Structure_Template.FirstOrDefault(s => s.ID == templateModel.ID);
+        if (templateEntity is null)
+        {
+            if (DB.Structure_Template.Any(s => s.Name.Equals(model.Template.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
+
+            templateEntity = new()
+            {
+                ID = Guid.NewGuid(),
+                UserID = CurrentUser.ID,
+                Name = templateModel.Name,
+                Description = string.IsNullOrWhiteSpace(templateModel.Description) ? null : templateModel.Description,
+                Tags = string.IsNullOrWhiteSpace(templateModel.Tags) ? null : templateModel.Tags.Normalize().ToLower(),
+            };
+            DB.Structure_Template.Add(templateEntity);
+        }
+        else
+        {
+            if (templateEntity.UserID != CurrentUser.ID)
+                throw new RequestException(ResultCodes.YouDontOwnTheData);
+            if (templateEntity.Name != templateModel.Name &&
+                DB.Structure_Template.Any(s => s.Name.Equals(model.Template.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
+
+            templateEntity.Name = templateModel.Name;
+            templateEntity.Description = string.IsNullOrWhiteSpace(templateModel.Description) ? null : templateModel.Description;
+            templateEntity.Tags = string.IsNullOrWhiteSpace(templateModel.Tags) ? null : templateModel.Tags.Normalize().ToLower();
+        }
+
+        List<Guid> rowIDs = [];
+        int rowSortOrder = 0;
+        foreach (EntryRow eRowModel in model.Items)
+        {
+            TemplateRow tRowModel = eRowModel.Template ?? throw new RequestException(ResultCodes.NoDataFound);
+            Structure_Template_Row? tRowEntity = DB.Structure_Template_Row.SingleOrDefault(t => tRowModel.ID == t.ID);
+
+            if (tRowEntity is null)
+            {
+                tRowEntity = new()
+                {
+                    ID = Guid.NewGuid(),
+                    TemplateID = templateEntity.ID,
+                    SortOrder = rowSortOrder++,
+                    CanWrapCells = tRowModel.CanWrapCells,
+                    CanRepeat = tRowModel.CanRepeat,
+                    HideOnNoInput = tRowModel.HideOnNoInput
+                };
+                DB.Structure_Template_Row.Add(tRowEntity);
+            }
+            else
+            {
+                tRowEntity.SortOrder = rowSortOrder++;
+                tRowEntity.CanWrapCells = tRowModel.CanWrapCells;
+                tRowEntity.CanRepeat = tRowModel.CanRepeat;
+                tRowEntity.HideOnNoInput = tRowModel.HideOnNoInput;
+            }
+
+            rowIDs.Add(tRowEntity.ID);
+            int cellSortOrder = 0;
+            List<Guid> cellIDs = [];
+
+            foreach (EntryCell eCellModel in eRowModel.Items)
+            {
+                TemplateCell tCellModel = eCellModel.Template ?? throw new RequestException(ResultCodes.NoDataFound);
+                Structure_Template_Cell? tCellEntity = DB.Structure_Template_Cell.SingleOrDefault(c => c.ID == eCellModel.ID);
+
+                if (tCellEntity is null)
+                {
+                    tCellEntity = new()
+                    {
+                        ID = Guid.NewGuid(),
+                        RowID = tRowEntity.ID,
+                        SortOrder = cellSortOrder++,
+                        InputHelper = tCellModel.InputHelper,
+                        HideOnEmpty = tCellModel.HideOnEmpty,
+                        IsRequired = tCellModel.IsRequired,
+                        Text = tCellModel.Text,
+                        Description = tCellModel.Description,
+                        MetaData = tCellModel.Text
+                    };
+                    DB.Structure_Template_Cell.Add(tCellEntity);
+                }
+                else
+                {
+                    tCellEntity.SortOrder = cellSortOrder++;
+                    tCellEntity.InputHelper = tCellModel.InputHelper;
+                    tCellEntity.HideOnEmpty = tCellModel.HideOnEmpty;
+                    tCellEntity.IsRequired = tCellModel.IsRequired;
+                    tCellEntity.Text = tCellModel.Text;
+                    tCellEntity.Description = tCellModel.Description;
+                    tCellEntity.MetaData = tCellModel.MetaData;
+                }
+                cellIDs.Add(tCellEntity.ID);
+            }
+            DB.Structure_Template_Cell.RemoveRange(DB.Structure_Template_Cell.Where(s => !cellIDs.Contains(s.ID) && s.RowID == tRowEntity.ID));
+        }
+        DB.Structure_Template_Row.RemoveRange(DB.Structure_Template_Row.Where(s => !rowIDs.Contains(s.ID) && s.TemplateID == templateEntity.ID));
+
+        DB.SaveChanges();
+        return GetTemplate(templateEntity.ID);
+    }
+}
