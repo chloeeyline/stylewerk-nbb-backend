@@ -8,6 +8,26 @@ namespace StyleWerk.NBB.Queries;
 
 public class EditorQuery(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
+    private List<EntryCell> CreateCellsFromTemplate(List<Structure_Template_Cell> list)
+    {
+        return [.. list.OrderBy(s => s.SortOrder).Select(s =>
+            new EntryCell(
+                null,
+                s.ID,
+                null,
+                new TemplateCell(
+                    s.ID,
+                    s.InputHelper,
+                    s.HideOnEmpty,
+                    s.IsRequired,
+                    s.Text,
+                    s.Description,
+                    s.MetaData
+                )
+            )
+        )];
+    }
+
     public Model_Editor GetEntry(Guid? id)
     {
         if (id is null || id == Guid.Empty)
@@ -102,26 +122,6 @@ public class EditorQuery(NbbContext DB, ApplicationUser CurrentUser) : BaseQueri
         Model_Editor editorModel = new(null, null, tEntity.ID, null, null, false, templateModel, entryRows);
 
         return editorModel;
-    }
-
-    private List<EntryCell> CreateCellsFromTemplate(List<Structure_Template_Cell> list)
-    {
-        return [.. list.OrderBy(s => s.SortOrder).Select(s =>
-            new EntryCell(
-                null,
-                s.ID,
-                null,
-                new TemplateCell(
-                    s.ID,
-                    s.InputHelper,
-                    s.HideOnEmpty,
-                    s.IsRequired,
-                    s.Text,
-                    s.Description,
-                    s.MetaData
-                )
-            )
-        )];
     }
 
     public Model_Editor UpdateTemplate(Model_Editor? model)
@@ -230,5 +230,130 @@ public class EditorQuery(NbbContext DB, ApplicationUser CurrentUser) : BaseQueri
 
         DB.SaveChanges();
         return GetTemplate(templateEntity.ID);
+    }
+
+    public Model_Editor UpdateEntry(Model_Editor? model)
+    {
+        if (model is null || string.IsNullOrWhiteSpace(model.Name) || model.TemplateID is null || model.TemplateID == Guid.Empty)
+            throw new RequestException(ResultCodes.DataIsInvalid);
+
+        Structure_Entry? entryEntity = DB.Structure_Entry.FirstOrDefault(s => s.ID == model.ID);
+
+        Structure_Template templateEntity = DB.Structure_Template.FirstOrDefault(s => s.ID == model.TemplateID)
+            ?? throw new RequestException(ResultCodes.NoDataFound);
+        if (templateEntity.UserID != CurrentUser.ID)
+            throw new RequestException(ResultCodes.YouDontOwnTheData);
+
+        if (model.FolderID is not null && model.FolderID != Guid.Empty)
+        {
+            Structure_Entry_Folder? folderEntity = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == model.FolderID)
+                ?? throw new RequestException(ResultCodes.NoDataFound);
+            if (folderEntity.UserID != CurrentUser.ID)
+                throw new RequestException(ResultCodes.YouDontOwnTheData);
+        }
+
+        if (entryEntity is null)
+        {
+            if (DB.Structure_Entry.Any(s => s.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
+
+            entryEntity = new()
+            {
+                ID = Guid.NewGuid(),
+                UserID = CurrentUser.ID,
+                FolderID = model.FolderID,
+                TemplateID = model.TemplateID.Value,
+                Name = model.Name,
+                Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags.Normalize().ToLower(),
+                IsEncrypted = model.IsEncrypted,
+            };
+
+            DB.Structure_Entry.Add(entryEntity);
+        }
+        else
+        {
+            if (entryEntity.UserID != CurrentUser.ID)
+                throw new RequestException(ResultCodes.YouDontOwnTheData);
+            if (entryEntity.Name != model.Name &&
+                DB.Structure_Entry.Any(s => s.Name.Equals(model.Name, StringComparison.OrdinalIgnoreCase) && s.UserID == CurrentUser.ID))
+                throw new RequestException(ResultCodes.NameMustBeUnique);
+            if (entryEntity.TemplateID != model.TemplateID)
+                throw new RequestException(ResultCodes.TemplateDoesntMatch);
+
+            entryEntity.FolderID = model.FolderID;
+            entryEntity.Name = model.Name;
+            entryEntity.Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower();
+            entryEntity.IsEncrypted = model.IsEncrypted;
+        }
+
+        Guid rowTemplateID = Guid.Empty;
+        int rowSortOrder = 0;
+        foreach (EntryRow row in model.Items)
+        {
+            Structure_Entry_Row? entryRow = DB.Structure_Entry_Row.FirstOrDefault(s => s.ID == row.ID);
+            if (rowTemplateID == row.TemplateID)
+                rowSortOrder++;
+
+            bool isNewRow = false;
+            if (entryRow is null)
+            {
+                isNewRow = true;
+                entryRow = new()
+                {
+                    ID = Guid.NewGuid(),
+                    EntryID = entryEntity.ID,
+                    TemplateID = row.TemplateID.Value,
+                    SortOrder = rowSortOrder
+                };
+            }
+            else
+            {
+                entryRow.SortOrder = rowSortOrder;
+            }
+
+            bool hasData = false;
+            foreach (EntryCell cell in row.Items)
+            {
+                Structure_Entry_Cell? entryCell = DB.Structure_Entry_Cell.FirstOrDefault(s => s.ID == cell.ID);
+                if (entryCell is null)
+                {
+                    if (string.IsNullOrWhiteSpace(cell.Data))
+                        continue;
+
+                    hasData = true;
+                    entryCell = new()
+                    {
+                        ID = Guid.NewGuid(),
+                        RowID = entryRow.ID,
+                        TemplateID = cell.TemplateID.Value,
+                        Data = cell.Data
+                    };
+                    DB.Structure_Entry_Cell.Add(entryCell);
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(cell.Data))
+                    {
+                        DB.Structure_Entry_Cell.Remove(entryCell);
+                        continue;
+                    }
+                    else
+                    {
+                        entryCell.Data = cell.Data;
+                        hasData = true;
+                    }
+                }
+            }
+
+            if (!isNewRow && !hasData)
+                DB.Structure_Entry_Row.Remove(entryRow);
+            if (isNewRow && hasData)
+                DB.Structure_Entry_Row.Add(entryRow);
+            rowSortOrder = rowTemplateID == entryRow.TemplateID ? rowSortOrder + 1 : 0;
+            rowTemplateID = entryRow.TemplateID;
+        }
+        DB.SaveChanges();
+
+        return GetEntry(entryEntity.ID);
     }
 }
