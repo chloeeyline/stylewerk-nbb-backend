@@ -1,6 +1,4 @@
-﻿using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Database.Structure;
-using StyleWerk.NBB.Models;
+﻿using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
@@ -8,23 +6,23 @@ namespace ApiServerTest.Tests
     public class FolderTest
     {
 
-        private Guid DefaultUserGuid = new("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-        private Guid OtherUserDefaultGuid = new("6e4a61db-8c61-4594-a643-feae632caba2");
+        private Guid DefaultUserGuid { get; set; }
+        private Guid OtherUserDefaultGuid { get; set; }
+
+        private string Username = "TestUser";
+        private string Email = "chloe.hauer@lbs4.salzburg.at";
+        private string Password = "TestTest@123";
+
+        private string OtherUsername = "TestUser1";
+        private string OtherEmail = "juliane.krenek@lbs4.salzburg.at";
 
         #region Helpers
-        private static EntryFolderQueries ReturnQuery(string userGuid)
-        {
-            NbbContext DB = NbbContext.Create();
-            ApplicationUser user = DB.GetUser(new Guid(userGuid));
-            EntryFolderQueries query = new(DB, user);
-            return query;
-        }
 
         private static Model_EntryFolders CreateFolder(string folderName, string user)
         {
             Model_EntryFolders newFolderOtherUser = new(Guid.NewGuid(), folderName, []);
 
-            EntryFolderQueries query = ReturnQuery(user);
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(user);
             Model_EntryFolders responseOtherUser = query.Update(newFolderOtherUser);
 
             return responseOtherUser;
@@ -32,18 +30,8 @@ namespace ApiServerTest.Tests
 
         private static List<Model_EntryFolders> LoadFolders(string user)
         {
-            EntryFolderQueries query = ReturnQuery(user);
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(user);
             return query.List();
-        }
-
-        private void DeleteAll()
-        {
-            NbbContext context = NbbContext.Create();
-            List<Structure_Entry_Folder> folders = [.. context.Structure_Entry_Folder];
-            if (folders.Count > 0)
-                context.Structure_Entry_Folder.RemoveRange(folders);
-
-            context.SaveChanges();
         }
         #endregion
 
@@ -51,8 +39,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Update_CreateFolder()
         {
-            DeleteAll();
-            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
             Model_EntryFolders newFolder = new(null, $"TestFolder", []);
 
             Model_EntryFolders response = query.Update(newFolder);
@@ -63,9 +52,12 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Update_MissingRight()
         {
-            DeleteAll();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            OtherUserDefaultGuid = Helpers.CreateUser(OtherUsername, OtherEmail, Password);
+
             Model_EntryFolders responseOtherUser = CreateFolder("TestFolder", OtherUserDefaultGuid.ToString());
-            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
             Model_EntryFolders folder = new(responseOtherUser.ID, "TestFolder1", []);
 
             Model_EntryFolders action() => query.Update(folder);
@@ -78,10 +70,12 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Update_FolderNameExists()
         {
-            DeleteAll();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
             Model_EntryFolders folderUser = CreateFolder("TestFolder", DefaultUserGuid.ToString());
             Model_EntryFolders folder2 = CreateFolder("TestFolder1", DefaultUserGuid.ToString());
-            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
             Model_EntryFolders folder = new(folderUser.ID, "TestFolder1", []);
 
             Model_EntryFolders action() => query.Update(folder);
@@ -94,7 +88,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Update_DataInvalid()
         {
-            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
             Model_EntryFolders newFolder = new(null, null, []);
 
             Model_EntryFolders action() => query.Update(newFolder);
@@ -109,7 +105,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Remove_DataNoFound()
         {
-            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
 
             try
             {
@@ -125,7 +123,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Remove_DataInvalid()
         {
-            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
 
             try
             {
@@ -141,12 +141,15 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Remove_DontOwnData()
         {
-            DeleteAll();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            OtherUserDefaultGuid = Helpers.CreateUser(OtherUsername, OtherEmail, Password);
+
             Model_EntryFolders folderOtherUser = CreateFolder("TestFolder", OtherUserDefaultGuid.ToString());
 
             try
             {
-                EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+                EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
                 query.Remove(folderOtherUser.ID);
             }
             catch (RequestException ex)
@@ -160,8 +163,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Remove()
         {
-            DeleteAll();
-            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
             Model_EntryFolders folder = CreateFolder("TestFolder", DefaultUserGuid.ToString());
 
             query.Remove(folder.ID);
@@ -176,8 +180,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ListFolder()
         {
-            DeleteAll();
-            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
             CreateFolder("TestFolder", DefaultUserGuid.ToString());
             CreateFolder("TestFolder1", DefaultUserGuid.ToString());
             List<Model_EntryFolders> folders = query.List();
@@ -190,8 +195,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Reorder()
         {
-            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
-            DeleteAll();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
             CreateFolder("TestFolder", DefaultUserGuid.ToString());
             CreateFolder("TestFolder1", DefaultUserGuid.ToString());
             CreateFolder("TestFolder2", DefaultUserGuid.ToString());
@@ -212,6 +218,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Reorder_NoDataFound()
         {
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
             List<Guid> guids = [];
 
             for (int i = 0; i < 3; i++)
@@ -219,7 +228,7 @@ namespace ApiServerTest.Tests
                 guids.Add(Guid.NewGuid());
             }
 
-            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
 
             try
             {
@@ -235,7 +244,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Reorder_DataInvalid()
         {
-            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
             List<Guid> emptyGuids = [];
 
             try
@@ -252,10 +264,14 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Reorder_DontOwnData()
         {
-            EntryFolderQueries query = ReturnQuery(DefaultUserGuid.ToString());
-            EntryFolderQueries queryOtherUser = ReturnQuery(OtherUserDefaultGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            OtherUserDefaultGuid = Helpers.CreateUser(OtherUsername, OtherEmail, Password);
+
+            EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
+            EntryFolderQueries queryOtherUser = Helpers.ReturnFolderQuery(OtherUserDefaultGuid.ToString());
             List<Guid> guidsOtherUser = [];
-            DeleteAll();
+
             CreateFolder("TestFolder", OtherUserDefaultGuid.ToString());
             List<Model_EntryFolders> foldersOtherUser = queryOtherUser.List();
             foreach (Model_EntryFolders folder in foldersOtherUser)
