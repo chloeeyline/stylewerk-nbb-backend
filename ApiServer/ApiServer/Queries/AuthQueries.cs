@@ -23,11 +23,6 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
 {
     #region Fixed Values
     private const int KeySize = 256;
-    private static long StatusTokenDuration => new DateTimeOffset(DateTime.UtcNow.AddDays(1)).ToUnixTimeMilliseconds();
-    private static long LoginTokenDuration => new DateTimeOffset(DateTime.UtcNow.AddHours(3)).ToUnixTimeMilliseconds();
-    private static long RefreshTokenShortDuration => new DateTimeOffset(DateTime.UtcNow.AddHours(4)).ToUnixTimeMilliseconds();
-    private static long RefreshTokenDuration => new DateTimeOffset(DateTime.UtcNow.AddDays(7)).ToUnixTimeMilliseconds();
-    private static long Now => new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
     #endregion
 
     #region Login
@@ -57,7 +52,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         User_Token? token = DB.User_Token.FirstOrDefault(s => s.Agent == agent && s.RefreshToken == model.Token)
             ?? throw new RequestException(ResultCodes.RefreshTokenNotFound);
 
-        if (Now >= token.RefreshTokenExpiryTime)
+        if (UserTimeStamps.Now >= token.RefreshTokenExpiryTime)
             throw new RequestException(ResultCodes.RefreshTokenExpired);
 
         User_Login? user = DB.User_Login.FirstOrDefault(s => s.ID == token.ID)
@@ -78,17 +73,17 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
 
         Claim[] claims = [new Claim(ClaimTypes.Sid, user.ID.ToString())];
 
-        JwtSecurityToken token = new(SecretData.JwtIssuer, SecretData.JwtAudience, claims, expires: DateTimeOffset.FromUnixTimeMilliseconds(LoginTokenDuration).DateTime, signingCredentials: credentials);
+        JwtSecurityToken token = new(SecretData.JwtIssuer, SecretData.JwtAudience, claims, expires: UserTimeStamps.LoginTokenDate.DateTime, signingCredentials: credentials);
         string loginToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-        return new Model_Token(loginToken, LoginTokenDuration);
+        return new Model_Token(loginToken, UserTimeStamps.LoginTokenDuration);
     }
 
     public Model_Token GetRefreshToken(Guid userID, bool? consistOverSession)
     {
         string agent = GetUserAgentString(UserAgent);
         string refreshToken = GenerateRandomKey();
-        long expireTime = consistOverSession is true ? RefreshTokenDuration : RefreshTokenShortDuration;
+        long expireTime = consistOverSession is true ? UserTimeStamps.RefreshTokenDuration : UserTimeStamps.RefreshTokenShortDuration;
 
         User_Token? userToken = DB.User_Token.FirstOrDefault(s => s.ID == userID && s.Agent == agent);
         if (userToken is not null)
@@ -162,10 +157,6 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
             .Date).ToUnixTimeMilliseconds();
         ValidatePassword(model.Password);
 
-        Guid id = Guid.NewGuid();
-        while (DB.User_Login.Any(s => s.ID == id))
-            id = Guid.NewGuid();
-
         User_Login user = new()
         {
             ID = Guid.NewGuid(),
@@ -176,7 +167,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
             PasswordHash = HashPassword(model.Password, salt),
             PasswordSalt = salt,
             StatusToken = GetStatusToken(),
-            StatusTokenExpireTime = StatusTokenDuration,
+            StatusTokenExpireTime = UserTimeStamps.StatusTokenDuration,
             StatusCode = UserStatus.EmailVerification,
             Admin = false
         };
@@ -212,7 +203,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
             ?? throw new RequestException(ResultCodes.StatusTokenNotFound);
         if (user.StatusCode != UserStatus.EmailVerification)
             throw new RequestException(ResultCodes.WrongStatusCode);
-        if (Now >= user.StatusTokenExpireTime)
+        if (UserTimeStamps.Now >= user.StatusTokenExpireTime)
             throw new RequestException(ResultCodes.StatusTokenExpired);
 
         user.StatusCode = null;
@@ -237,7 +228,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         DB.User_Token.RemoveRange(user.O_Token);
         user.StatusCode = UserStatus.PasswordReset;
         user.StatusToken = GetStatusToken();
-        user.StatusTokenExpireTime = StatusTokenDuration;
+        user.StatusTokenExpireTime = UserTimeStamps.StatusTokenDuration;
         DB.SaveChanges();
 
         SendMail_ResetPassword(email, user.StatusToken);
@@ -261,7 +252,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
             throw new RequestException(ResultCodes.StatusTokenNotFound);
         if (user.StatusCode is null || user.StatusCode is not UserStatus.PasswordReset)
             throw new RequestException(ResultCodes.WrongStatusCode);
-        if (Now >= user.StatusTokenExpireTime)
+        if (UserTimeStamps.Now >= user.StatusTokenExpireTime)
             throw new RequestException(ResultCodes.RefreshTokenExpired);
 
         user.PasswordSalt = GetSalt();
@@ -298,7 +289,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         CurrentUser.Login.NewEmail = email;
         CurrentUser.Login.StatusCode = UserStatus.EmailChange;
         CurrentUser.Login.StatusToken = new Random().Next(100001).ToString("D6");
-        CurrentUser.Login.StatusTokenExpireTime = StatusTokenDuration;
+        CurrentUser.Login.StatusTokenExpireTime = UserTimeStamps.StatusTokenDuration;
         DB.SaveChanges();
 
         SendMail_UpdateEmail(email, CurrentUser.Login.StatusToken);
@@ -321,7 +312,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
             throw new RequestException(ResultCodes.WrongStatusCode);
         if (string.IsNullOrWhiteSpace(CurrentUser.Login.NewEmail))
             throw new RequestException(ResultCodes.WrongStatusCode);
-        if (Now >= CurrentUser.Login.StatusTokenExpireTime)
+        if (UserTimeStamps.Now >= CurrentUser.Login.StatusTokenExpireTime)
             throw new RequestException(ResultCodes.StatusTokenExpired);
 
         DB.User_Token.RemoveRange(DB.User_Token.Where(s => s.ID == CurrentUser.ID && s.Agent != UserAgent));
@@ -380,14 +371,14 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
             statusToken = Guid.NewGuid().ToString();
         return statusToken;
     }
-    private string GetSalt()
+    public string GetSalt()
     {
         string salt = GenerateRandomKey();
         while (DB.User_Login.Any(s => s.PasswordSalt == salt))
             salt = GenerateRandomKey();
         return salt;
     }
-    private string HashPassword(string password, string salt) => ComputeHash(password, salt, SecretData.PasswortPepper, 5);
+    public string HashPassword(string password, string salt) => ComputeHash(password, salt, SecretData.PasswortPepper, 5);
 
     private static string ComputeHash(string password, string salt, string pepper, int iteration)
     {
@@ -433,7 +424,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
             ? throw new RequestException(ResultCodes.UnToShort)
             : username.Length > 50
             ? throw new RequestException(ResultCodes.UnToShort)
-            : !OnlyUsernameValidChars().IsMatch(username)
+            : !UsedRegex.OnlyUsernameValidChars().IsMatch(username)
             ? throw new RequestException(ResultCodes.UnUsesInvalidChars)
             : DB.User_Login.Any(s => s.UsernameNormalized == username)
             ? throw new RequestException(ResultCodes.UsernameAlreadyExists)
@@ -446,27 +437,19 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
             throw new RequestException(ResultCodes.PwTooShort);
         if (password.Length < 10)
             throw new RequestException(ResultCodes.PwTooShort);
-        if (!ContainsLowercase().IsMatch(password))
+        if (!UsedRegex.ContainsLowercase().IsMatch(password))
             throw new RequestException(ResultCodes.PwHasNoLowercaseLetter);
-        if (!ContainsUppercase().IsMatch(password))
+        if (!UsedRegex.ContainsUppercase().IsMatch(password))
             throw new RequestException(ResultCodes.PwHasNoUppercaseLetter);
-        if (!ContainsDigit().IsMatch(password))
+        if (!UsedRegex.ContainsDigit().IsMatch(password))
             throw new RequestException(ResultCodes.PwHasNoNumber);
-        if (!ContainsPasswordSpecialChar().IsMatch(password))
+        if (!UsedRegex.ContainsPasswordSpecialChar().IsMatch(password))
             throw new RequestException(ResultCodes.PwHasNoSpecialChars);
-        if (ContainsWhitespace().IsMatch(password))
+        if (UsedRegex.ContainsWhitespace().IsMatch(password))
             throw new RequestException(ResultCodes.PwHasWhitespace);
-        if (!OnlyPasswordValidChars().IsMatch(password))
+        if (!UsedRegex.OnlyPasswordValidChars().IsMatch(password))
             throw new RequestException(ResultCodes.PwUsesInvalidChars);
     }
-
-    [GeneratedRegex(@"[a-z]")] private static partial Regex ContainsLowercase();
-    [GeneratedRegex(@"[A-Z]")] private static partial Regex ContainsUppercase();
-    [GeneratedRegex(@"\d")] private static partial Regex ContainsDigit();
-    [GeneratedRegex(@"[!#$%&'*+\-./?@\\_|]")] private static partial Regex ContainsPasswordSpecialChar();
-    [GeneratedRegex(@"\s")] private static partial Regex ContainsWhitespace();
-    [GeneratedRegex(@"[a-zA-Z\d!#$%&'*+\-./?@\\_|^\s]")] private static partial Regex OnlyPasswordValidChars();
-    [GeneratedRegex(@"[a-zA-Z\d&'*+\-./\\_|^\s]")] private static partial Regex OnlyUsernameValidChars();
     #endregion
 
     #region Email
@@ -502,4 +485,30 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
     }
     #endregion
+}
+
+public static class UserTimeStamps
+{
+    public static DateTimeOffset StatusTokenDate => DateTimeOffset.UtcNow.AddDays(1);
+    public static DateTimeOffset LoginTokenDate => DateTimeOffset.UtcNow.AddHours(3);
+    public static DateTimeOffset RefreshTokenShortDate => DateTimeOffset.UtcNow.AddHours(4);
+    public static DateTimeOffset RefreshTokenDate => DateTimeOffset.UtcNow.AddDays(7);
+    public static DateTimeOffset CurrentDate => DateTimeOffset.UtcNow;
+
+    public static long StatusTokenDuration => StatusTokenDate.ToUnixTimeMilliseconds();
+    public static long LoginTokenDuration => LoginTokenDate.ToUnixTimeMilliseconds();
+    public static long RefreshTokenShortDuration => RefreshTokenShortDate.ToUnixTimeMilliseconds();
+    public static long RefreshTokenDuration => RefreshTokenDate.ToUnixTimeMilliseconds();
+    public static long Now => CurrentDate.ToUnixTimeMilliseconds();
+}
+
+public static partial class UsedRegex
+{
+    [GeneratedRegex(@"[a-z]")] public static partial Regex ContainsLowercase();
+    [GeneratedRegex(@"[A-Z]")] public static partial Regex ContainsUppercase();
+    [GeneratedRegex(@"\d")] public static partial Regex ContainsDigit();
+    [GeneratedRegex(@"[!#$%&'*+\-./?@\\_|]")] public static partial Regex ContainsPasswordSpecialChar();
+    [GeneratedRegex(@"\s")] public static partial Regex ContainsWhitespace();
+    [GeneratedRegex(@"[a-zA-Z\d!#$%&'*+\-./?@\\_|^\s]")] public static partial Regex OnlyPasswordValidChars();
+    [GeneratedRegex(@"[a-zA-Z\d&'*+\-./\\_|^\s]")] public static partial Regex OnlyUsernameValidChars();
 }

@@ -1,4 +1,6 @@
-﻿namespace StyleWerk.NBB.Models;
+﻿using System.Runtime.CompilerServices;
+
+namespace StyleWerk.NBB.Models;
 
 public record Paging(int Count, int Page, int MaxPage, int PerPage);
 
@@ -14,9 +16,19 @@ public record Model_Result<T>(int Code, ResultCodes CodeName, T? Data)
 }
 
 [Serializable]
-public class RequestException(ResultCodes Code, string? message = null, Exception? inner = null) : Exception(string.IsNullOrWhiteSpace(message) ? Code.ToString() : message, inner)
+public class RequestException(ResultCodes Code, string? message = null, Exception? inner = null, [CallerMemberName] string memberName = "", [CallerLineNumber] int lineNumber = 0) : Exception(CreateMessage(Code, message, memberName, lineNumber), inner)
 {
     public ResultCodes Code { get; set; } = Code;
+
+    private static string CreateMessage(ResultCodes code,
+        string? message = null,
+        string memberName = "",
+        int lineNumber = 0)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        { message = string.Empty; }
+        return $"Code: {code}, Method: {memberName}, Line: {lineNumber}, Message: \"{message}\"";
+    }
 }
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]

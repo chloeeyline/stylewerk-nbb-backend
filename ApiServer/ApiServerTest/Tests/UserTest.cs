@@ -10,7 +10,7 @@ namespace ApiServerTest.Tests
     {
         private Guid DefaultUserGuid = new("90865032-e4e8-4e2b-85e0-5db345f42a5b");
         private string DefaultPassword = "TestTest@123";
-        private string DefaultEmail = "";
+        private string DefaultEmail = "test@gmail.com";
         private string DefaultUser = "TestUser";
         private Guid OtherUserDefaultGuid = new("cd6c092d-0546-4f8b-b70c-352d2ca765a4");
 
@@ -77,7 +77,7 @@ namespace ApiServerTest.Tests
             Model_Login login = new(null, null, true);
             User_Login action() => query.GetUser(login);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -89,7 +89,7 @@ namespace ApiServerTest.Tests
             Model_Login login = new(" ", " ", true);
             User_Login action() => query.GetUser(login);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -101,7 +101,7 @@ namespace ApiServerTest.Tests
             Model_Login login = new("Test", DefaultPassword, true);
             User_Login action() => query.GetUser(login);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
             RequestException result = new(ResultCodes.NoUserFound);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -113,7 +113,7 @@ namespace ApiServerTest.Tests
             Model_Login login = new(DefaultUser, "TestAdmin@123", true);
             User_Login action() => query.GetUser(login);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
             RequestException result = new(ResultCodes.NoUserFound);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -141,7 +141,7 @@ namespace ApiServerTest.Tests
             User_Login user = query.GetUser(login);
             Model_Token action() => query.GetAccessToken(user);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Token>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Token>) action);
             RequestException result = new(ResultCodes.EmailIsNotVerified);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -170,7 +170,7 @@ namespace ApiServerTest.Tests
 
             Model_Token action() => query.GetAccessToken(user);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Token>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Token>) action);
             RequestException result = new(ResultCodes.PasswordResetWasRequested);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -194,7 +194,7 @@ namespace ApiServerTest.Tests
 
             AuthenticationResult action() => query.GetAuthenticationResult(Guid.NewGuid(), token, refreshToken, true);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<AuthenticationResult>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<AuthenticationResult>) action);
             RequestException result = new(ResultCodes.NoUserFound);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -566,7 +566,7 @@ namespace ApiServerTest.Tests
             Model_RefreshToken token = new(null, true);
             User_Login action() => query.GetUser(token);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -586,7 +586,7 @@ namespace ApiServerTest.Tests
             Model_RefreshToken token = new("abcdefg", true);
             User_Login action() => query.GetUser(token);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
             RequestException result = new(ResultCodes.RefreshTokenNotFound);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -615,7 +615,7 @@ namespace ApiServerTest.Tests
             Model_RefreshToken token = new(myToken.RefreshToken, true);
             User_Login action() => query.GetUser(token);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
             RequestException result = new(ResultCodes.RefreshTokenExpired);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -1058,7 +1058,7 @@ namespace ApiServerTest.Tests
 
             string action() => query.ValidateUsername("Test");
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
             RequestException result = new(ResultCodes.UnToShort);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -1070,7 +1070,7 @@ namespace ApiServerTest.Tests
 
             string action() => query.ValidateUsername(null);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
             RequestException result = new(ResultCodes.UnToShort);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -1082,7 +1082,7 @@ namespace ApiServerTest.Tests
 
             string action() => query.ValidateUsername("Test#User");
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
             RequestException result = new(ResultCodes.UnUsesInvalidChars);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -1094,7 +1094,7 @@ namespace ApiServerTest.Tests
 
             string action() => query.ValidateUsername(DefaultUser);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
             RequestException result = new(ResultCodes.UsernameAlreadyExists);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -1109,7 +1109,7 @@ namespace ApiServerTest.Tests
 
             string action() => query.ValidateEmail(null);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
             RequestException result = new(ResultCodes.EmailInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -1121,7 +1121,7 @@ namespace ApiServerTest.Tests
 
             string action() => query.ValidateEmail(" ");
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
             RequestException result = new(ResultCodes.EmailInvalid);
             Assert.Equal(result.Code, exception.Code);
 
@@ -1134,7 +1134,7 @@ namespace ApiServerTest.Tests
 
             string action() => query.ValidateEmail("schwammal55gmail.com");
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
             RequestException result = new(ResultCodes.EmailInvalid);
             Assert.Equal(result.Code, exception.Code);
 
@@ -1147,7 +1147,7 @@ namespace ApiServerTest.Tests
 
             string action() => query.ValidateEmail("schwammal55@gmailcom");
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
             RequestException result = new(ResultCodes.EmailInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -1165,7 +1165,7 @@ namespace ApiServerTest.Tests
 
             string action() => query.ValidateEmail(DefaultEmail);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
             RequestException result = new(ResultCodes.EmailAlreadyExists);
             Assert.Equal(result.Code, exception.Code);
         }
