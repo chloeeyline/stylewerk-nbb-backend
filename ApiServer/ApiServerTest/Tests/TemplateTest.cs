@@ -1,27 +1,26 @@
-﻿using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Models;
+﻿using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
     public class TemplateTest
     {
-        private Guid DefaultUserGuid = new("90865032-e4e8-4e2b-85e0-5db345f42a5b");
-        private Guid OtherUserDefaultGuid = new("cd6c092d-0546-4f8b-b70c-352d2ca765a4");
+        private Guid DefaultUserGuid { get; set; }
+        private Guid OtherUserDefaultGuid { get; set; }
+
+        private string Username = "TestUser";
+        private string Email = "chloe.hauer@lbs4.salzburg.at";
+        private string Password = "TestTest@123";
+
+        private string OtherUsername = "TestUser1";
+        private string OtherEmail = "florian.windisch@lbs4.salzburg.at";
 
         #region Helpers
-        private static TemplateQueries ReturnQuery(string userGuid)
-        {
-            NbbContext DB = NbbContext.Create();
-            ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
-            TemplateQueries query = new(DB, user);
-            return query;
-        }
 
         private static Model_Template CreateTemplate(string templateName, string user)
         {
-            TemplateQueries query = ReturnQuery(user);
+            TemplateQueries query = Helpers.ReturnTemplateQuery(user);
             Guid rowId = Guid.NewGuid();
             List<Model_TemplateCell> cells =
             [
@@ -46,7 +45,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Add()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             Guid rowId = Guid.NewGuid();
             List<Model_TemplateCell> cells =
             [
@@ -70,7 +72,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void AddDataInvalid()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             Model_Template template = new(null, string.Empty, null, null, []);
 
             Model_Template action() => query.Update(template);
@@ -83,7 +88,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ChangeDontOwnData()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            OtherUserDefaultGuid = Helpers.CreateUser(OtherUsername, OtherEmail, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             Model_Template templateOtherUser = CreateTemplate("TestTemplate2", OtherUserDefaultGuid.ToString());
 
             Model_Template action() => query.Update(templateOtherUser);
@@ -96,7 +105,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Change()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             Model_Template template = CreateTemplate("TestTemplate3", DefaultUserGuid.ToString());
             Model_Template changes = new(template.ID, "TestTemplate4", null, null, template.Items);
 
@@ -110,7 +122,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Remove()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             Model_Template template = CreateTemplate("TestTemplate7", DefaultUserGuid.ToString());
 
             query.Remove(template.ID);
@@ -121,7 +136,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RemoveDataInvalid()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
 
             try
             {
@@ -137,7 +155,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RemoveNoDataFound()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             try
             {
                 query.Remove(Guid.NewGuid());
@@ -152,7 +173,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RemoveDontOwnData()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            OtherUserDefaultGuid = Helpers.CreateUser(OtherUsername, OtherEmail, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             Model_Template templateOtherUser = CreateTemplate("TestTemplate6", OtherUserDefaultGuid.ToString());
 
             try
@@ -172,7 +197,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Copy()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            OtherUserDefaultGuid = Helpers.CreateUser(OtherUsername, OtherEmail, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             Model_Template templateOtherUser = CreateTemplate("TestTemplate8", OtherUserDefaultGuid.ToString());
 
             query.Copy(templateOtherUser.ID);
@@ -183,7 +212,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void CopyDataInvalid()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             try
             {
                 query.Copy(null);
@@ -198,7 +230,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void CopyNoDataFound()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             try
             {
                 query.Copy(Guid.NewGuid());
@@ -216,7 +251,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Details()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             Model_Template template = CreateTemplate("TestTemplate10", DefaultUserGuid.ToString());
             Model_Template detailTemplate = query.Details(template.ID);
             Assert.True(detailTemplate.Items.Count > 0);
@@ -225,7 +263,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void DetailsDataIsInvalid()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             try
             {
                 query.Details(null);
@@ -240,7 +281,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void DetailsNoDataFound()
         {
-            TemplateQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             try
             {
                 query.Details(Guid.NewGuid());

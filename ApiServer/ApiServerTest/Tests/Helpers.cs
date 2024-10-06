@@ -18,14 +18,28 @@ namespace ApiServerTest.Tests
             return query;
         }
 
+        public static TemplateQueries ReturnTemplateQuery(string userGuid)
+        {
+            NbbContext DB = NbbContext.Create();
+            ApplicationUser user = DB.GetUser(new Guid(userGuid));
+
+            TemplateQueries query = new(DB, user);
+            return query;
+        }
+
         public static void DeleteAll()
         {
             NbbContext context = NbbContext.Create();
             List<Structure_Entry_Folder> folders = [.. context.Structure_Entry_Folder];
+            List<Structure_Template> templates = [.. context.Structure_Template];
             List<User_Login> usersLogin = [.. context.User_Login];
             List<User_Information> userInformations = [.. context.User_Information];
+
             if (folders.Count > 0)
                 context.Structure_Entry_Folder.RemoveRange(folders);
+
+            if (templates.Count > 0)
+                context.Structure_Template.RemoveRange(templates);
 
             if (usersLogin.Count > 0)
                 context.User_Login.RemoveRange(usersLogin);
