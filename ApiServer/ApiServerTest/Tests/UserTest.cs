@@ -8,43 +8,23 @@ namespace ApiServerTest.Tests
 {
     public class UserTest
     {
-        private Guid DefaultUserGuid = new("90865032-e4e8-4e2b-85e0-5db345f42a5b");
+        private Guid DefaultUserGuid { get; set; }
+        private Guid OtherUserDefaultGuid { get; set; }
+
         private string DefaultPassword = "TestTest@123";
         private string DefaultEmail = "test@gmail.com";
         private string DefaultUser = "TestUser";
-        private Guid OtherUserDefaultGuid = new("cd6c092d-0546-4f8b-b70c-352d2ca765a4");
 
-        #region Helpers
-        private static AuthQueries ReturnQuery(string userGuid)
-        {
-            NbbContext DB = NbbContext.Create();
-            ApplicationUser user = DB.GetUser(new Guid(userGuid));
+        private string OtherUserEmail = "test123@gmail.com";
+        private string OtherUsertUser = "TestUser123";
 
-            string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
-            AuthQueries query = new(DB, user, userAgent, SecretData.GetData());
-            return query;
-        }
-
-        private void SetUserTokensNull()
-        {
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
-            user.StatusToken = null;
-            user.StatusCode = null;
-            user.StatusTokenExpireTime = null;
-            user.Email = DefaultEmail;
-            user.EmailNormalized = DefaultEmail.Normalize().ToLower();
-            context.SaveChanges();
-        }
-
-        #endregion
 
         #region Register
 
         [Fact]
         public void Register()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             Model_Registration register = new("Test123Juliane", "juliane.krenek@lbs4.salzburg.at", "TestTest123@", "Juliane", "Krenek", UserGender.Female, 0);
             query.Registration(register);
             Assert.True(true);
@@ -53,9 +33,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RegisterDataInvalid()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             DateTime birthday = new(2003, 4, 24);
             Model_Registration register = new("", "", "", "Juliane", "Krenek", UserGender.Female, birthday.Ticks);
+
             try
             {
                 query.Registration(register);
@@ -73,11 +54,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Login_GetUser_DataInvalid_Null()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             Model_Login login = new(null, null, true);
             User_Login action() => query.GetUser(login);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -85,11 +66,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Login_GetUser_DataInvalid_WhiteSpace()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             Model_Login login = new(" ", " ", true);
             User_Login action() => query.GetUser(login);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -97,11 +78,14 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Login_GetUser_NotFound_Username()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
-            Model_Login login = new("Test", DefaultPassword, true);
+            Helpers.DeleteAll();
+            Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
+            Model_Login login = new("Default", DefaultPassword, true);
             User_Login action() => query.GetUser(login);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
             RequestException result = new(ResultCodes.NoUserFound);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -109,11 +93,14 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Login_GetUser_NotFound_Password()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            Helpers.DeleteAll();
+            Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             Model_Login login = new(DefaultUser, "TestAdmin@123", true);
             User_Login action() => query.GetUser(login);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
             RequestException result = new(ResultCodes.NoUserFound);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -121,27 +108,20 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Login_GetAccessToken_EmailNotVerified()
         {
-            string passwordChange = DefaultPassword;
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
             NbbContext context = NbbContext.Create();
-
-            SetUserTokensNull();
-
-            AuthQueries setup = ReturnQuery(DefaultUserGuid.ToString());
-            string? token = setup.RequestPasswordReset(DefaultEmail);
-            Model_ResetPassword password = new(token, passwordChange);
-            setup.ResetPassword(password);
-
-            context = NbbContext.Create();
             User_Login? setupUser = context.User_Login.First(u => u.ID == DefaultUserGuid);
             setupUser.StatusCode = UserStatus.EmailVerification;
             context.SaveChanges();
 
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
-            Model_Login login = new(DefaultUser, passwordChange, true);
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
+            Model_Login login = new(DefaultUser, DefaultPassword, true);
             User_Login user = query.GetUser(login);
             Model_Token action() => query.GetAccessToken(user);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Token>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Token>)action);
             RequestException result = new(ResultCodes.EmailIsNotVerified);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -149,28 +129,21 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Login_GetAccessToken_PasswordReset()
         {
-            string passwordChange = DefaultPassword;
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
             NbbContext context = NbbContext.Create();
-
-            SetUserTokensNull();
-
-            AuthQueries setup = ReturnQuery(DefaultUserGuid.ToString());
-            string? token = setup.RequestPasswordReset(DefaultEmail);
-            Model_ResetPassword password = new(token, passwordChange);
-            setup.ResetPassword(password);
-
-            context = NbbContext.Create();
             User_Login? setupUser = context.User_Login.First(u => u.ID == DefaultUserGuid);
             setupUser.StatusCode = UserStatus.PasswordReset;
             context.SaveChanges();
 
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
-            Model_Login login = new(DefaultUser, passwordChange, true);
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
+            Model_Login login = new(DefaultUser, DefaultPassword, true);
             User_Login user = query.GetUser(login);
 
             Model_Token action() => query.GetAccessToken(user);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Token>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Token>)action);
             RequestException result = new(ResultCodes.PasswordResetWasRequested);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -178,23 +151,19 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Login_GetAuthenticationResult_NoUserFound()
         {
-            string passwordChange = DefaultPassword;
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
-            NbbContext context = NbbContext.Create();
-            SetUserTokensNull();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
 
-            string? statusToken = query.RequestPasswordReset(DefaultEmail);
-            Model_ResetPassword password = new(statusToken, passwordChange);
-            query.ResetPassword(password);
-
-            Model_Login login = new(DefaultUser, passwordChange, true);
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
+            Model_Login login = new(DefaultUser, DefaultPassword, true);
             User_Login user = query.GetUser(login);
             Model_Token token = query.GetAccessToken(user);
             Model_Token refreshToken = query.GetRefreshToken(user.ID, true);
 
             AuthenticationResult action() => query.GetAuthenticationResult(Guid.NewGuid(), token, refreshToken, true);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<AuthenticationResult>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<AuthenticationResult>)action);
             RequestException result = new(ResultCodes.NoUserFound);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -205,14 +174,13 @@ namespace ApiServerTest.Tests
         [Fact]
         public void VerifyEmail()
         {
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
             NbbContext context = NbbContext.Create();
             User_Login? user = context.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
-            string newToken = Guid.NewGuid().ToString();
-            user.StatusToken = newToken;
-            user.StatusCode = UserStatus.EmailVerification;
-            context.SaveChanges();
 
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             query.VerifyEmail(user.StatusToken);
 
             NbbContext context2 = NbbContext.Create();
@@ -226,7 +194,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void VerifyEmailDataInvalid()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
                 query.VerifyEmail(null);
@@ -241,7 +209,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void VerifyEmailTokenNotFound()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
                 query.VerifyEmail(Guid.NewGuid().ToString());
@@ -256,7 +224,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void VerifyEmailWrongStatusCode()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             NbbContext context = NbbContext.Create();
             User_Login? user = context.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
 
@@ -281,7 +252,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void VerifyEmailTokenExpired()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             NbbContext context = NbbContext.Create();
             User_Login? user = context.User_Login.First(u => u.ID == DefaultUserGuid);
             long todayPlusTwo = new DateTimeOffset(DateTime.UtcNow).AddDays(2).ToUnixTimeMilliseconds();
@@ -307,8 +281,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RequestPasswordReset()
         {
-            SetUserTokensNull();
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             query.RequestPasswordReset(DefaultEmail);
             Assert.True(true);
         }
@@ -316,8 +293,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ResetPassword()
         {
-            AuthQueries query = ReturnQuery(DefaultUserGuid.ToString());
-            SetUserTokensNull();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
 
             string? token = query.RequestPasswordReset(DefaultEmail);
             Model_ResetPassword password = new(token, DefaultPassword);
@@ -329,7 +309,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RequestPasswordReset_NoUserFound()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
 
             try
             {
@@ -345,7 +325,8 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RequestPasswordReset_DataInvalid()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
+
             try
             {
                 query.RequestPasswordReset(null);
@@ -360,7 +341,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RequestPasswordReset_EmailNotVerified()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             NbbContext context = NbbContext.Create();
             User_Login? user = context.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
             user.StatusCode = UserStatus.EmailVerification;
@@ -381,7 +365,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ResetPassword_DataInvalid()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
                 query.ResetPassword(null);
@@ -396,7 +380,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ResetPassword_TokenNotFound()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             Model_ResetPassword password = new(Guid.NewGuid().ToString(), DefaultPassword);
             try
             {
@@ -412,13 +399,13 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ResetPassword_StatusCode()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             string? token = query.RequestPasswordReset(DefaultEmail);
             Model_ResetPassword password = new(token, DefaultPassword);
-            NbbContext context = NbbContext.Create();
-            User_Login? user = context.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
-            user.StatusCode = UserStatus.EmailVerification;
-            context.SaveChanges();
 
             try
             {
@@ -434,7 +421,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ResetPassword_RefreshTokenExpired()
         {
-            AuthQueries query = ReturnQuery(Guid.NewGuid().ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.NewGuid().ToString());
             NbbContext context = NbbContext.Create();
 
             User_Login? user = context.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
@@ -463,15 +453,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Login_GetUser_UserLogin()
         {
-            string passwordChange = DefaultPassword;
-            SetUserTokensNull();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
-            string? token = query.RequestPasswordReset(DefaultEmail);
-            Model_ResetPassword password = new(token, passwordChange);
-            query.ResetPassword(password);
-
-            Model_Login login = new(DefaultUser, passwordChange, true);
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
+            Model_Login login = new(DefaultUser, DefaultPassword, true);
             User_Login user = query.GetUser(login);
 
             Assert.NotNull(user);
@@ -483,22 +469,12 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RefreshToken_GetUser()
         {
-            string passwordChange = DefaultPassword;
-            NbbContext context = NbbContext.Create();
-            SetUserTokensNull();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
 
-            AuthQueries setup = ReturnQuery(DefaultUserGuid.ToString());
-            string? token = setup.RequestPasswordReset(DefaultEmail);
-            Model_ResetPassword password = new(token, passwordChange);
-            setup.ResetPassword(password);
-
-            context = NbbContext.Create();
-            User_Login? setupUser = context.User_Login.First(u => u.ID == DefaultUserGuid);
-            setupUser.StatusCode = null;
-            context.SaveChanges();
-
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
-            Model_Login login = new(DefaultUser, passwordChange, true);
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
+            Model_Login login = new(DefaultUser, DefaultPassword, true);
             Model_Token refreshToken = query.GetRefreshToken(DefaultUserGuid, true);
             Model_RefreshToken rToken = new(refreshToken.Token, true);
             User_Login user = query.GetUser(rToken);
@@ -513,16 +489,12 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Login_GetAccessToken_UserLogin()
         {
-            string passwordChange = DefaultPassword;
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
-            NbbContext context = NbbContext.Create();
-            SetUserTokensNull();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
 
-            string? statusToken = query.RequestPasswordReset(DefaultEmail);
-            Model_ResetPassword password = new(statusToken, passwordChange);
-            query.ResetPassword(password);
-
-            Model_Login login = new(DefaultUser, passwordChange, true);
+            AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
+            Model_Login login = new(DefaultUser, DefaultPassword, true);
             User_Login user = query.GetUser(login);
             Model_Token token = query.GetAccessToken(user);
 
@@ -535,16 +507,16 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Login_GetRefreshToken_UserLogin()
         {
-            string passwordChange = DefaultPassword;
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
-            NbbContext context = NbbContext.Create();
-            SetUserTokensNull();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
 
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             string? statusToken = query.RequestPasswordReset(DefaultEmail);
-            Model_ResetPassword password = new(statusToken, passwordChange);
+            Model_ResetPassword password = new(statusToken, DefaultPassword);
             query.ResetPassword(password);
 
-            Model_Login login = new(DefaultUser, passwordChange, true);
+            Model_Login login = new(DefaultUser, DefaultPassword, true);
             User_Login user = query.GetUser(login);
             Model_Token token = query.GetAccessToken(user);
             Model_Token refreshToken = query.GetRefreshToken(DefaultUserGuid, true);
@@ -555,18 +527,16 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RefreshToken_Getuser_DataInvalid()
         {
-            string passwordChange = DefaultPassword;
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
-            SetUserTokensNull();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
 
-            string? statusToken = query.RequestPasswordReset(DefaultEmail);
-            Model_ResetPassword password = new(statusToken, passwordChange);
-            query.ResetPassword(password);
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
 
             Model_RefreshToken token = new(null, true);
             User_Login action() => query.GetUser(token);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -574,19 +544,16 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RefreshToken_Getuser_RefreshTokenNotFound()
         {
-            string passwordChange = DefaultPassword;
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
-            NbbContext context = NbbContext.Create();
-            SetUserTokensNull();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
 
-            string? statusToken = query.RequestPasswordReset(DefaultEmail);
-            Model_ResetPassword password = new(statusToken, passwordChange);
-            query.ResetPassword(password);
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
 
             Model_RefreshToken token = new("abcdefg", true);
             User_Login action() => query.GetUser(token);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
             RequestException result = new(ResultCodes.RefreshTokenNotFound);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -594,13 +561,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RefreshToken_Getuser_RefreshTokenExpired()
         {
-            string passwordChange = DefaultPassword;
-            SetUserTokensNull();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            AuthQueries setup = ReturnQuery(DefaultUserGuid.ToString());
-            string? statusToken = setup.RequestPasswordReset(DefaultEmail);
-            Model_ResetPassword password = new(statusToken, passwordChange);
-            setup.ResetPassword(password);
+            AuthQueries setup = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
 
             Model_Token refreshTokenSetup = setup.GetRefreshToken(DefaultUserGuid, true);
 
@@ -610,12 +574,12 @@ namespace ApiServerTest.Tests
             rToken.RefreshTokenExpiryTime = todayPlusTwo;
             context.SaveChanges();
 
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             User_Token myToken = context.User_Token.First(t => t.ID == DefaultUserGuid);
             Model_RefreshToken token = new(myToken.RefreshToken, true);
             User_Login action() => query.GetUser(token);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<User_Login>)action);
             RequestException result = new(ResultCodes.RefreshTokenExpired);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -626,16 +590,12 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Login_GetAuthenticationResult()
         {
-            string passwordChange = DefaultPassword;
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
-            NbbContext context = NbbContext.Create();
-            SetUserTokensNull();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
 
-            string? statusToken = query.RequestPasswordReset(DefaultEmail);
-            Model_ResetPassword password = new(statusToken, passwordChange);
-            query.ResetPassword(password);
-
-            Model_Login login = new(DefaultUser, passwordChange, true);
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
+            Model_Login login = new(DefaultUser, DefaultPassword, true);
             User_Login user = query.GetUser(login);
             Model_Token token = query.GetAccessToken(user);
             Model_Token refreshToken = query.GetRefreshToken(user.ID, true);
@@ -654,6 +614,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void RemoveSession()
         {
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
             NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(DefaultUserGuid);
 
@@ -667,7 +630,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void Logout()
         {
-            AuthQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             query.Logout();
             Assert.True(true);
         }
@@ -677,6 +643,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ChangeEmail()
         {
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
             NbbContext context = NbbContext.Create();
             User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
             user.StatusCode = UserStatus.EmailChange;
@@ -684,7 +653,7 @@ namespace ApiServerTest.Tests
             user.StatusTokenExpireTime = null;
             context.SaveChanges();
 
-            AuthQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             string? statusToken = query.UpdateEmail("chloe.hauer@lbs4.salzburg.at");
             Assert.NotNull(statusToken);
         }
@@ -692,6 +661,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void VerifyUpdatedEmail()
         {
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
             NbbContext context = NbbContext.Create();
             User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
             user.StatusCode = UserStatus.EmailChange;
@@ -713,7 +685,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ChangeEmail_DataInvalid()
         {
-            AuthQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             try
             {
                 query.UpdateEmail(" ");
@@ -728,9 +703,13 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ChangeEmail_PasswordRequestSet()
         {
-            AuthQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             NbbContext context = NbbContext.Create();
-            SetUserTokensNull();
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
 
             query.RequestPasswordReset(DefaultEmail);
 
@@ -748,7 +727,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void VerifyUpdatedEmail_DataInvalid()
         {
-            AuthQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
 
             try
             {
@@ -764,6 +747,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void VerifyUpdatedEmail_EmailChngeCodeWrong()
         {
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
             NbbContext context = NbbContext.Create();
             User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
             user.StatusToken = null;
@@ -774,7 +760,7 @@ namespace ApiServerTest.Tests
             try
             {
 
-                AuthQueries query = ReturnQuery(DefaultUserGuid.ToString());
+                AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
                 query.VerifyUpdatedEmail(Guid.NewGuid().ToString());
             }
             catch (RequestException ex)
@@ -787,6 +773,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void VerifyUpdatedEmail_WrongStatusCode()
         {
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
             NbbContext context = NbbContext.Create();
             User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
             user.StatusToken = null;
@@ -794,7 +783,7 @@ namespace ApiServerTest.Tests
             user.StatusTokenExpireTime = null;
             context.SaveChanges();
 
-            AuthQueries updateEmail = ReturnQuery(DefaultUserGuid.ToString());
+            AuthQueries updateEmail = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             string? token = updateEmail.UpdateEmail("chloe.hauer@lbs4.salzburg.at");
 
             context = NbbContext.Create();
@@ -804,7 +793,7 @@ namespace ApiServerTest.Tests
 
             try
             {
-                AuthQueries query = ReturnQuery(DefaultUserGuid.ToString());
+                AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
                 query.VerifyUpdatedEmail(token);
             }
             catch (RequestException ex)
@@ -817,6 +806,9 @@ namespace ApiServerTest.Tests
         [Fact]
         public void VerifyUpdatedEmail_StatusTokenExpired()
         {
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
             NbbContext context = NbbContext.Create();
             User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
             user.StatusToken = null;
@@ -824,7 +816,7 @@ namespace ApiServerTest.Tests
             user.StatusTokenExpireTime = null;
             context.SaveChanges();
 
-            AuthQueries updateEmail = ReturnQuery(DefaultUserGuid.ToString());
+            AuthQueries updateEmail = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             string? token = updateEmail.UpdateEmail("chloe.hauer@lbs4.salzburg.at");
 
             context = NbbContext.Create();
@@ -835,7 +827,7 @@ namespace ApiServerTest.Tests
 
             try
             {
-                AuthQueries query = ReturnQuery(DefaultUserGuid.ToString());
+                AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
                 query.VerifyUpdatedEmail(token);
             }
             catch (RequestException ex)
@@ -851,7 +843,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void GetUserData()
         {
-            AuthQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             Model_UserData userData = query.GetUserData();
             Assert.NotNull(userData.Username);
             Assert.NotNull(userData.Email);
@@ -862,10 +857,13 @@ namespace ApiServerTest.Tests
         [Fact]
         public void UpdateUserData()
         {
-            NbbContext context = NbbContext.Create();
-            SetUserTokensNull();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            AuthQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            NbbContext context = NbbContext.Create();
+            Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             Model_UpdateUserData data = new(null, "Violet", "Sorrengail", null);
             query.UpdateUserData(data);
             Assert.True(true);
@@ -874,7 +872,10 @@ namespace ApiServerTest.Tests
         [Fact]
         public void UpdateUserData_DataInvalid()
         {
-            AuthQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
+            AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             Model_UpdateUserData data = null;
             try
             {
@@ -888,30 +889,17 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void UpdateUserData_NotFoundUser()
-        {
-            AuthQueries query = ReturnQuery(Guid.NewGuid().ToString());
-            Model_UpdateUserData data = new(null, "Kylie", "Mueller", null);
-            try
-            {
-                query.UpdateUserData(data);
-            }
-            catch (RequestException ex)
-            {
-                RequestException result = new(ResultCodes.NoUserFound);
-                Assert.Equal(result.Code, ex.Code);
-            }
-        }
-
-        [Fact]
         public void UpdateUserData_PendingChangeOpen()
         {
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
+
             NbbContext context = NbbContext.Create();
             User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
             user.StatusCode = UserStatus.EmailChange;
             context.SaveChanges();
 
-            AuthQueries query = ReturnQuery(DefaultUserGuid.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             Model_UpdateUserData data = new(null, "Violet", "Riorson", null);
 
             try
@@ -932,7 +920,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidatePassword_Short()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
                 query.ValidatePassword("Test123@");
@@ -947,7 +935,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidatePassword_ShortNull()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
                 query.ValidatePassword(null);
@@ -962,7 +950,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidatePassword_LowerCase()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
                 query.ValidatePassword(DefaultPassword);
@@ -977,7 +965,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidatePassword_UpperCase()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
                 query.ValidatePassword(DefaultPassword);
@@ -992,7 +980,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidatePassword_Number()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
                 query.ValidatePassword("TestTestTest@");
@@ -1007,7 +995,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidatePassword_SpecialChars()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
                 query.ValidatePassword("Testtest123");
@@ -1022,7 +1010,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidatePassword_WhiteSpace()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
                 query.ValidatePassword("Test test@123");
@@ -1037,7 +1025,7 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidatePassword_InvalidChars()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
                 query.ValidatePassword("TestTest&123");
@@ -1054,11 +1042,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidateUserName_Short()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
 
             string action() => query.ValidateUsername("Test");
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
             RequestException result = new(ResultCodes.UnToShort);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -1066,11 +1054,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidateUserName_Short_Null()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
 
             string action() => query.ValidateUsername(null);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
             RequestException result = new(ResultCodes.UnToShort);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -1078,11 +1066,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidateUserName_InvalidChars()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
 
             string action() => query.ValidateUsername("Test#User");
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
             RequestException result = new(ResultCodes.UnUsesInvalidChars);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -1090,11 +1078,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidateUserName_Unique()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
 
             string action() => query.ValidateUsername(DefaultUser);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
             RequestException result = new(ResultCodes.UsernameAlreadyExists);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -1105,11 +1093,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidateEmail_Invalid()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
 
             string action() => query.ValidateEmail(null);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
             RequestException result = new(ResultCodes.EmailInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -1117,11 +1105,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidateEmail_Invalid_WhiteSpace()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
 
             string action() => query.ValidateEmail(" ");
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
             RequestException result = new(ResultCodes.EmailInvalid);
             Assert.Equal(result.Code, exception.Code);
 
@@ -1130,11 +1118,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidateEmail_Invalid_NoAt()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
 
             string action() => query.ValidateEmail("schwammal55gmail.com");
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
             RequestException result = new(ResultCodes.EmailInvalid);
             Assert.Equal(result.Code, exception.Code);
 
@@ -1143,11 +1131,11 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidateEmail_Invalid_NoPoint()
         {
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
 
             string action() => query.ValidateEmail("schwammal55@gmailcom");
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
             RequestException result = new(ResultCodes.EmailInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -1155,17 +1143,14 @@ namespace ApiServerTest.Tests
         [Fact]
         public void ValidateEmail_AlreadyExists()
         {
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
-            user.Email = DefaultEmail;
-            user.EmailNormalized = DefaultEmail.Normalize().ToLower();
-            context.SaveChanges();
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            AuthQueries query = ReturnQuery(Guid.Empty.ToString());
+            AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
 
             string action() => query.ValidateEmail(DefaultEmail);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
             RequestException result = new(ResultCodes.EmailAlreadyExists);
             Assert.Equal(result.Code, exception.Code);
         }

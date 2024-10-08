@@ -10,10 +10,6 @@ namespace StyleWerk.NBB.Queries;
 
 public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
-    /// <summary>
-    /// Get all folders and all entries which arent't in a folder, that belong to the current user
-    /// </summary>
-    /// <returns></returns>
     public List<Model_EntryFolders> List()
     {
         List<Model_EntryFolders> entryFolders =
@@ -36,12 +32,6 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         return entryFolders;
     }
 
-    /// <summary>
-    /// Get all entries in a folder specified by the given folder id
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    /// <exception cref="RequestException"></exception>
     public List<Model_EntryItem> Details(Guid? id)
     {
         if (id is null || id == Guid.Empty)
@@ -63,12 +53,6 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         return list;
     }
 
-    /// <summary>
-    /// update or add folder
-    /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    /// <exception cref="RequestException"></exception>
     public Model_EntryFolders Update(Model_EntryFolders? model)
     {
         if (model is null || string.IsNullOrWhiteSpace(model.Name))
@@ -111,11 +95,6 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         return result;
     }
 
-    /// <summary>
-    /// remove a folder based on the given folder id
-    /// </summary>
-    /// <param name="id"></param>
-    /// <exception cref="RequestException"></exception>
     public void Remove(Guid? id)
     {
         if (id is null)
@@ -131,11 +110,6 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         DB.SaveChanges();
     }
 
-    /// <summary>
-    /// reorder folders based on the given folder ids in a list
-    /// </summary>
-    /// <param name="model"></param>
-    /// <exception cref="RequestException"></exception>
     public void Reorder(List<Guid>? model)
     {
         if (model is null || model.Count == 0)

@@ -14,10 +14,10 @@ public class ShareController(NbbContext db) : BaseController(db)
     public ShareQueries Query => new(DB, CurrentUser);
 
     /// <summary>
-    /// get the rights of a group or another user on a specific shared item
+    /// gets all shared items
     /// </summary>
-    /// <param name="id"></param>
-    /// <param name="type"></param>
+    /// <param name="id">shared item</param>
+    /// <param name="type">entry or template</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_ShareItem>>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
@@ -29,10 +29,9 @@ public class ShareController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// Update the rights of a group or another user on a specific shared item 
-    /// or create the item if it doesn't exists
+    /// setting the rights of a group or user on a specific shared item and create it if it doen't exist
     /// </summary>
-    /// <param name="model"></param>
+    /// <param name="model">contains the information about the shared item</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.MissingRight, ResultCodes.OnlyOwnerCanChangePublicity)]
@@ -44,9 +43,9 @@ public class ShareController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// Remove a shared template or entry based on the given Id. 
+    /// Remove a shared template or entry 
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="id">itemId that should be removed</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.YouDontOwnTheData)]

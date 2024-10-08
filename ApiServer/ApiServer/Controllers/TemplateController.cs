@@ -15,16 +15,16 @@ public class TemplateController(NbbContext db) : BaseController(db)
     /// <summary>
     /// Lists all Templates based on the filters
     /// </summary>
-    /// <param name="page"></param>
-    /// <param name="perPage"></param>
-    /// <param name="name"></param>
-    /// <param name="username"></param>
-    /// <param name="description"></param>
-    /// <param name="tags"></param>
-    /// <param name="publicShared"></param>
-    /// <param name="shared"></param>
-    /// <param name="includeOwned"></param>
-    /// <param name="directUser"></param>
+    /// <param name="page">pages</param>
+    /// <param name="perPage">how many templates per page should be shown</param>
+    /// <param name="name">template name</param>
+    /// <param name="username">username</param>
+    /// <param name="description">template description</param>
+    /// <param name="tags">tags on the template</param>
+    /// <param name="publicShared">tempate is public visible</param>
+    /// <param name="shared">template is shared</param>
+    /// <param name="includeOwned">template belongs to current user</param>
+    /// <param name="directUser">username has to be exactly the given username</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_TemplatePaging>))]
     [HttpGet(nameof(List))]
@@ -37,7 +37,7 @@ public class TemplateController(NbbContext db) : BaseController(db)
     /// <summary>
     /// Removes a template and all its rows, cells and all entries that are based on the template
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="id">templateId</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(Remove))]
@@ -47,6 +47,11 @@ public class TemplateController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<string>());
     }
 
+    /// <summary>
+    /// copies a shared template for the current user
+    /// </summary>
+    /// <param name="id">templateId</param>
+    /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Editor>))]
     [HttpPost(nameof(Copy))]
     public IActionResult Copy(Guid? id)
