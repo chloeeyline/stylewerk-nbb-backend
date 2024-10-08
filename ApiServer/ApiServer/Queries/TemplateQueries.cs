@@ -10,6 +10,20 @@ namespace StyleWerk.NBB.Queries;
 
 public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
+    /// <summary>
+    /// Filtering all templates based on the given Filters
+    /// </summary>
+    /// <param name="page"></param>
+    /// <param name="perPage"></param>
+    /// <param name="name"></param>
+    /// <param name="username"></param>
+    /// <param name="description"></param>
+    /// <param name="tags"></param>
+    /// <param name="publicShared"></param>
+    /// <param name="shared"></param>
+    /// <param name="includeOwned"></param>
+    /// <param name="directUser"></param>
+    /// <returns></returns>
     public Model_TemplatePaging List(int? page, int? perPage, string? name, string? username, string? description, string? tags, bool? publicShared, bool? shared, bool? includeOwned, bool? directUser)
     {
         if (publicShared is not true && shared is not true)
@@ -147,7 +161,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         return paging;
     }
 
-
     /// <summary>
     /// Remove a Template, all its rows, cells and entries where the template was used
     /// </summary>
@@ -167,6 +180,12 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         DB.SaveChanges();
     }
 
+    /// <summary>
+    /// Copies a template for the currentuser
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    /// <exception cref="RequestException"></exception>
     public Model_Editor Copy(Guid? id)
     {
         if (id is null || id == Guid.Empty)
