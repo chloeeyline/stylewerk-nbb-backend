@@ -45,6 +45,16 @@ namespace ApiServerTest.Tests
             return query;
         }
 
+        public static AuthQueries ReturnAuthQuery(string userGuid)
+        {
+            NbbContext DB = NbbContext.Create();
+            ApplicationUser user = DB.GetUser(new Guid(userGuid));
+
+            string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
+            AuthQueries query = new(DB, user, userAgent, SecretData.GetData());
+            return query;
+        }
+
         public static void DeleteAll()
         {
             NbbContext context = NbbContext.Create();
@@ -160,6 +170,18 @@ namespace ApiServerTest.Tests
             Model_Editor result = query.UpdateEntry(newEntry);
 
             return result;
+        }
+
+        public static void SetUserTokensNull(Guid userGuid, string email)
+        {
+            NbbContext context = NbbContext.Create();
+            User_Login user = context.User_Login.First(u => u.ID == userGuid);
+            user.StatusToken = null;
+            user.StatusCode = null;
+            user.StatusTokenExpireTime = null;
+            user.Email = email;
+            user.EmailNormalized = email.Normalize().ToLower();
+            context.SaveChanges();
         }
     }
 }
