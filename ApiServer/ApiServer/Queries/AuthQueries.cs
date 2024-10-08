@@ -510,5 +510,5 @@ public static partial class UsedRegex
     [GeneratedRegex(@"[!#$%&'*+\-./?@\\_|]")] public static partial Regex ContainsPasswordSpecialChar();
     [GeneratedRegex(@"\s")] public static partial Regex ContainsWhitespace();
     [GeneratedRegex(@"[a-zA-Z\d!#$%&'*+\-./?@\\_|^\s]")] public static partial Regex OnlyPasswordValidChars();
-    [GeneratedRegex(@"[a-zA-Z\d&'*+\-./\\_|^\s]")] public static partial Regex OnlyUsernameValidChars();
+    [GeneratedRegex(@"^[a-zA-Z\d&+*\-._|]+$")] public static partial Regex OnlyUsernameValidChars();
 }
