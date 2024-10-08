@@ -17,9 +17,9 @@ public class EntryController(NbbContext db) : BaseController(db)
     /// </summary>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryItem>>))]
     [HttpGet(nameof(List))]
-    public IActionResult List(string? name, string? username, string? templateName, string? tags, bool? publicShared, bool? groupShared, bool? directlyShared, bool? directUser)
+    public IActionResult List(string? name, string? username, string? templateName, string? tags, bool? publicShared, bool? shared, bool? includeOwned, bool? directUser)
     {
-        List<Model_EntryItem> result = Query.List(name, username, templateName, tags, publicShared, groupShared, directlyShared, directUser);
+        List<Model_EntryItem> result = Query.List(name, username, templateName, tags, publicShared, shared, includeOwned, directUser);
         return base.Ok(new Model_Result<List<Model_EntryItem>>(result));
     }
 
