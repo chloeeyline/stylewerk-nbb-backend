@@ -13,7 +13,7 @@ public class ShareGroupController(NbbContext db) : BaseController(db)
     public ShareGroupQueries Query => new(DB, CurrentUser);
 
     /// <summary>
-    /// Load all groups which you own
+    /// load all groups that the current user owns
     /// </summary>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_Group>>))]
@@ -27,7 +27,7 @@ public class ShareGroupController(NbbContext db) : BaseController(db)
     /// <summary>
     /// Load the users in a specific group with the rights they have
     /// </summary>
-    /// <param name="id">The ID of the group from which zou want to load the users</param>
+    /// <param name="id">The ID of the group that the users should be loaded</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<string>>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid)]
@@ -41,7 +41,7 @@ public class ShareGroupController(NbbContext db) : BaseController(db)
     /// <summary>
     /// Get all items with type and name that are shared to this group
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="id">groupId</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_SharedToGroup>>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
@@ -53,9 +53,9 @@ public class ShareGroupController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// Create a group or update the group informations of an existing group
+    /// Creates or updates a group
     /// </summary>
-    /// <param name="model"></param>
+    /// <param name="model">contains groupId, group name and a total amout of the users in it</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Group>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.NameMustBeUnique, ResultCodes.YouDontOwnTheData)]
@@ -67,7 +67,7 @@ public class ShareGroupController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// Delete a group you own
+    /// Deletes a group and removes all users from it
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
@@ -81,7 +81,7 @@ public class ShareGroupController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// Add an user to a group or change there rights in a group where they already are a part of
+    /// Add a user to a group or change there rights in a group where they already are a part of
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
