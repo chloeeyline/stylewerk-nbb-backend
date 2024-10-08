@@ -10,13 +10,6 @@ namespace StyleWerk.NBB.Queries;
 
 public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
-    /// <summary>
-    /// Gets to whom this item is shared
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="type"></param>
-    /// <returns></returns>
-    /// <exception cref="RequestException"></exception>
     public List<Model_ShareItem> List(Guid? id, ShareType? type)
     {
         if (id is null || id == Guid.Empty || !type.HasValue)
@@ -61,13 +54,6 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         return result;
     }
 
-    /// <summary>
-    /// Change rights on the template or entry that was shared in a group or directly shared.
-    /// Only the creator of the template or entry can set it to public.
-    /// If the item doesn't exists, create it
-    /// </summary>
-    /// <param name="model"></param>
-    /// <exception cref="RequestException"></exception>
     public void Update(Model_ShareItem? model)
     {
         if (model is null)
@@ -107,7 +93,6 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         else
             throw new RequestException(ResultCodes.DataIsInvalid);
 
-        //wieso? das wird doch nie der fall sein, dass in der tabelle ein item drin ist, dass mit niemanden geteilt ist...
         Share_Item? item = DB.Share_Item.FirstOrDefault(s => s.ToWhom == null &&
             s.Visibility == model.Visibility &&
             s.ItemID == model.ID &&
@@ -129,12 +114,6 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         DB.SaveChanges();
     }
 
-    /// <summary>
-    /// Remove a shared template or entry from a direct or group share. 
-    /// Only the creator of the template or entry can change the publicity of it 
-    /// </summary>
-    /// <param name="id"></param>
-    /// <exception cref="RequestException"></exception>
     public void Remove(Guid? id)
     {
         if (id is null || id == Guid.Empty)
@@ -161,14 +140,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
                 : throw new RequestException(ResultCodes.DataIsInvalid);
         return userID;
     }
-    /// <summary>
-    /// Return the user Id from the item creator if it exists
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="set"></param>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    /// <exception cref="RequestException"></exception>
+
     private static Guid Exist_SharedItem<T>(DbSet<T> set, Guid id) where T : class, IEntity_GuidID, IEntity_User
     {
         T item = set.FirstOrDefault(s => s.ID == id)
