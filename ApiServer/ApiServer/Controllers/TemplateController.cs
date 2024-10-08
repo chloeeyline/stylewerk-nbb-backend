@@ -24,7 +24,7 @@ public class TemplateController(NbbContext db) : BaseController(db)
     /// <param name="publicShared">tempate is public visible</param>
     /// <param name="shared">template is shared</param>
     /// <param name="includeOwned">template belongs to current user</param>
-    /// <param name="directUser">template was shared with the given user in the username</param>
+    /// <param name="directUser">username has to be exactly the given username</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_TemplatePaging>))]
     [HttpGet(nameof(List))]
