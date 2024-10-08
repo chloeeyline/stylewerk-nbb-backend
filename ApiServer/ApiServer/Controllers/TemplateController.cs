@@ -12,6 +12,20 @@ public class TemplateController(NbbContext db) : BaseController(db)
 {
     public TemplateQueries Query => new(DB, CurrentUser);
 
+    /// <summary>
+    /// Lists all Templates based on the filters
+    /// </summary>
+    /// <param name="page"></param>
+    /// <param name="perPage"></param>
+    /// <param name="name"></param>
+    /// <param name="username"></param>
+    /// <param name="description"></param>
+    /// <param name="tags"></param>
+    /// <param name="publicShared"></param>
+    /// <param name="shared"></param>
+    /// <param name="includeOwned"></param>
+    /// <param name="directUser"></param>
+    /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_TemplatePaging>))]
     [HttpGet(nameof(List))]
     public IActionResult List(int page, int perPage, string? name, string? username, string? description, string? tags, bool? publicShared, bool? shared, bool? includeOwned, bool? directUser)
@@ -20,22 +34,11 @@ public class TemplateController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<Model_TemplatePaging>(result));
     }
 
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Template>))]
-    [HttpGet(nameof(Details))]
-    public IActionResult Details(Guid? id)
-    {
-        Model_Template result = Query.Details(id);
-        return Ok(new Model_Result<Model_Template>(result));
-    }
-
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Template>))]
-    [HttpPost(nameof(Update))]
-    public IActionResult Update([FromBody] Model_Template model)
-    {
-        Model_Template result = Query.Update(model);
-        return Ok(new Model_Result<Model_Template>(result));
-    }
-
+    /// <summary>
+    /// Removes a template and all its rows, cells and all entries that are based on the template
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(Remove))]
     public IActionResult Remove(Guid? id)
@@ -44,11 +47,11 @@ public class TemplateController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<string>());
     }
 
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Template>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Editor>))]
     [HttpPost(nameof(Copy))]
     public IActionResult Copy(Guid? id)
     {
-        Model_Template result = Query.Copy(id);
-        return Ok(new Model_Result<Model_Template>(result));
+        Model_Editor result = Query.Copy(id);
+        return Ok(new Model_Result<Model_Editor>(result));
     }
 }

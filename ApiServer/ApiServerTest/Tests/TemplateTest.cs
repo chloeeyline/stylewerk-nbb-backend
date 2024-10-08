@@ -1,4 +1,6 @@
-﻿using StyleWerk.NBB.Models;
+﻿using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Structure;
+using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
@@ -15,32 +17,6 @@ namespace ApiServerTest.Tests
         private string OtherUsername = "TestUser1";
         private string OtherEmail = "florian.windisch@lbs4.salzburg.at";
 
-        #region Helpers
-
-
-        private static Model_Template CreateTemplate(string templateName, string user)
-        {
-            TemplateQueries query = Helpers.ReturnTemplateQuery(user);
-            Guid rowId = Guid.NewGuid();
-            List<Model_TemplateCell> cells =
-            [
-                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test1", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test2", "Test")
-            ];
-
-            List<Model_TemplateRow> rows =
-            [
-                new Model_TemplateRow(rowId, true, true, false, cells)
-            ];
-
-            Model_Template template = new(null, templateName, "TestDescription", "Test", rows);
-            Model_Template result = query.Update(template);
-
-            return result;
-        }
-        #endregion
-
         #region Update Function
         [Fact]
         public void Add()
@@ -48,73 +24,86 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
 
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Guid rowId = Guid.NewGuid();
-            List<Model_TemplateCell> cells =
-            [
-                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test1", "Test"),
-                new Model_TemplateCell(Guid.NewGuid(), 1, false, false, "Test2", "Test")
-            ];
+            EditorQueries query = Helpers.ReturnEditorQuery(DefaultUserGuid.ToString());
+            Model_Editor result = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
 
-            List<Model_TemplateRow> rows =
-            [
-                new Model_TemplateRow(rowId, true, true, false, cells)
-            ];
-
-            Model_Template template = new(null, "TestTemplate", "TestDescription", "Test", rows);
-
-            query.Update(template);
-
-            Assert.True(true);
+            NbbContext context = NbbContext.Create();
+            Structure_Template? dbTemplate = context.Structure_Template.FirstOrDefault(t => t.ID == result.TemplateID);
+            Assert.NotNull(dbTemplate);
         }
 
         [Fact]
-        public void AddDataInvalid()
+        public void Update()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
 
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_Template template = new(null, string.Empty, null, null, []);
+            Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
+            Model_Editor updateTemplate = Helpers.CreateTemplate("DefaultTemplate", DefaultUserGuid.ToString(), template.ID);
 
-            Model_Template action() => query.Update(template);
+            NbbContext context = NbbContext.Create();
+            Structure_Template dbTemplate = context.Structure_Template.First(t => t.ID == updateTemplate.TemplateID);
+            Assert.NotEqual(template.Template.Name, dbTemplate.Name);
+        }
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Template>)action);
+        [Fact]
+        public void Add_DataInvalid()
+        {
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            Model_Editor action() => Helpers.CreateTemplate(string.Empty, DefaultUserGuid.ToString(), null);
+
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>)action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
 
         [Fact]
-        public void ChangeDontOwnData()
+        public void Add_NameUnique()
+        {
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+
+            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
+
+            Model_Editor action() => Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
+
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException result = new(ResultCodes.NameMustBeUnique);
+            Assert.Equal(result.Code, exception.Code);
+        }
+
+        [Fact]
+        public void Update_DontOwnData()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             OtherUserDefaultGuid = Helpers.CreateUser(OtherUsername, OtherEmail, Password);
 
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_Template templateOtherUser = CreateTemplate("TestTemplate2", OtherUserDefaultGuid.ToString());
+            Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
+            Model_Editor action() => Helpers.CreateTemplate("DefaultTemplate", OtherUserDefaultGuid.ToString(), template.TemplateID);
 
-            Model_Template action() => query.Update(templateOtherUser);
-
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Template>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>)action);
             RequestException result = new(ResultCodes.YouDontOwnTheData);
-            Assert.Equal(result.Code, ex.Code);
+            Assert.Equal(result.Code, exception.Code);
+
         }
 
         [Fact]
-        public void Change()
+        public void Update_NameUnique()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
 
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_Template template = CreateTemplate("TestTemplate3", DefaultUserGuid.ToString());
-            Model_Template changes = new(template.ID, "TestTemplate4", null, null, template.Items);
+            Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
+            Model_Editor template2 = Helpers.CreateTemplate("Test", DefaultUserGuid.ToString(), null);
 
-            query.Update(changes);
+            Model_Editor action() => Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), template2.TemplateID);
 
-            Assert.True(true);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException result = new(ResultCodes.NameMustBeUnique);
+            Assert.Equal(result.Code, exception.Code);
         }
         #endregion
 
@@ -126,15 +115,15 @@ namespace ApiServerTest.Tests
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
 
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_Template template = CreateTemplate("TestTemplate7", DefaultUserGuid.ToString());
+            Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
 
-            query.Remove(template.ID);
+            query.Remove(template.TemplateID);
 
             Assert.True(true);
         }
 
         [Fact]
-        public void RemoveDataInvalid()
+        public void Remove_DataInvalid()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
@@ -153,7 +142,7 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void RemoveNoDataFound()
+        public void Remove_NoDataFound()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
@@ -171,18 +160,18 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void RemoveDontOwnData()
+        public void Remove_DontOwnData()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             OtherUserDefaultGuid = Helpers.CreateUser(OtherUsername, OtherEmail, Password);
 
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_Template templateOtherUser = CreateTemplate("TestTemplate6", OtherUserDefaultGuid.ToString());
+            Model_Editor templateOtherUser = Helpers.CreateTemplate("TestTemplate", OtherUserDefaultGuid.ToString(), null);
 
             try
             {
-                query.Remove(templateOtherUser.ID);
+                query.Remove(templateOtherUser.TemplateID);
             }
             catch (RequestException ex)
             {
@@ -202,15 +191,17 @@ namespace ApiServerTest.Tests
             OtherUserDefaultGuid = Helpers.CreateUser(OtherUsername, OtherEmail, Password);
 
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_Template templateOtherUser = CreateTemplate("TestTemplate8", OtherUserDefaultGuid.ToString());
+            Model_Editor templateOtherUser = Helpers.CreateTemplate("TestTemplate", OtherUserDefaultGuid.ToString(), null);
 
-            query.Copy(templateOtherUser.ID);
+            query.Copy(templateOtherUser.TemplateID);
 
-            Assert.True(true);
+            NbbContext context = NbbContext.Create();
+            Structure_Template? template = context.Structure_Template.FirstOrDefault(t => t.UserID == DefaultUserGuid && t.Name == "TestTemplate (Kopie)");
+            Assert.True(template != null);
         }
 
         [Fact]
-        public void CopyDataInvalid()
+        public void Copy_DataInvalid()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
@@ -228,7 +219,7 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void CopyNoDataFound()
+        public void Copy_NoDataFound()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
@@ -245,56 +236,6 @@ namespace ApiServerTest.Tests
             }
         }
 
-        #endregion
-
-        #region Details Function
-        [Fact]
-        public void Details()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_Template template = CreateTemplate("TestTemplate10", DefaultUserGuid.ToString());
-            Model_Template detailTemplate = query.Details(template.ID);
-            Assert.True(detailTemplate.Items.Count > 0);
-        }
-
-        [Fact]
-        public void DetailsDataIsInvalid()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            try
-            {
-                query.Details(null);
-            }
-            catch (RequestException ex)
-            {
-                RequestException result = new(ResultCodes.DataIsInvalid);
-                Assert.Equal(result.Code, ex.Code);
-            }
-        }
-
-        [Fact]
-        public void DetailsNoDataFound()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            try
-            {
-                query.Details(Guid.NewGuid());
-            }
-            catch (RequestException ex)
-            {
-                RequestException result = new(ResultCodes.NoDataFound);
-                Assert.Equal(result.Code, ex.Code);
-            }
-        }
         #endregion
     }
 }
