@@ -60,9 +60,9 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             throw new RequestException(ResultCodes.DataIsInvalid);
 
         Guid userID = model.Type == ShareType.Entry
-            ? Exist_SharedItem(DB.Structure_Entry, model.ID)
+            ? Exist_SharedItem(DB.Structure_Entry, model.ItemID)
             : model.Type == ShareType.Template
-            ? Exist_SharedItem(DB.Structure_Template, model.ID)
+            ? Exist_SharedItem(DB.Structure_Template, model.ItemID)
             : throw new RequestException(ResultCodes.DataIsInvalid);
 
         if (userID != CurrentUser.ID)
@@ -93,7 +93,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         else
             throw new RequestException(ResultCodes.DataIsInvalid);
 
-        Share_Item? item = DB.Share_Item.FirstOrDefault(s => s.ToWhom == null &&
+        Share_Item? item = DB.Share_Item.FirstOrDefault(s => s.ToWhom == toWhom &&
             s.Visibility == model.Visibility &&
             s.ItemID == model.ID &&
             s.Type == model.Type);
