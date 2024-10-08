@@ -12,7 +12,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
 {
     public Model_TemplatePaging List(int? page, int? perPage, string? name, string? username, string? description, string? tags, bool? publicShared, bool? shared, bool? includeOwned, bool? directUser)
     {
-        if (publicShared is not true && directUser is not true)
+        if (publicShared is not true && shared is not true)
             includeOwned = true;
         // Normalize the username for comparison
         username = username?.Normalize().ToLower();
@@ -26,7 +26,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         join owner in DB.User_Login on template.UserID equals owner.ID
         join sgu in DB.Share_GroupUser on
             new { si.ToWhom, si.Visibility } equals
-            new { ToWhom = (Guid?) sgu.GroupID, Visibility = ShareVisibility.Group }
+            new { ToWhom = (Guid?)sgu.GroupID, Visibility = ShareVisibility.Group }
             into groupJoin
         from sharedGroup in groupJoin.DefaultIfEmpty()
         join sg in DB.Share_Group on sharedGroup.GroupID equals sg.ID into groupDataJoin
@@ -135,7 +135,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         int tCount = orderedQuery.Count();
         if (!perPage.HasValue || perPage < 20)
             perPage = 20;
-        int maxPages = (int) Math.Ceiling(tCount / (double) perPage);
+        int maxPages = (int)Math.Ceiling(tCount / (double)perPage);
         if (!page.HasValue || page >= maxPages || page < 0)
             page = 0;
 
@@ -147,39 +147,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         return paging;
     }
 
-    public Model_Template Details(Guid? id)
-    {
-        if (id is null || id == Guid.Empty)
-            throw new RequestException(ResultCodes.DataIsInvalid);
-
-        Structure_Template item = DB.Structure_Template.FirstOrDefault(t => t.ID == id)
-            ?? throw new RequestException(ResultCodes.NoDataFound);
-
-        List<Model_TemplateRow> rows = [];
-        List<Structure_Template_Row> rowTemplate = [.. DB.Structure_Template_Row
-            .Where(s => s.TemplateID == item.ID)
-            .OrderBy(s => s.SortOrder)];
-
-        foreach (Structure_Template_Row row in rowTemplate)
-        {
-            List<Model_TemplateCell> cells = [];
-            List<Structure_Template_Cell> cellTemplate = [.. DB.Structure_Template_Cell
-                .Where(s => s.RowID == row.ID)
-                .OrderBy(s => s.SortOrder)];
-
-            foreach (Structure_Template_Cell cell in cellTemplate)
-            {
-                Model_TemplateCell cellModel = new(cell.ID, cell.InputHelper, cell.HideOnEmpty, cell.IsRequired, cell.Text, cell.MetaData);
-                cells.Add(cellModel);
-            }
-
-            Model_TemplateRow rowModel = new(row.ID, row.CanWrapCells, row.CanRepeat, row.HideOnNoInput, cells);
-            rows.Add(rowModel);
-        }
-        Model_Template model = new(item.ID, item.Name, item.Description, item.Tags, rows);
-
-        return model;
-    }
 
     /// <summary>
     /// Remove a Template, all its rows, cells and entries where the template was used
@@ -199,112 +166,8 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
 
         DB.SaveChanges();
     }
-    /// <summary>
-    /// update or add template
-    /// </summary>
-    /// <param name="model"></param>
-    /// <exception cref="RequestException"></exception>
-    public Model_Template Update(Model_Template? model)
-    {
-        if (model is null || string.IsNullOrWhiteSpace(model.Name))
-            throw new RequestException(ResultCodes.DataIsInvalid);
 
-        string name = model.Name.NormalizeName();
-        Structure_Template? template = DB.Structure_Template.FirstOrDefault(s => s.ID == model.ID);
-        if (template is null)
-        {
-            if (DB.Structure_Template.Any(s => s.UserID == CurrentUser.ID && s.NameNormalized == name))
-                throw new RequestException(ResultCodes.NameMustBeUnique);
-            template = new()
-            {
-                ID = Guid.NewGuid(),
-                UserID = CurrentUser.ID,
-                Name = model.Name,
-                NameNormalized = model.Name.NormalizeName(),
-                Description = string.IsNullOrWhiteSpace(model.Description) ? null : model.Description,
-                Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower(),
-            };
-            DB.Structure_Template.Add(template);
-        }
-        else
-        {
-            if (template.UserID != CurrentUser.ID)
-                throw new RequestException(ResultCodes.YouDontOwnTheData);
-            if (template.Name != name && DB.Structure_Template.Any(s => s.UserID == CurrentUser.ID && s.NameNormalized == name))
-                throw new RequestException(ResultCodes.NameMustBeUnique);
-            template.Name = model.Name;
-            template.Description = string.IsNullOrWhiteSpace(model.Description) ? null : model.Description;
-            template.Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower();
-        }
-
-        List<Guid> rowIDs = [];
-        int rowSortOrder = 0;
-        foreach (Model_TemplateRow rowItem in model.Items)
-        {
-            Structure_Template_Row? rowTemplate = DB.Structure_Template_Row.SingleOrDefault(t => rowItem.ID == t.ID);
-
-            if (rowTemplate is null)
-            {
-                rowTemplate = new()
-                {
-                    ID = Guid.NewGuid(),
-                    TemplateID = template.ID,
-                    SortOrder = rowSortOrder++,
-                    CanWrapCells = rowItem.CanWrapCells,
-                    CanRepeat = rowItem.CanRepeat,
-                    HideOnNoInput = rowItem.HideOnNoInput
-                };
-                DB.Structure_Template_Row.Add(rowTemplate);
-            }
-            else
-            {
-                rowTemplate.SortOrder = rowSortOrder++;
-                rowTemplate.CanWrapCells = rowItem.CanWrapCells;
-                rowTemplate.CanRepeat = rowItem.CanRepeat;
-                rowTemplate.HideOnNoInput = rowItem.HideOnNoInput;
-            }
-            rowIDs.Add(rowTemplate.ID);
-            int cellSortOrder = 0;
-            List<Guid> cellIDs = [];
-            foreach (Model_TemplateCell cell in rowItem.Items)
-            {
-                Structure_Template_Cell? cellTemplate = DB.Structure_Template_Cell.SingleOrDefault(c => c.ID == cell.ID);
-
-                if (cellTemplate is null)
-                {
-                    cellTemplate = new()
-                    {
-                        ID = Guid.NewGuid(),
-                        RowID = rowTemplate.ID,
-                        SortOrder = cellSortOrder++,
-                        InputHelper = cell.InputHelper,
-                        HideOnEmpty = cell.HideOnEmpty,
-                        IsRequired = cell.IsRequired,
-                        Text = cell.Text,
-                        MetaData = cell.Text
-                    };
-                    DB.Structure_Template_Cell.Add(cellTemplate);
-                }
-                else
-                {
-                    cellTemplate.SortOrder = cellSortOrder++;
-                    cellTemplate.InputHelper = cell.InputHelper;
-                    cellTemplate.HideOnEmpty = cell.HideOnEmpty;
-                    cellTemplate.IsRequired = cell.IsRequired;
-                    cellTemplate.Text = cell.Text;
-                    cellTemplate.MetaData = cell.MetaData;
-                }
-                cellIDs.Add(cellTemplate.ID);
-            }
-            DB.Structure_Template_Cell.RemoveRange(DB.Structure_Template_Cell.Where(s => !cellIDs.Contains(s.ID) && s.RowID == rowTemplate.ID));
-        }
-        DB.Structure_Template_Row.RemoveRange(DB.Structure_Template_Row.Where(s => !rowIDs.Contains(s.ID) && s.TemplateID == template.ID));
-
-        DB.SaveChanges();
-        return Details(template.ID);
-    }
-
-    public Model_Template Copy(Guid? id)
+    public Model_Editor Copy(Guid? id)
     {
         if (id is null || id == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -355,6 +218,8 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         }
 
         DB.SaveChanges();
-        return Details(template.ID);
+        EditorQueries query = new(DB, CurrentUser);
+
+        return query.GetTemplate(template.ID);
     }
 }

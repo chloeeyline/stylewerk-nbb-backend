@@ -29,7 +29,7 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryItem>>))]
     [HttpGet(nameof(Details))]
     public IActionResult Details(Guid? id)
     {
