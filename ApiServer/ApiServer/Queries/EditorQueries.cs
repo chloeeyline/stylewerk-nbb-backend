@@ -35,7 +35,8 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             throw new RequestException(ResultCodes.DataIsInvalid);
 
         Structure_Entry eEntity = DB.Structure_Entry
-            .Include(s => s.O_Template).ThenInclude(s => s.O_Rows)
+            .Include(s => s.O_Template)
+                .ThenInclude(s => s.O_Rows)
             .Include(s => s.O_Rows) // Load rows for the entry
                 .ThenInclude(s => s.O_Template) // Include template for each row
             .Include(s => s.O_Rows) // Load cells for each row
