@@ -38,7 +38,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             Model_Editor action() => Helpers.CreateEntry(DefaultUserGuid.ToString(), string.Empty, null, "Test", template);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -79,7 +79,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -101,7 +101,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.NoDataFound);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -126,7 +126,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.YouDontOwnTheData);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -149,7 +149,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.NoDataFound);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -173,7 +173,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.YouDontOwnTheData);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -191,11 +191,11 @@ namespace ApiServerTest.Tests
             Model_Editor template = query.GetTemplate(modelTemplate.TemplateID);
             Model_Editor getEntry = query.GetEntry(entry.ID);
 
-            Model_Editor uEntry = new(null, null, template.TemplateID, "TestEntry", "Test", false, template.Template, getEntry.Items);
+            Model_Editor uEntry = new(Guid.Empty, null, template.TemplateID, "TestEntry", "Test", false, template.Template, getEntry.Items);
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.NameMustBeUnique);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -218,7 +218,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.YouDontOwnTheData);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -241,7 +241,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.NameMustBeUnique);
             Assert.Equal(result.Code, ex.Code);
         }

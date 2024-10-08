@@ -28,7 +28,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
                 .Include(s => s.O_User)
                 .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsEncrypted, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, ShareVisibility.None)),
         ];
-        entryFolders.Insert(0, new Model_EntryFolders(null, null, result));
+        entryFolders.Insert(0, new Model_EntryFolders(Guid.Empty, null, result));
         return entryFolders;
     }
 

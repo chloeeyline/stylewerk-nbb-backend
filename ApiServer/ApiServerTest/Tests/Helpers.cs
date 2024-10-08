@@ -103,7 +103,7 @@ namespace ApiServerTest.Tests
         {
             EntryFolderQueries query = ReturnFolderQuery(user);
 
-            Model_EntryFolders folder = new(null, folderName, []);
+            Model_EntryFolders folder = new(Guid.Empty, folderName, []);
             Model_EntryFolders result = query.Update(folder);
 
             return result;
@@ -115,16 +115,10 @@ namespace ApiServerTest.Tests
             Guid rowId = Guid.NewGuid();
             Guid templateId = Guid.NewGuid();
             Guid templateCellId = Guid.NewGuid();
-            Template template;
 
-            if (updateTemplateId != null)
-            {
-                template = new(updateTemplateId, templateName, "Test", "Test");
-            }
-            else
-            {
-                template = new(templateId, templateName, "Test", "Test");
-            }
+            Template template = updateTemplateId.HasValue
+                ? new(updateTemplateId.Value, templateName, "Test", "Test")
+                : new(templateId, templateName, "Test", "Test");
 
             TemplateCell templateCell = new(templateCellId, 1, false, false, null, null, null);
             TemplateRow templateRow = new(rowId, false, false, false);
@@ -138,7 +132,7 @@ namespace ApiServerTest.Tests
             entryrows.Add(entryRow);
 
 
-            Model_Editor newTemplate = new(null, null, null, null, null, false, template, entryrows);
+            Model_Editor newTemplate = new(Guid.Empty, null, Guid.Empty, null, null, false, template, entryrows);
             Model_Editor result = query.UpdateTemplate(newTemplate);
 
             return result;

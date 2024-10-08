@@ -9,12 +9,12 @@ namespace ApiServerTest.Tests
         private Guid DefaultUserGuid { get; set; }
         private Guid OtherUserDefaultGuid { get; set; }
 
-        private string Username = "TestUser";
-        private string Email = "chloe.hauer@lbs4.salzburg.at";
-        private string Password = "TestTest@123";
+        private readonly string Username = "TestUser";
+        private readonly string Email = "chloe.hauer@lbs4.salzburg.at";
+        private readonly string Password = "TestTest@123";
 
-        private string OtherUsername = "TestUser1";
-        private string OtherEmail = "juliane.krenek@lbs4.salzburg.at";
+        private readonly string OtherUsername = "TestUser1";
+        private readonly string OtherEmail = "juliane.krenek@lbs4.salzburg.at";
 
         #region Helpers
 
@@ -42,7 +42,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
-            Model_EntryFolders newFolder = new(null, $"TestFolder", []);
+            Model_EntryFolders newFolder = new(Guid.Empty, $"TestFolder", []);
 
             Model_EntryFolders response = query.Update(newFolder);
 
@@ -62,7 +62,7 @@ namespace ApiServerTest.Tests
 
             Model_EntryFolders action() => query.Update(folder);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>) action);
             RequestException result = new(ResultCodes.MissingRight);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -80,7 +80,7 @@ namespace ApiServerTest.Tests
 
             Model_EntryFolders action() => query.Update(folder);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>) action);
             RequestException result = new(ResultCodes.NameMustBeUnique);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -91,11 +91,11 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
-            Model_EntryFolders newFolder = new(null, null, []);
+            Model_EntryFolders newFolder = new(Guid.Empty, null, []);
 
             Model_EntryFolders action() => query.Update(newFolder);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -206,8 +206,8 @@ namespace ApiServerTest.Tests
 
             foreach (Model_EntryFolders folder in folders)
             {
-                if (folder.ID != null)
-                    guids.Add(folder.ID.Value);
+                if (folder.ID != Guid.Empty)
+                    guids.Add(folder.ID);
             }
 
             query.Reorder(guids);
@@ -276,8 +276,8 @@ namespace ApiServerTest.Tests
             List<Model_EntryFolders> foldersOtherUser = queryOtherUser.List();
             foreach (Model_EntryFolders folder in foldersOtherUser)
             {
-                if (folder.ID != null)
-                    guidsOtherUser.Add(folder.ID.Value);
+                if (folder.ID != Guid.Empty)
+                    guidsOtherUser.Add(folder.ID);
             }
 
             try

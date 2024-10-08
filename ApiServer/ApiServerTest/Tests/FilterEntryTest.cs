@@ -19,7 +19,7 @@ namespace ApiServerTest.Tests
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
 
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entrys = query.List(null, null, null, null, false, false, true, false);
             Assert.True(entrys.Count > 0);
@@ -31,10 +31,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entrys = query.List(null, null, null, null, true, false, false, false);
-            Assert.True(entrys.Count == 0);
+            Assert.Empty(entrys);
         }
 
         [Fact]
@@ -43,10 +43,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entrys = query.List(null, null, null, null, false, true, false, false);
-            Assert.True(entrys.Count == 0);
+            Assert.Empty(entrys);
         }
 
         [Fact]
@@ -55,7 +55,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entrys = query.List(null, null, null, null, false, false, false, true);
             Assert.True(entrys.Count > 0);
@@ -67,7 +67,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entrys = query.List(null, null, null, null, true, true, true, true);
             Assert.NotNull(entrys);
@@ -80,7 +80,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entrys = query.List(null, null, null, null, true, false, true, false);
             Assert.True(entrys.Count > 0);
@@ -94,7 +94,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entries = query.List("Test", null, null, null, false, false, true, false);
             Assert.NotNull(entries);
@@ -107,10 +107,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entries = query.List("Test", null, null, null, true, false, false, false);
-            Assert.True(entries.Count == 0);
+            Assert.Empty(entries);
         }
 
         [Fact]
@@ -119,10 +119,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entries = query.List("Test", null, null, null, false, true, false, false);
-            Assert.True(entries.Count == 0);
+            Assert.Empty(entries);
         }
 
         [Fact]
@@ -131,7 +131,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entries = query.List("Test", null, null, null, false, false, false, true);
             Assert.True(entries.Count > 0);
@@ -143,7 +143,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entries = query.List("Test", null, null, null, true, true, true, false);
             Assert.True(entries.Count > 0);
@@ -157,7 +157,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entries = query.List(null, "Test", null, null, false, false, true, false);
             Assert.True(entries.Count > 0);
@@ -169,10 +169,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entries = query.List(null, "Test", null, null, true, false, false, false);
-            Assert.True(entries.Count == 0);
+            Assert.Empty(entries);
         }
 
         [Fact]
@@ -181,10 +181,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entries = query.List(null, "Test", null, null, false, true, false, false);
-            Assert.True(entries.Count == 0);
+            Assert.Empty(entries);
         }
 
         [Fact]
@@ -193,10 +193,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entries = query.List(null, "Test", null, null, false, false, false, true);
-            Assert.True(entries.Count == 0);
+            Assert.Empty(entries);
         }
 
         [Fact]
@@ -205,7 +205,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> entries = query.List(null, "Test", null, null, true, true, true, false);
             Assert.True(entries.Count > 0);
@@ -219,7 +219,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> templates = query.List(null, null, "Test", null, false, false, true, false);
             Assert.NotNull(templates);
@@ -232,10 +232,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> templates = query.List(null, null, "Test", null, true, false, false, false);
-            Assert.True(templates.Count == 0);
+            Assert.Empty(templates);
         }
 
         [Fact]
@@ -244,10 +244,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> templates = query.List(null, null, "Test", null, false, true, false, false);
-            Assert.True(templates.Count == 0);
+            Assert.Empty(templates);
         }
 
         [Fact]
@@ -256,7 +256,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> templates = query.List(null, null, "Test", null, false, false, false, true);
             Assert.True(templates.Count > 0);
@@ -268,7 +268,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> templates = query.List(null, null, "Test", null, true, true, true, false);
             Assert.True(templates.Count > 0);
@@ -282,7 +282,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> templates = query.List(null, null, null, "Test", false, false, true, false);
             Assert.True(templates.Count > 0);
@@ -294,10 +294,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> templates = query.List(null, null, null, "Test", true, false, false, false);
-            Assert.True(templates.Count == 0);
+            Assert.Empty(templates);
         }
 
         [Fact]
@@ -306,10 +306,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> templates = query.List(null, null, null, "Test", false, true, false, false);
-            Assert.True(templates.Count == 0);
+            Assert.Empty(templates);
         }
 
         [Fact]
@@ -318,7 +318,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> templates = query.List(null, null, null, "Test", false, false, false, true);
             Assert.True(templates.Count > 0);
@@ -330,7 +330,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> templates = query.List(null, null, null, "Test", true, true, true, true);
             Assert.True(templates.Count > 0);
@@ -342,7 +342,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> templates = query.List(null, null, null, "Test", true, false, true, false);
             Assert.True(templates.Count > 0);
@@ -356,7 +356,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> templates = query.List("Test", null, null, null, true, false, true, false);
             Assert.NotNull(templates);
@@ -369,7 +369,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             List<Model_EntryItem> templates = query.List("Test", "Test", null, "Test", false, false, false, false);
             Assert.True(templates.Count > 0);

@@ -20,8 +20,8 @@ public class EntryController(NbbContext db) : BaseController(db)
     /// <param name="templateName">template name the entry is based on</param>
     /// <param name="tags">tags on entry</param>
     /// <param name="publicShared">entry is public visible</param>
-    /// <param name="groupShared">entry is visible in group</param>
-    /// <param name="directlyShared">entry is directly shared with current user</param>
+    /// <param name="shared">entry is shared to current user</param>
+    /// <param name="includeOwned">entry is owned by user</param>
     /// <param name="directUser">username has to be exactly the given username</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryItem>>))]

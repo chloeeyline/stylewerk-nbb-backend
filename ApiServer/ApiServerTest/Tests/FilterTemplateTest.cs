@@ -6,7 +6,6 @@ namespace ApiServerTest.Tests
     public class FilterTemplateTest
     {
         private Guid DefaultUserGuid { get; set; }
-        private Guid OtherUserDefaultGuid { get; set; }
 
         private const string Username = "TestUser";
         private const string Email = "chloe.hauer@lbs4.salzburg.at";
@@ -250,7 +249,7 @@ namespace ApiServerTest.Tests
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, false, true, false, false);
-            Assert.True(templates.Items.Count == 0);
+            Assert.Empty(templates.Items);
         }
 
         [Fact]

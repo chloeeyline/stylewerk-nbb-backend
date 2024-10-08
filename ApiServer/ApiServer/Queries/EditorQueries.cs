@@ -13,7 +13,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
     {
         return [.. list.OrderBy(s => s.SortOrder).Select(s =>
             new EntryCell(
-                null,
+                Guid.Empty,
                 s.ID,
                 null,
                 new TemplateCell(
@@ -60,7 +60,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             if (eRowEntities.Count == 0)
             {
                 List<EntryCell> cells = CreateCellsFromTemplate(tRowEntity.O_Cells);
-                EntryRow eRowModel = new(null, tRowEntity.ID, tRowModel, cells);
+                EntryRow eRowModel = new(Guid.Empty, tRowEntity.ID, tRowModel, cells);
                 entryRows.Add(eRowModel);
             }
             else
@@ -116,12 +116,12 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             List<EntryCell> entryCells = CreateCellsFromTemplate(tCellEntities);
 
             TemplateRow tRowModel = new(tRowEntity.ID, tRowEntity.CanWrapCells, tRowEntity.CanRepeat, tRowEntity.HideOnNoInput);
-            EntryRow eRowModel = new(null, tRowEntity.ID, tRowModel, entryCells);
+            EntryRow eRowModel = new(Guid.Empty, tRowEntity.ID, tRowModel, entryCells);
             entryRows.Add(eRowModel);
         }
 
         Template templateModel = new(tEntity.ID, tEntity.Name, tEntity.Description, tEntity.Tags);
-        Model_Editor editorModel = new(null, null, tEntity.ID, null, null, false, templateModel, entryRows);
+        Model_Editor editorModel = new(Guid.Empty, null, tEntity.ID, null, null, false, templateModel, entryRows);
 
         return editorModel;
     }
@@ -237,7 +237,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
 
     public Model_Editor UpdateEntry(Model_Editor? model)
     {
-        if (model is null || string.IsNullOrWhiteSpace(model.Name) || model.TemplateID is null || model.TemplateID == Guid.Empty)
+        if (model is null || string.IsNullOrWhiteSpace(model.Name) || model.TemplateID == Guid.Empty)
             throw new RequestException(ResultCodes.DataIsInvalid);
 
         string name = model.Name.NormalizeName();
@@ -266,7 +266,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
                 ID = Guid.NewGuid(),
                 UserID = CurrentUser.ID,
                 FolderID = model.FolderID,
-                TemplateID = model.TemplateID.Value,
+                TemplateID = model.TemplateID,
                 Name = model.Name,
                 NameNormalized = model.Name.NormalizeName(),
                 Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags.Normalize().ToLower(),
@@ -306,7 +306,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
                 {
                     ID = Guid.NewGuid(),
                     EntryID = entryEntity.ID,
-                    TemplateID = row.TemplateID.Value,
+                    TemplateID = row.TemplateID,
                     SortOrder = rowSortOrder
                 };
             }
@@ -329,7 +329,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
                     {
                         ID = Guid.NewGuid(),
                         RowID = entryRow.ID,
-                        TemplateID = cell.TemplateID.Value,
+                        TemplateID = cell.TemplateID,
                         Data = cell.Data
                     };
                     DB.Structure_Entry_Cell.Add(entryCell);

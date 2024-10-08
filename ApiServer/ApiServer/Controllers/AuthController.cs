@@ -84,7 +84,7 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     [ApiExplorerSettings(GroupName = "Forgot Password")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(RequestPasswordReset))]
-    public IActionResult RequestPasswordReset([FromBody] string email)
+    public IActionResult RequestPasswordReset([FromBody] string? email)
     {
         string? result = Authentication.RequestPasswordReset(email);
         return Ok(new Model_Result<string>(result));

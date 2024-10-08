@@ -141,7 +141,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     #endregion
 
     #region Registration
-    public string? Registration(Model_Registration? model)
+    public string Registration(Model_Registration? model)
     {
         if (model is null ||
             string.IsNullOrWhiteSpace(model.Username) ||
@@ -214,7 +214,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     #endregion
 
     #region Forgot Password
-    public string? RequestPasswordReset(string email)
+    public string RequestPasswordReset(string? email)
     {
         if (string.IsNullOrWhiteSpace(email))
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -278,7 +278,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     #endregion
 
     #region Change Email
-    public string? UpdateEmail(string? email)
+    public string UpdateEmail(string? email)
     {
         if (string.IsNullOrWhiteSpace(email))
             throw new RequestException(ResultCodes.DataIsInvalid);
