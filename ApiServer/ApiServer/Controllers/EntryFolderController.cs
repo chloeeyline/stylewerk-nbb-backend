@@ -13,7 +13,7 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
     public EntryFolderQueries Query => new(DB, CurrentUser);
 
     /// <summary>
-    /// Get all folders and entries
+    /// Get all folders and entries based on the given filters
     /// </summary>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
