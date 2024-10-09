@@ -171,7 +171,7 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Userdata")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_UserData>))]
-    [HttpPost(nameof(GetUserData)), Authorize]
+    [HttpGet(nameof(GetUserData)), Authorize]
     public IActionResult GetUserData()
     {
         Model_UserData user = Authentication.GetUserData();

@@ -135,18 +135,18 @@ namespace ApiServerTest.Tests
             return newGroup;
         }
 
-        public static void AddUserToGroup(string addUser, Guid? groupId, string username, string userId)
+        public static void AddUserToGroup(string addUser, Guid groupId, string username, string userId)
         {
-            Model_GroupUser newUser = new(addUser, groupId.Value, false, false, username);
+            Model_GroupUser newUser = new(addUser, groupId, username);
 
             ShareGroupQueries query = Helpers.ReturnShareGroupQuery(userId);
             query.UpdateUser(newUser);
         }
 
-        public static void ShareWithGroup(Guid? itemId, Guid? groupId, Guid userId, string who, ShareType type)
+        public static void ShareWithGroup(Guid itemId, Guid groupId, Guid userId, string who, ShareType type)
         {
             ShareQueries queryShare = ReturnShareQuery(userId.ToString());
-            Model_ShareItem newItem = new(Guid.Empty, itemId.Value, who, ShareVisibility.Group, type, groupId.ToString());
+            Model_ShareItem newItem = new(Guid.Empty, itemId, who, ShareVisibility.Group, type, groupId.ToString());
             queryShare.Update(newItem);
 
         }

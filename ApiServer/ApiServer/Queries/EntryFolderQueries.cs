@@ -26,7 +26,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
                 .Where(s => s.UserID == CurrentUser.ID && s.FolderID == null)
                 .Include(s => s.O_Template)
                 .Include(s => s.O_User)
-                .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsEncrypted, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, ShareVisibility.None)),
+                .Select(s => new Model_EntryItem(s.ID, s.FolderID ?? Guid.Empty, s.Name, s.IsEncrypted, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, ShareVisibility.None)),
         ];
         entryFolders.Insert(0, new Model_EntryFolders(Guid.Empty, null, result));
         return entryFolders;
@@ -47,7 +47,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
                 .Include(s => s.O_Folder)
                 .Include(s => s.O_User)
                 .Where(s => s.FolderID == id)
-                .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsEncrypted, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, ShareVisibility.None)),
+                .Select(s => new Model_EntryItem(s.ID, s.FolderID ?? Guid.Empty, s.Name, s.IsEncrypted, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, ShareVisibility.None)),
         ];
 
         return list;
@@ -91,7 +91,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
 
         DB.SaveChanges();
 
-        Model_EntryFolders result = new(item.ID, item.Name, []);
+        Model_EntryFolders result = new(item.ID, item.Name, [.. Details(item.ID)]);
         return result;
     }
 

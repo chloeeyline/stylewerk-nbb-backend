@@ -42,7 +42,7 @@ namespace ApiServerTest.Tests
 
             Model_Group action() => query.Update(null);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Group>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Group>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -57,7 +57,7 @@ namespace ApiServerTest.Tests
 
             Model_Group action() => Helpers.CreateGroup(GroupName, DefaultUserGuid.ToString());
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Group>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Group>) action);
             RequestException result = new(ResultCodes.NameMustBeUnique);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -93,7 +93,7 @@ namespace ApiServerTest.Tests
             ShareGroupQueries query = Helpers.ReturnShareGroupQuery(DefaultUserGuid.ToString());
             Model_Group action() => query.Update(update);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Group>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Group>) action);
             RequestException result = new(ResultCodes.YouDontOwnTheData);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -111,7 +111,7 @@ namespace ApiServerTest.Tests
             ShareGroupQueries query = Helpers.ReturnShareGroupQuery(DefaultUserGuid.ToString());
             Model_Group action() => query.Update(update);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Group>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Group>) action);
             RequestException result = new(ResultCodes.NameMustBeUnique);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -448,7 +448,7 @@ namespace ApiServerTest.Tests
             ShareGroupQueries query = Helpers.ReturnShareGroupQuery(DefaultUserGuid.ToString());
             List<Model_SharedToGroup> action() => query.GetSharedToGroup(Guid.Empty);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<List<Model_SharedToGroup>>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<List<Model_SharedToGroup>>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -473,7 +473,7 @@ namespace ApiServerTest.Tests
             ShareGroupQueries query = Helpers.ReturnShareGroupQuery(DefaultUserGuid.ToString());
             List<Model_SharedToGroup> action() => query.GetSharedToGroup(group.ID);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<List<Model_SharedToGroup>>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<List<Model_SharedToGroup>>) action);
             RequestException result = new(ResultCodes.NoDataFound);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -498,7 +498,7 @@ namespace ApiServerTest.Tests
             ShareGroupQueries query = Helpers.ReturnShareGroupQuery(DefaultUserGuid.ToString());
             List<Model_SharedToGroup> action() => query.GetSharedToGroup(group.ID);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<List<Model_SharedToGroup>>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<List<Model_SharedToGroup>>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -513,7 +513,7 @@ namespace ApiServerTest.Tests
             OtherUserDefaultGuid = Helpers.CreateUser(OtherUsername, OtherEmail, Password);
 
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
+            _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             Model_Group group = Helpers.CreateGroup(GroupName, DefaultUserGuid.ToString());
             Helpers.AddUserToGroup(OtherUsername, group.ID, Username, DefaultUserGuid.ToString());
 
@@ -531,7 +531,7 @@ namespace ApiServerTest.Tests
             ShareGroupQueries query = Helpers.ReturnShareGroupQuery(DefaultUserGuid.ToString());
             List<Model_SharedToGroup> action() => query.GetSharedToGroup(Guid.Empty);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<List<Model_SharedToGroup>>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<List<Model_SharedToGroup>>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
