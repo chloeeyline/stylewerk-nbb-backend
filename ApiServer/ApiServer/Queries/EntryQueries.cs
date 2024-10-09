@@ -33,7 +33,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             entry.TemplateID equals template.ID
         join sgu in DB.Share_GroupUser on
             new { si.ToWhom, si.Visibility } equals
-            new { ToWhom = (Guid?)sgu.GroupID, Visibility = ShareVisibility.Group }
+            new { ToWhom = (Guid?) sgu.GroupID, Visibility = ShareVisibility.Group }
             into groupJoin
         from sharedGroup in groupJoin.DefaultIfEmpty()
         join sg in DB.Share_Group on
@@ -43,6 +43,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         select new
         {
             entry.ID,
+            entry.FolderID,
             entry.Name,
             entry.IsEncrypted,
             entry.Tags,
@@ -66,6 +67,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             select new
             {
                 entry.ID,
+                entry.FolderID,
                 entry.Name,
                 entry.IsEncrypted,
                 entry.Tags,
@@ -133,6 +135,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         select new Model_EntryItem
         (
             g.ID,
+            g.FolderID ?? Guid.Empty,
             g.Name,
             g.IsEncrypted,
             g.Tags,
