@@ -91,7 +91,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
 
         DB.SaveChanges();
 
-        Model_EntryFolders result = new(item.ID, item.Name, []);
+        Model_EntryFolders result = new(item.ID, item.Name, [.. Details(item.ID)]);
         return result;
     }
 

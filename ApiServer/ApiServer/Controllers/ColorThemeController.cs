@@ -39,7 +39,7 @@ public class ColorThemeController(NbbContext db) : BaseController(db)
     }
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
-    [HttpGet(nameof(Remove))]
+    [HttpPost(nameof(Remove))]
     public IActionResult Remove(Guid? id)
     {
         Query.Remove(id);
