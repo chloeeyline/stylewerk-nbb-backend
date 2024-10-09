@@ -17,7 +17,7 @@ public class ColorThemeController(NbbContext db) : BaseController(db)
     public IActionResult Get(Guid? id)
     {
         string result = Query.Get(id);
-        return Ok(new Model_Result<string>(result));
+        return Ok(result);
     }
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_ColorTheme>>))]

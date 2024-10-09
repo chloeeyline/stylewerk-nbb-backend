@@ -17,7 +17,7 @@ public class LanguageController(NbbContext db) : BaseController(db)
     public IActionResult Get(string? code)
     {
         string result = Query.Get(code);
-        return Ok(new Model_Result<string>(result));
+        return Ok(result);
     }
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_Language>>))]
