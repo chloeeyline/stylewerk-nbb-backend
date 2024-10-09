@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Text.Json;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using StyleWerk.NBB.Database;
@@ -17,7 +19,7 @@ public class LanguageController(NbbContext db) : BaseController(db)
     public IActionResult Get(string? code)
     {
         string result = Query.Get(code);
-        return Ok(result);
+        return Ok(JsonSerializer.Deserialize(result, typeof(object)));
     }
 
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_Language>>))]
