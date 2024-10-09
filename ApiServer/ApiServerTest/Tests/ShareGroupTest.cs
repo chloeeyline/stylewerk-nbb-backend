@@ -513,7 +513,7 @@ namespace ApiServerTest.Tests
             OtherUserDefaultGuid = Helpers.CreateUser(OtherUsername, OtherEmail, Password);
 
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
+            Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             Model_Group group = Helpers.CreateGroup(GroupName, DefaultUserGuid.ToString());
             Helpers.AddUserToGroup(OtherUsername, group.ID, Username, DefaultUserGuid.ToString());
 

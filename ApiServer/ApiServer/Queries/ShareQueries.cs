@@ -21,10 +21,10 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         foreach (Share_Item item in list)
         {
             Guid userID = type == ShareType.Entry
-               ? Exist_SharedItem(DB.Structure_Entry, item.ItemID)
-               : type == ShareType.Template
-               ? Exist_SharedItem(DB.Structure_Template, item.ItemID)
-               : throw new RequestException(ResultCodes.DataIsInvalid);
+            ? Exist_SharedItem(DB.Structure_Entry, id)
+            : type == ShareType.Template
+            ? Exist_SharedItem(DB.Structure_Template, id)
+            : throw new RequestException(ResultCodes.DataIsInvalid);
 
             User_Login owner = DB.User_Login.FirstOrDefault(s => s.ID == userID)
                     ?? throw new RequestException(ResultCodes.NoDataFound);
@@ -85,6 +85,10 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
                 throw new RequestException(ResultCodes.CantShareWithYourself);
             toWhom = user.ID;
         }
+        else if (model.Visibility is ShareVisibility.Public)
+        {
+
+        }
         else
             throw new RequestException(ResultCodes.DataIsInvalid);
 
@@ -117,7 +121,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         Share_Item item = DB.Share_Item.FirstOrDefault(s => s.ID == id) ??
             throw new RequestException(ResultCodes.NoDataFound);
 
-        Guid userID = GetOwnerID(item.ID, item.Type);
+        Guid userID = GetOwnerID(item.ItemID, item.Type);
 
         if (userID != CurrentUser.ID)
             throw new RequestException(ResultCodes.YouDontOwnTheData);
@@ -136,8 +140,11 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         return userID;
     }
 
-    private static Guid Exist_SharedItem<T>(DbSet<T> set, Guid id) where T : class, IEntity_GuidID, IEntity_User
+    private static Guid Exist_SharedItem<T>(DbSet<T> set, Guid? id) where T : class, IEntity_GuidID, IEntity_User
     {
+        if (id is null || id == Guid.Empty)
+            throw new RequestException(ResultCodes.DataIsInvalid);
+
         T item = set.FirstOrDefault(s => s.ID == id)
             ?? throw new RequestException(ResultCodes.NoDataFound);
         return item.UserID;
