@@ -49,6 +49,7 @@ public enum ResultCodes
     MissingRight = 1103,
     YouDontOwnTheData = 1104,
     NameMustBeUnique = 1105,
+    UserMustBeAdmin = 1106,
 
     #region Authentication
     EmailInvalid = 1210,
@@ -83,19 +84,6 @@ public enum ResultCodes
     PwUsesInvalidChars = 1247,
     #endregion
 
-    #region Share
-    CantShareWithYourself = 1302,
-    OnlyOwnerCanChangePublicity = 1303,
-    #endregion
-
-    #region Entry
-    TemplateDoesntMatch = 1400,
-    #endregion
-
-    #region Folder
-    #endregion
-
-    #region Template
-    NotYourTemplate = 1600
-    #endregion
+    CantShareWithYourself = 1301,
+    TemplateDoesntMatch = 1302,
 }

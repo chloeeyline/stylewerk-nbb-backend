@@ -118,6 +118,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
         int sortOrder = 1;
         foreach (Guid id in model)
         {
+            if (id == Guid.Empty) continue;
             Structure_Entry_Folder folder = DB.Structure_Entry_Folder.FirstOrDefault(s => s.ID == id)
                 ?? throw new RequestException(ResultCodes.NoDataFound);
             if (folder.UserID != CurrentUser.ID)

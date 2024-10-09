@@ -47,6 +47,8 @@ public class ColorThemeQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
     {
         if (model is null || string.IsNullOrWhiteSpace(model.Data))
             throw new RequestException(ResultCodes.DataIsInvalid);
+        if (!CurrentUser.Login.Admin)
+            throw new RequestException(ResultCodes.UserMustBeAdmin);
         string name = model.Name.NormalizeName();
         Admin_ColorTheme? item = DB.Admin_ColorTheme.FirstOrDefault(s => s.ID == model.ID);
 

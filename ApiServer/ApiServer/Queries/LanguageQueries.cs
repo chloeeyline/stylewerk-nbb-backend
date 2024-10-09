@@ -47,6 +47,8 @@ public class LanguageQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
     {
         if (model is null || string.IsNullOrWhiteSpace(model.Data))
             throw new RequestException(ResultCodes.DataIsInvalid);
+        if (!CurrentUser.Login.Admin)
+            throw new RequestException(ResultCodes.UserMustBeAdmin);
         string name = model.Name.NormalizeName();
         Admin_Language? item = DB.Admin_Language.FirstOrDefault(s => s.Code == model.Code);
 

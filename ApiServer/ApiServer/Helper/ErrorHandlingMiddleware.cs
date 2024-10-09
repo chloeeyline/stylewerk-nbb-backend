@@ -58,7 +58,7 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
         // Set status code depending on the exception type
         context.Response.StatusCode = (int) HttpStatusCode.OK;
 
-        Model_Result<string> response = new(ResultCodes.GeneralError);
+        Model_Result<string> response = new(ResultCodes.GeneralError, data: exception.Message);
         if (exception is RequestException requestException)
         {
             response = new Model_Result<string>(requestException.Code);

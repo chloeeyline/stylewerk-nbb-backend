@@ -70,12 +70,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
 
         Guid? toWhom = null;
 
-        if (model.Visibility is ShareVisibility.Public && string.IsNullOrWhiteSpace(model.ToWhom))
-        {
-            if (userID != CurrentUser.ID)
-                throw new RequestException(ResultCodes.OnlyOwnerCanChangePublicity);
-        }
-        else if (model.Visibility is ShareVisibility.Group && !string.IsNullOrWhiteSpace(model.ToWhom) && Guid.TryParse(model.ToWhom, out Guid groupID))
+        if (model.Visibility is ShareVisibility.Group && !string.IsNullOrWhiteSpace(model.ToWhom) && Guid.TryParse(model.ToWhom, out Guid groupID))
         {
             Share_Group group = DB.Share_Group.FirstOrDefault(s => s.ID == groupID)
                 ?? throw new RequestException(ResultCodes.NoDataFound);
