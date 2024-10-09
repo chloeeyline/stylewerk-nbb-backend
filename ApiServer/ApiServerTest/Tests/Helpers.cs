@@ -1,6 +1,7 @@
 ﻿using StyleWerk.NBB.Authentication;
 using StyleWerk.NBB.AWS;
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Admin;
 using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Database.User;
@@ -74,6 +75,15 @@ namespace ApiServerTest.Tests
             return query;
         }
 
+        public static ColorThemeQueries ReturnColorQuery(string userGuid)
+        {
+            NbbContext DB = NbbContext.Create();
+            ApplicationUser user = DB.GetUser(new Guid(userGuid));
+
+            ColorThemeQueries query = new(DB, user);
+            return query;
+        }
+
         public static void DeleteAll()
         {
             NbbContext context = NbbContext.Create();
@@ -84,6 +94,7 @@ namespace ApiServerTest.Tests
             List<Structure_Entry> entries = [.. context.Structure_Entry];
             List<Share_Item> items = [.. context.Share_Item];
             List<Share_Group> groups = [.. context.Share_Group];
+            List<Admin_ColorTheme> colors = [.. context.Admin_ColorTheme];
 
             if (folders.Count > 0)
                 context.Structure_Entry_Folder.RemoveRange(folders);
@@ -99,6 +110,9 @@ namespace ApiServerTest.Tests
 
             if (groups.Count > 0)
                 context.Share_Group.RemoveRange(groups);
+
+            if (colors.Count > 0)
+                context.Admin_ColorTheme.RemoveRange(colors);
 
             if (usersLogin.Count > 0)
                 context.User_Login.RemoveRange(usersLogin);
@@ -141,6 +155,27 @@ namespace ApiServerTest.Tests
 
             ShareGroupQueries query = Helpers.ReturnShareGroupQuery(userId);
             query.UpdateUser(newUser);
+        }
+
+        public static Admin_ColorTheme CreateColorTheme(string userId, string themeName, Guid updateTheme)
+        {
+            ColorThemeQueries query = ReturnColorQuery(userId);
+
+            if (updateTheme != Guid.Empty)
+            {
+                Model_ColorTheme color = new(updateTheme, themeName, "Test", "{\"foo\":\"bar\"}");
+                query.Update(color);
+            }
+            else
+            {
+                Model_ColorTheme color = new(Guid.NewGuid(), themeName, "Test", "{\"foo\":\"bar\"}");
+                query.Update(color);
+            }
+
+            NbbContext context = NbbContext.Create();
+            Admin_ColorTheme? result = context.Admin_ColorTheme.FirstOrDefault(c => c.Name == themeName);
+
+            return result;
         }
 
         public static void ShareWithGroup(Guid itemId, Guid groupId, Guid userId, string who, ShareType type)
@@ -227,6 +262,14 @@ namespace ApiServerTest.Tests
             user.StatusTokenExpireTime = null;
             user.Email = email;
             user.EmailNormalized = email.Normalize().ToLower();
+            context.SaveChanges();
+        }
+
+        public static void SetUserAdmin(Guid userId)
+        {
+            NbbContext context = NbbContext.Create();
+            User_Login user = context.User_Login.First(u => u.ID == userId);
+            user.Admin = true;
             context.SaveChanges();
         }
     }
