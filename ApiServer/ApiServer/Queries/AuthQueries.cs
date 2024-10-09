@@ -283,7 +283,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         if (string.IsNullOrWhiteSpace(email))
             throw new RequestException(ResultCodes.DataIsInvalid);
 
-        if (CurrentUser.Login.StatusCode is null || CurrentUser.Login.StatusCode is UserStatus.PasswordReset)
+        if (CurrentUser.Login.StatusCode is not null && CurrentUser.Login.StatusCode is UserStatus.PasswordReset)
             throw new RequestException(ResultCodes.PasswordResetWasRequested);
 
         CurrentUser.Login.NewEmail = email;
@@ -507,8 +507,8 @@ public static partial class UsedRegex
     [GeneratedRegex(@"[a-z]")] public static partial Regex ContainsLowercase();
     [GeneratedRegex(@"[A-Z]")] public static partial Regex ContainsUppercase();
     [GeneratedRegex(@"\d")] public static partial Regex ContainsDigit();
-    [GeneratedRegex(@"[!#$%&'*+\-./?@\\_|]")] public static partial Regex ContainsPasswordSpecialChar();
+    [GeneratedRegex(@"[!#$%&*+\-.?@_|]")] public static partial Regex ContainsPasswordSpecialChar();
     [GeneratedRegex(@"\s")] public static partial Regex ContainsWhitespace();
-    [GeneratedRegex(@"[a-zA-Z\d!#$%&'*+\-./?@\\_|^\s]")] public static partial Regex OnlyPasswordValidChars();
+    [GeneratedRegex(@"[a-zA-Z\d!#$%&*+\-.?@_|^\s]")] public static partial Regex OnlyPasswordValidChars();
     [GeneratedRegex(@"^[a-zA-Z\d&+*\-._|]+$")] public static partial Regex OnlyUsernameValidChars();
 }
