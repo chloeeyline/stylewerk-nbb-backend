@@ -100,7 +100,7 @@ public class ShareQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
                 ID = Guid.NewGuid(),
                 Visibility = model.Visibility,
                 Type = model.Type,
-                ItemID = model.ID,
+                ItemID = model.ItemID,
                 ToWhom = toWhom
             };
 

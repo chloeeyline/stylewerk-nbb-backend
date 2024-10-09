@@ -81,7 +81,7 @@ public class ShareGroupQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
                 NameNormalized = model.Name.NormalizeName(),
             };
             DB.Share_Group.Add(item);
-            model = model with { ID = model.ID };
+            model = model with { ID = item.ID };
         }
         else
         {

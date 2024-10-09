@@ -2,28 +2,21 @@
 {
     public class ShareTest
     {
+        private Guid DefaultUserGuid { get; set; }
+        private Guid OtherUserDefaultGuid { get; set; }
 
+        private string Username = "TestUser";
+        private string Email = "chloe.hauer@lbs4.salzburg.at";
+        private string Password = "TestTest@123";
+
+        private string OtherUsername = "TestUser1";
+        private string OtherEmail = "florian.windisch@lbs4.salzburg.at";
+
+        #region Remove
         [Fact]
-        public void CreateGroup()
+        public void Remove()
         {
-
-        }
-
-        [Fact]
-        public void AddUserToGroupCreator()
-        {
-
-        }
-
-        [Fact]
-        public void AddUserToGroupUser()
-        {
-
-        }
-
-        [Fact]
-        public void RemoveUserCreator()
-        {
+            Helpers.DeleteAll();
 
         }
 
@@ -32,6 +25,7 @@
         {
 
         }
+        #endregion
 
         [Fact]
         public void ChangeUserRightsInGroup()

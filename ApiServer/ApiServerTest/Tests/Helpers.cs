@@ -1,6 +1,7 @@
 ﻿using StyleWerk.NBB.Authentication;
 using StyleWerk.NBB.AWS;
 using StyleWerk.NBB.Database;
+using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
@@ -45,6 +46,24 @@ namespace ApiServerTest.Tests
             return query;
         }
 
+        public static ShareQueries ReturnShareQuery(string userGuid)
+        {
+            NbbContext DB = NbbContext.Create();
+            ApplicationUser user = DB.GetUser(new Guid(userGuid));
+
+            ShareQueries query = new(DB, user);
+            return query;
+        }
+
+        public static ShareGroupQueries ReturnShareGroupQuery(string userGuid)
+        {
+            NbbContext DB = NbbContext.Create();
+            ApplicationUser user = DB.GetUser(new Guid(userGuid));
+
+            ShareGroupQueries query = new(DB, user);
+            return query;
+        }
+
         public static AuthQueries ReturnAuthQuery(string userGuid)
         {
             NbbContext DB = NbbContext.Create();
@@ -63,6 +82,8 @@ namespace ApiServerTest.Tests
             List<User_Login> usersLogin = [.. context.User_Login];
             List<User_Information> userInformations = [.. context.User_Information];
             List<Structure_Entry> entries = [.. context.Structure_Entry];
+            List<Share_Item> items = [.. context.Share_Item];
+            List<Share_Group> groups = [.. context.Share_Group];
 
             if (folders.Count > 0)
                 context.Structure_Entry_Folder.RemoveRange(folders);
@@ -72,6 +93,12 @@ namespace ApiServerTest.Tests
 
             if (entries.Count > 0)
                 context.Structure_Entry.RemoveRange(entries);
+
+            if (items.Count > 0)
+                context.Share_Item.RemoveRange(items);
+
+            if (groups.Count > 0)
+                context.Share_Group.RemoveRange(groups);
 
             if (usersLogin.Count > 0)
                 context.User_Login.RemoveRange(usersLogin);
@@ -97,6 +124,31 @@ namespace ApiServerTest.Tests
             User_Login myUser = query.GetUser(login);
 
             return myUser.ID;
+        }
+
+        public static Model_Group CreateGroup(string groupName, string userGuid)
+        {
+            Model_Group group = new(Guid.NewGuid(), groupName, 3);
+            ShareGroupQueries query = ReturnShareGroupQuery(userGuid);
+            Model_Group newGroup = query.Update(group);
+
+            return newGroup;
+        }
+
+        public static void AddUserToGroup(string addUser, Guid? groupId, string username, string userId)
+        {
+            Model_GroupUser newUser = new(addUser, groupId.Value, false, false, username);
+
+            ShareGroupQueries query = Helpers.ReturnShareGroupQuery(userId);
+            query.UpdateUser(newUser);
+        }
+
+        public static void ShareWithGroup(Guid? itemId, Guid? groupId, Guid userId, string who, ShareType type)
+        {
+            ShareQueries queryShare = ReturnShareQuery(userId.ToString());
+            Model_ShareItem newItem = new(Guid.Empty, itemId.Value, who, ShareVisibility.Group, type, groupId.ToString());
+            queryShare.Update(newItem);
+
         }
 
         public static Model_EntryFolders CreateFolder(string user, string folderName)
