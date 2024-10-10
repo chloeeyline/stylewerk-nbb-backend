@@ -84,6 +84,15 @@ namespace ApiServerTest.Tests
             return query;
         }
 
+        public static LanguageQueries ReturnLanguageQuery(string userGuid)
+        {
+            NbbContext DB = NbbContext.Create();
+            ApplicationUser user = DB.GetUser(new Guid(userGuid));
+
+            LanguageQueries query = new(DB, user);
+            return query;
+        }
+
         public static void DeleteAll()
         {
             NbbContext context = NbbContext.Create();
@@ -95,6 +104,7 @@ namespace ApiServerTest.Tests
             List<Share_Item> items = [.. context.Share_Item];
             List<Share_Group> groups = [.. context.Share_Group];
             List<Admin_ColorTheme> colors = [.. context.Admin_ColorTheme];
+            List<Admin_Language> langs = [.. context.Admin_Language];
 
             if (folders.Count > 0)
                 context.Structure_Entry_Folder.RemoveRange(folders);
@@ -113,6 +123,9 @@ namespace ApiServerTest.Tests
 
             if (colors.Count > 0)
                 context.Admin_ColorTheme.RemoveRange(colors);
+
+            if (langs.Count > 0)
+                context.Admin_Language.RemoveRange(langs);
 
             if (usersLogin.Count > 0)
                 context.User_Login.RemoveRange(usersLogin);
@@ -177,6 +190,20 @@ namespace ApiServerTest.Tests
 
             return result;
         }
+
+        public static Admin_Language CreateLanguage(string userId, string code, string langName)
+        {
+            LanguageQueries query = ReturnLanguageQuery(userId);
+
+            Model_Language lang = new(code, langName, "{\"foo\":\"bar\"}");
+            query.Update(lang);
+
+            NbbContext context = NbbContext.Create();
+            Admin_Language? result = context.Admin_Language.FirstOrDefault(c => c.Code == code);
+
+            return result;
+        }
+
 
         public static void ShareWithGroup(Guid itemId, Guid groupId, Guid userId, string who, ShareType type)
         {

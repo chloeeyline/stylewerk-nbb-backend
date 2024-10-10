@@ -6,7 +6,7 @@ using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
-    public class ColorTest
+    public class LanguageTest
     {
         private Guid DefaultUserGuid { get; set; }
         private Guid OtherUserDefaultGuid { get; set; }
@@ -18,7 +18,8 @@ namespace ApiServerTest.Tests
         private readonly string OtherUsername = "TestUser1";
         private readonly string OtherEmail = "florian.windisch@lbs4.salzburg.at";
 
-        #region add
+        #region Add
+
         [Fact]
         public void Add()
         {
@@ -26,7 +27,7 @@ namespace ApiServerTest.Tests
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
 
-            Admin_ColorTheme result = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Admin_Language result = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
             Assert.NotNull(result);
         }
 
@@ -37,11 +38,12 @@ namespace ApiServerTest.Tests
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
 
-            Model_ColorTheme color = new(Guid.NewGuid(), "TestTheme", "Test", null);
-            ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
             try
             {
-                query.Update(color);
+                LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
+
+                Model_Language lang = new("En", "English", string.Empty);
+                query.Update(lang);
             }
             catch (RequestException ex)
             {
@@ -58,7 +60,7 @@ namespace ApiServerTest.Tests
 
             try
             {
-                Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+                _ = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
             }
             catch (RequestException ex)
             {
@@ -73,11 +75,11 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
 
             try
             {
-                Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+                _ = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "gb", "English");
             }
             catch (RequestException ex)
             {
@@ -87,7 +89,7 @@ namespace ApiServerTest.Tests
         }
         #endregion
 
-        #region update
+        #region Update
 
         [Fact]
         public void Update()
@@ -95,12 +97,12 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
-            Admin_ColorTheme result = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestColor", theme.ID);
+            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
+            Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "Australian");
 
             NbbContext context = NbbContext.Create();
-            Admin_ColorTheme? dbtheme = context.Admin_ColorTheme.FirstOrDefault(c => c.ID == result.ID);
-            Assert.NotEqual(theme.Name, dbtheme.Name);
+            Admin_Language? lang = context.Admin_Language.FirstOrDefault(l => l.Code == language.Code);
+            Assert.NotEqual(lang.Name, language.Name);
         }
 
         [Fact]
@@ -109,12 +111,12 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
-            _ = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "DefaultTheme", Guid.Empty);
+            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
+            Helpers.CreateLanguage(DefaultUserGuid.ToString(), "de", "Australian");
 
             try
             {
-                _ = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "DefaultTheme", theme.ID);
+                Helpers.CreateLanguage(DefaultUserGuid.ToString(), "de", "English");
             }
             catch (RequestException ex)
             {
@@ -124,21 +126,21 @@ namespace ApiServerTest.Tests
         }
         #endregion
 
-        #region remove
+        #region Remove
         [Fact]
         public void Remove()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
 
-            ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
-            query.Remove(theme.ID);
+            LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
+            query.Remove(language.Code);
 
             NbbContext context = NbbContext.Create();
-            Admin_ColorTheme? dbTheme = context.Admin_ColorTheme.FirstOrDefault(t => t.ID == theme.ID);
-            Assert.Null(dbTheme);
+            Admin_Language? lang = context.Admin_Language.FirstOrDefault(l => l.Code == language.Code);
+            Assert.Null(lang);
         }
 
         [Fact]
@@ -148,11 +150,10 @@ namespace ApiServerTest.Tests
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
 
-            ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
-
+            LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
             try
             {
-                query.Remove(Guid.Empty);
+                query.Remove(string.Empty);
             }
             catch (RequestException ex)
             {
@@ -168,11 +169,10 @@ namespace ApiServerTest.Tests
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
 
-            ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
-
+            LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
             try
             {
-                query.Remove(Guid.NewGuid());
+                query.Remove("xl");
             }
             catch (RequestException ex)
             {
@@ -187,18 +187,17 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
 
             NbbContext context = NbbContext.Create();
             User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
             user.Admin = false;
             context.SaveChanges();
 
-            ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
-
+            LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
             try
             {
-                query.Remove(theme.ID);
+                query.Remove(language.Code);
             }
             catch (RequestException ex)
             {
@@ -208,20 +207,20 @@ namespace ApiServerTest.Tests
         }
         #endregion
 
-        #region details
-
+        #region Details
         [Fact]
         public void Details()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
 
-            ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
-            Model_ColorTheme result = query.Details(theme.ID);
+            LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
+            Model_Language details = query.Details(language.Code);
 
-            Assert.NotNull(result);
+            Assert.NotNull(details);
+            Assert.Equal(details.Name, language.Name);
         }
 
         [Fact]
@@ -231,62 +230,80 @@ namespace ApiServerTest.Tests
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
 
-            ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
-
-            Model_ColorTheme action() => query.Details(Guid.Empty);
-
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_ColorTheme>)action);
-            RequestException result = new(ResultCodes.DataIsInvalid);
-            Assert.Equal(result.Code, exception.Code);
+            LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
+            try
+            {
+                Model_Language details = query.Details(string.Empty);
+            }
+            catch (RequestException ex)
+            {
+                RequestException result = new(ResultCodes.DataIsInvalid);
+                Assert.Equal(result.Code, ex.Code);
+            }
         }
 
         [Fact]
-        public void Detais_NoDataFound()
+        public void Details_NoDataFound()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
 
-            ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
-
-            Model_ColorTheme action() => query.Details(Guid.NewGuid());
-
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_ColorTheme>)action);
-            RequestException result = new(ResultCodes.NoDataFound);
-            Assert.Equal(result.Code, exception.Code);
+            LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
+            try
+            {
+                Model_Language details = query.Details("xl");
+            }
+            catch (RequestException ex)
+            {
+                RequestException result = new(ResultCodes.NoDataFound);
+                Assert.Equal(result.Code, ex.Code);
+            }
         }
         #endregion
 
-        #region list
-
+        #region List
         [Fact]
         public void List()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
 
-            ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
-            List<Model_ColorTheme> result = query.List();
+            LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
+            List<Model_Language> details = query.List();
 
-            Assert.NotEmpty(result);
+            Assert.NotEmpty(details);
+        }
+
+        [Fact]
+        public void List_Empty()
+        {
+            Helpers.DeleteAll();
+            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
+            Helpers.SetUserAdmin(DefaultUserGuid);
+
+            LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
+            List<Model_Language> details = query.List();
+
+            Assert.Empty(details);
         }
         #endregion
 
-        #region get
-
+        #region Get
         [Fact]
         public void Get()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
-            ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
+            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
 
-            string result = query.Get(theme.ID);
-            Assert.NotNull(result);
+            LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
+            string details = query.Get(language.Code);
+
+            Assert.NotNull(details);
         }
 
         [Fact]
@@ -295,14 +312,18 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
-            ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
 
-            string action() => query.Get(Guid.Empty);
+            LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
+            try
+            {
+                string details = query.Get(string.Empty);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
-            RequestException result = new(ResultCodes.DataIsInvalid);
-            Assert.Equal(result.Code, exception.Code);
+            }
+            catch (RequestException ex)
+            {
+                RequestException result = new(ResultCodes.DataIsInvalid);
+                Assert.Equal(result.Code, ex.Code);
+            }
         }
 
         [Fact]
@@ -311,13 +332,18 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
 
-            string action() => query.Get(Guid.NewGuid());
+            LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
+            try
+            {
+                string details = query.Get("xl");
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
-            RequestException result = new(ResultCodes.NoDataFound);
-            Assert.Equal(result.Code, exception.Code);
+            }
+            catch (RequestException ex)
+            {
+                RequestException result = new(ResultCodes.NoDataFound);
+                Assert.Equal(result.Code, ex.Code);
+            }
         }
         #endregion
     }

@@ -38,6 +38,8 @@ public class LanguageQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             throw new RequestException(ResultCodes.DataIsInvalid);
         Admin_Language item = DB.Admin_Language.FirstOrDefault(s => s.Code == code)
             ?? throw new RequestException(ResultCodes.NoDataFound);
+        if (!CurrentUser.Login.Admin)
+            throw new RequestException(ResultCodes.UserMustBeAdmin);
 
         DB.Admin_Language.Remove(item);
         DB.SaveChanges();

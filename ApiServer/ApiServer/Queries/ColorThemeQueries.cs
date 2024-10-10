@@ -38,6 +38,8 @@ public class ColorThemeQueries(NbbContext DB, ApplicationUser CurrentUser) : Bas
             throw new RequestException(ResultCodes.DataIsInvalid);
         Admin_ColorTheme item = DB.Admin_ColorTheme.FirstOrDefault(s => s.ID == id)
             ?? throw new RequestException(ResultCodes.NoDataFound);
+        if (!CurrentUser.Login.Admin)
+            throw new RequestException(ResultCodes.UserMustBeAdmin);
 
         DB.Admin_ColorTheme.Remove(item);
         DB.SaveChanges();
