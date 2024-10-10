@@ -17,12 +17,14 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
 
     #region Login
     /// <summary>
-    /// login for the user
+    /// Login with username and password
     /// </summary>
-    /// <param name="model">contains username and password</param>
+    /// <param name="model">contains username and password and whether the login should consist over session</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Login")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<AuthenticationResult>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoUserFound, ResultCodes.EmailIsNotVerified,
+    ResultCodes.PasswordResetWasRequested)]
     [HttpPost(nameof(Login))]
     public IActionResult Login([FromBody] Model_Login? model)
     {
@@ -31,12 +33,14 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     }
 
     /// <summary>
-    /// sets the refresh token
+    /// Login with refresh token
     /// </summary>
-    /// <param name="model"></param>
+    /// <param name="model">contains token and whether the login should consist over session</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Login")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<AuthenticationResult>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.RefreshTokenNotFound, ResultCodes.RefreshTokenExpired,
+        ResultCodes.NoUserFound, ResultCodes.EmailIsNotVerified, ResultCodes.PasswordResetWasRequested)]
     [HttpPost(nameof(RefreshToken))]
     public IActionResult RefreshToken([FromBody] Model_RefreshToken? model)
     {
@@ -47,12 +51,16 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
 
     #region Registration
     /// <summary>
-    /// registers a user
+    /// Registers a user
     /// </summary>
     /// <param name="model">contains the user information</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Registration")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.EmailInvalid, ResultCodes.EmailAlreadyExists,
+        ResultCodes.UnToShort, ResultCodes.UnUsesInvalidChars, ResultCodes.UsernameAlreadyExists, ResultCodes.PwTooShort,
+        ResultCodes.PwHasNoLowercaseLetter, ResultCodes.PwHasNoUppercaseLetter, ResultCodes.PwHasNoNumber,
+        ResultCodes.PwHasNoSpecialChars, ResultCodes.PwHasWhitespace, ResultCodes.PwUsesInvalidChars)]
     [HttpPost(nameof(Registration))]
     public IActionResult Registration([FromBody] Model_Registration? model)
     {
@@ -61,12 +69,14 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     }
 
     /// <summary>
-    /// verifies the email of the registered user
+    /// Verifies the email of the registered user
     /// </summary>
     /// <param name="token">status token of the user</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Registration")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.StatusTokenNotFound,
+        ResultCodes.WrongStatusCode, ResultCodes.StatusTokenExpired)]
     [HttpPost(nameof(VerifyEmail))]
     public IActionResult VerifyEmail(string? token)
     {
@@ -77,12 +87,13 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
 
     #region Forgot Password
     /// <summary>
-    /// sets the status code to Password reset and sends an email 
+    /// Sends email to user to reset password
     /// </summary>
     /// <param name="email">email of the user</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Forgot Password")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoUserFound, ResultCodes.EmailIsNotVerified)]
     [HttpPost(nameof(RequestPasswordReset))]
     public IActionResult RequestPasswordReset([FromBody] string? email)
     {
@@ -91,12 +102,16 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     }
 
     /// <summary>
-    /// resets password and sets the status code, token and expire time to null 
+    /// Resets the password of the user
     /// </summary>
     /// <param name="model">contains new password and status token</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Forgot Password")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.StatusTokenNotFound, ResultCodes.WrongStatusCode,
+        ResultCodes.StatusTokenExpired, ResultCodes.RefreshTokenExpired, ResultCodes.PwTooShort, ResultCodes.PwHasNoLowercaseLetter,
+        ResultCodes.PwHasNoUppercaseLetter, ResultCodes.PwHasNoNumber, ResultCodes.PwHasNoSpecialChars, ResultCodes.PwHasWhitespace,
+        ResultCodes.PwUsesInvalidChars)]
     [HttpPost(nameof(ResetPassword))]
     public IActionResult ResetPassword([FromBody] Model_ResetPassword? model)
     {
@@ -108,7 +123,7 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     #region Session
 
     /// <summary>
-    /// removes the current session for the current user
+    /// Logout on all devices the user was logged in
     /// </summary>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Session")]
@@ -121,7 +136,7 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     }
 
     /// <summary>
-    /// log out for the current user
+    /// Logout on current device
     /// </summary>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Session")]
@@ -136,12 +151,13 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
 
     #region Change Email
     /// <summary>
-    /// changes the email
+    /// Changes the email of the current user
     /// </summary>
     /// <param name="email">email of the user</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Change Email")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.PasswordResetWasRequested)]
     [HttpPost(nameof(UpdateEmail)), Authorize]
     public IActionResult UpdateEmail(string? email)
     {
@@ -150,12 +166,14 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     }
 
     /// <summary>
-    /// verifies the updated email 
+    /// Verifies the updated email 
     /// </summary>
     /// <param name="code">status token</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Change Email")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.EmailChangeCodeWrong,
+        ResultCodes.WrongStatusCode, ResultCodes.StatusTokenExpired)]
     [HttpPost(nameof(VerifyUpdatedEmail)), Authorize]
     public IActionResult VerifyUpdatedEmail(string? code)
     {
@@ -166,7 +184,7 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
 
     #region Userdata
     /// <summary>
-    /// Getting the User details of the current user
+    /// Gets user details of current user
     /// </summary>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Userdata")]
@@ -179,12 +197,15 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     }
 
     /// <summary>
-    /// updates the User details for the current user
+    /// Updates user details for the current user
     /// </summary>
-    /// <param name="model">contains password, firstname, lastname and gender</param>
+    /// <param name="model">contains data that can be updated</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Userdata")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.PendingChangeOpen, ResultCodes.PwTooShort,
+        ResultCodes.PwHasNoLowercaseLetter, ResultCodes.PwHasNoUppercaseLetter, ResultCodes.PwHasNoNumber,
+        ResultCodes.PwHasNoSpecialChars, ResultCodes.PwHasWhitespace, ResultCodes.PwUsesInvalidChars)]
     [HttpPost(nameof(UpdateUserData)), Authorize]
     public IActionResult UpdateUserData([FromBody] Model_UpdateUserData model)
     {
@@ -195,12 +216,14 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
 
     #region Validation
     /// <summary>
-    /// decides whether the password complies with our conditions
+    /// Decides whether the password complies with the conditions
     /// </summary>
     /// <param name="model">contains the password</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Validation")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.PwTooShort, ResultCodes.PwHasNoLowercaseLetter, ResultCodes.PwHasNoUppercaseLetter,
+        ResultCodes.PwHasNoNumber, ResultCodes.PwHasNoSpecialChars, ResultCodes.PwHasWhitespace, ResultCodes.PwUsesInvalidChars)]
     [HttpPost(nameof(ValidatePassword))]
     public IActionResult ValidatePassword([FromBody] Model_ValidateIdentification model)
     {
@@ -209,12 +232,13 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     }
 
     /// <summary>
-    /// decides whether the email complies with our conditions
+    /// Decides whether the email complies with the conditions
     /// </summary>
     /// <param name="model">contains the email</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Validation")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.EmailInvalid, ResultCodes.EmailAlreadyExists)]
     [HttpPost(nameof(ValidateEmail))]
     public IActionResult ValidateEmail([FromBody] Model_ValidateIdentification? model)
     {
@@ -223,12 +247,13 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     }
 
     /// <summary>
-    /// decides whether the username complies with our conditions
+    /// Decides whether the username complies with the conditions
     /// </summary>
     /// <param name="model">contains the username</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Validation")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.UnToShort, ResultCodes.UnUsesInvalidChars, ResultCodes.UsernameAlreadyExists)]
     [HttpPost(nameof(ValidateUsername))]
     public IActionResult ValidateUsername([FromBody] Model_ValidateIdentification? model)
     {
