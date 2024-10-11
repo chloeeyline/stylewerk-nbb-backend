@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
+using System.Text.Json;
 
 namespace StyleWerk.NBB.Controllers;
 
@@ -14,6 +15,11 @@ public class LanguageController(NbbContext db) : BaseController(db)
 {
     public LanguageQueries Query => new(DB, CurrentUser);
 
+    /// <summary>
+    /// Returns language data as JSON
+    /// </summary>
+    /// <param name="code">language code</param>
+    /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
     [HttpGet()]
     public IActionResult Get(string? code)
@@ -22,6 +28,10 @@ public class LanguageController(NbbContext db) : BaseController(db)
         return Ok(JsonSerializer.Deserialize(result, typeof(object)));
     }
 
+    /// <summary>
+    /// Loads all available languages
+    /// </summary>
+    /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_Language>>))]
     [HttpGet(nameof(List))]
     public IActionResult List()
@@ -30,6 +40,11 @@ public class LanguageController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<List<Model_Language>>(result));
     }
 
+    /// <summary>
+    /// Loads language title, code and details for the download 
+    /// </summary>
+    /// <param name="code">language code</param>
+    /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Language>))]
     [HttpGet(nameof(Details))]
     public IActionResult Details(string? code)
@@ -38,6 +53,11 @@ public class LanguageController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<Model_Language>(result));
     }
 
+    /// <summary>
+    /// Removes a language 
+    /// </summary>
+    /// <param name="code">language code</param>
+    /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(Remove))]
     public IActionResult Remove(string? code)
@@ -46,6 +66,11 @@ public class LanguageController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<string>());
     }
 
+    /// <summary>
+    /// Adds or updates a language with its details
+    /// </summary>
+    /// <param name="model">contains language code, title and data as JSON</param>
+    /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(Update)), Authorize]
     public IActionResult Update([FromBody] Model_Language? model)
