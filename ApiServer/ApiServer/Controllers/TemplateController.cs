@@ -13,7 +13,7 @@ public class TemplateController(NbbContext db) : BaseController(db)
     public TemplateQueries Query => new(DB, CurrentUser);
 
     /// <summary>
-    /// Lists all Templates based on the filters
+    /// Lists all templates based on given filters
     /// </summary>
     /// <param name="page">pages</param>
     /// <param name="perPage">how many templates per page should be shown</param>
@@ -35,9 +35,9 @@ public class TemplateController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// Removes a template and all its rows, cells and all entries that are based on the template
+    /// Removes a template and all its rows, cells and all entries that are based on it
     /// </summary>
-    /// <param name="id">templateId</param>
+    /// <param name="id">template ID</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(Remove))]
@@ -48,9 +48,9 @@ public class TemplateController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// copies a shared template for the current user
+    /// Copies a public template for the current user
     /// </summary>
-    /// <param name="id">templateId</param>
+    /// <param name="id">template ID</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Editor>))]
     [HttpPost(nameof(Copy))]
