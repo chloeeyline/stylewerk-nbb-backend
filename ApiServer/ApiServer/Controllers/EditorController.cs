@@ -18,6 +18,7 @@ public class EditorController(NbbContext db) : BaseController(db)
     /// <param name="id">entry ID</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Editor>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
     [HttpGet(nameof(GetEntry))]
     public IActionResult GetEntry(Guid? id)
     {
@@ -31,6 +32,7 @@ public class EditorController(NbbContext db) : BaseController(db)
     /// <param name="id">template ID</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Editor>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
     [HttpGet(nameof(GetTemplate))]
     public IActionResult GetTemplate(Guid? id)
     {
@@ -44,6 +46,7 @@ public class EditorController(NbbContext db) : BaseController(db)
     /// <param name="model">contains entry data and template that the entry is based on</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Editor>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.YouDontOwnTheData, ResultCodes.NameMustBeUnique, ResultCodes.TemplateDoesntMatch)]
     [HttpPost(nameof(UpdateEntry))]
     public IActionResult UpdateEntry([FromBody] Model_Editor? model)
     {
@@ -57,6 +60,7 @@ public class EditorController(NbbContext db) : BaseController(db)
     /// <param name="model">contains empty entry data but template data</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Editor>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NameMustBeUnique, ResultCodes.YouDontOwnTheData, ResultCodes.NoDataFound)]
     [HttpPost(nameof(UpdateTemplate))]
     public IActionResult UpdateTemplate([FromBody] Model_Editor? model)
     {
