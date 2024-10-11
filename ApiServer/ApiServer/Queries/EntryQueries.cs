@@ -9,9 +9,6 @@ namespace StyleWerk.NBB.Queries;
 
 public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
-    /// <summary>
-    /// Load all Entries that are available for User and filter them by the specified filters
-    /// </summary>
     public List<Model_EntryItem> List(string? name, string? username, string? templateName, string? tags, bool? publicShared, bool? shared, bool? includeOwned, bool? directUser)
     {
         if (publicShared is not true && shared is not true)
@@ -33,7 +30,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             entry.TemplateID equals template.ID
         join sgu in DB.Share_GroupUser on
             new { si.ToWhom, si.Visibility } equals
-            new { ToWhom = (Guid?) sgu.GroupID, Visibility = ShareVisibility.Group }
+            new { ToWhom = (Guid?)sgu.GroupID, Visibility = ShareVisibility.Group }
             into groupJoin
         from sharedGroup in groupJoin.DefaultIfEmpty()
         join sg in DB.Share_Group on
@@ -150,11 +147,6 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         return [.. orderedQuery];
     }
 
-    /// <summary>
-    /// Removes an entry and all its Details
-    /// </summary>
-    /// <param name="id"></param>
-    /// <exception cref="RequestException"></exception>
     public void Remove(Guid? id)
     {
         if (id is null || id == Guid.Empty)

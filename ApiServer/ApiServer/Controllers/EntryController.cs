@@ -35,7 +35,7 @@ public class EntryController(NbbContext db) : BaseController(db)
     /// <summary>
     /// Removes a entry and all its rows and cells
     /// </summary>
-    /// <param name="id">entryId</param>
+    /// <param name="id">entry ID</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [HttpPost(nameof(Remove))]
