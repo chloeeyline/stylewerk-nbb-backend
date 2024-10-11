@@ -1,8 +1,5 @@
-﻿using System.Text.Json;
-
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
@@ -21,6 +18,7 @@ public class LanguageController(NbbContext db) : BaseController(db)
     /// <param name="code">language code</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
     [HttpGet()]
     public IActionResult Get(string? code)
     {
@@ -46,6 +44,7 @@ public class LanguageController(NbbContext db) : BaseController(db)
     /// <param name="code">language code</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Language>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
     [HttpGet(nameof(Details))]
     public IActionResult Details(string? code)
     {
@@ -59,6 +58,7 @@ public class LanguageController(NbbContext db) : BaseController(db)
     /// <param name="code">language code</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.UserMustBeAdmin)]
     [HttpPost(nameof(Remove))]
     public IActionResult Remove(string? code)
     {
@@ -72,6 +72,7 @@ public class LanguageController(NbbContext db) : BaseController(db)
     /// <param name="model">contains language code, title and data as JSON</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.UserMustBeAdmin, ResultCodes.NameMustBeUnique)]
     [HttpPost(nameof(Update)), Authorize]
     public IActionResult Update([FromBody] Model_Language? model)
     {
