@@ -123,7 +123,7 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     #region Session
 
     /// <summary>
-    /// Logout on all devices the user was logged in
+    /// Removes all login information on all devices except the current one
     /// </summary>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Session")]
