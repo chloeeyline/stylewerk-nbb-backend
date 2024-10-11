@@ -89,15 +89,15 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     /// <summary>
     /// Sends email to user to reset password
     /// </summary>
-    /// <param name="email">email of the user</param>
+    /// <param name="model">email of the user</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Forgot Password")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoUserFound, ResultCodes.EmailIsNotVerified)]
     [HttpPost(nameof(RequestPasswordReset))]
-    public IActionResult RequestPasswordReset([FromBody] string? email)
+    public IActionResult RequestPasswordReset([FromBody] Model_ValidateIdentification? model)
     {
-        string? result = Authentication.RequestPasswordReset(email);
+        string? result = Authentication.RequestPasswordReset(model?.ToValidate);
         return Ok(new Model_Result<string>(result));
     }
 
