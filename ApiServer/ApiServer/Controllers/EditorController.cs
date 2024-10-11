@@ -13,9 +13,9 @@ public class EditorController(NbbContext db) : BaseController(db)
     public EditorQueries Query => new(DB, CurrentUser);
 
     /// <summary>
-    /// gets entry details
+    /// Gets entry details
     /// </summary>
-    /// <param name="id">entryId</param>
+    /// <param name="id">entry ID</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Editor>))]
     [HttpGet(nameof(GetEntry))]
@@ -26,9 +26,9 @@ public class EditorController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// gets template details
+    /// Gets template details
     /// </summary>
-    /// <param name="id">templateId</param>
+    /// <param name="id">template ID</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Editor>))]
     [HttpGet(nameof(GetTemplate))]
@@ -39,9 +39,9 @@ public class EditorController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// creates or updates a entry
+    /// Creates or updates a entry
     /// </summary>
-    /// <param name="model">contains entry data and template</param>
+    /// <param name="model">contains entry data and template that the entry is based on</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Editor>))]
     [HttpPost(nameof(UpdateEntry))]
@@ -52,7 +52,7 @@ public class EditorController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// creates or updates a template
+    /// Creates or updates a template
     /// </summary>
     /// <param name="model">contains empty entry data but template data</param>
     /// <returns></returns>
