@@ -40,6 +40,7 @@ public class TemplateController(NbbContext db) : BaseController(db)
     /// <param name="id">template ID</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.YouDontOwnTheData)]
     [HttpPost(nameof(Remove))]
     public IActionResult Remove(Guid? id)
     {
@@ -53,6 +54,7 @@ public class TemplateController(NbbContext db) : BaseController(db)
     /// <param name="id">template ID</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_Editor>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
     [HttpPost(nameof(Copy))]
     public IActionResult Copy(Guid? id)
     {
