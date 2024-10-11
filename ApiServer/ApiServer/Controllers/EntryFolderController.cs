@@ -30,6 +30,7 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
     /// <param name="id">folder ID</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryItem>>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
     [HttpGet(nameof(Details))]
     public IActionResult Details(Guid? id)
     {
@@ -43,6 +44,7 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
     /// <param name="model">contains folder ID, name and entries</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_EntryFolders>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NameMustBeUnique, ResultCodes.MissingRight)]
     [HttpPost(nameof(Update))]
     public IActionResult Update([FromBody] Model_EntryFolders? model)
     {
@@ -56,6 +58,7 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
     /// <param name="id">folder ID</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.YouDontOwnTheData)]
     [HttpPost(nameof(Remove))]
     public IActionResult Remove(Guid? id)
     {
@@ -69,6 +72,7 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
     /// <param name="model">list of all folders for the current user</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.YouDontOwnTheData)]
     [HttpPost(nameof(Reorder))]
     public IActionResult Reorder([FromBody] List<Guid>? model)
     {
