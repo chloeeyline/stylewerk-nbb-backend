@@ -11,9 +11,10 @@ namespace ApiServerTest.Tests
 {
     public class Helpers
     {
+        public readonly static NbbContext DB = NbbContext.Create();
+
         public static EntryFolderQueries ReturnFolderQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
             EntryFolderQueries query = new(DB, user);
             return query;
@@ -21,7 +22,6 @@ namespace ApiServerTest.Tests
 
         public static TemplateQueries ReturnTemplateQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
             TemplateQueries query = new(DB, user);
@@ -30,7 +30,6 @@ namespace ApiServerTest.Tests
 
         public static EntryQueries ReturnEntryQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
             EntryQueries query = new(DB, user);
@@ -39,7 +38,6 @@ namespace ApiServerTest.Tests
 
         public static EditorQueries ReturnEditorQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
             EditorQueries query = new(DB, user);
@@ -48,7 +46,6 @@ namespace ApiServerTest.Tests
 
         public static AuthQueries ReturnAuthQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
             string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
@@ -58,7 +55,6 @@ namespace ApiServerTest.Tests
 
         public static ColorThemeQueries ReturnColorQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
             ColorThemeQueries query = new(DB, user);
@@ -67,7 +63,6 @@ namespace ApiServerTest.Tests
 
         public static LanguageQueries ReturnLanguageQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
             LanguageQueries query = new(DB, user);
@@ -76,42 +71,40 @@ namespace ApiServerTest.Tests
 
         public static void DeleteAll()
         {
-            NbbContext context = NbbContext.Create();
-            List<Structure_Entry_Folder> folders = [.. context.Structure_Entry_Folder];
-            List<Structure_Template> templates = [.. context.Structure_Template];
-            List<User_Login> usersLogin = [.. context.User_Login];
-            List<User_Information> userInformations = [.. context.User_Information];
-            List<Structure_Entry> entries = [.. context.Structure_Entry];
-            List<Admin_ColorTheme> colors = [.. context.Admin_ColorTheme];
-            List<Admin_Language> langs = [.. context.Admin_Language];
+            List<Structure_Entry_Folder> folders = [.. DB.Structure_Entry_Folder];
+            List<Structure_Template> templates = [.. DB.Structure_Template];
+            List<User_Login> usersLogin = [.. DB.User_Login];
+            List<User_Information> userInformations = [.. DB.User_Information];
+            List<Structure_Entry> entries = [.. DB.Structure_Entry];
+            List<Admin_ColorTheme> colors = [.. DB.Admin_ColorTheme];
+            List<Admin_Language> langs = [.. DB.Admin_Language];
 
             if (folders.Count > 0)
-                context.Structure_Entry_Folder.RemoveRange(folders);
+                DB.Structure_Entry_Folder.RemoveRange(folders);
 
             if (templates.Count > 0)
-                context.Structure_Template.RemoveRange(templates);
+                DB.Structure_Template.RemoveRange(templates);
 
             if (entries.Count > 0)
-                context.Structure_Entry.RemoveRange(entries);
+                DB.Structure_Entry.RemoveRange(entries);
 
             if (colors.Count > 0)
-                context.Admin_ColorTheme.RemoveRange(colors);
+                DB.Admin_ColorTheme.RemoveRange(colors);
 
             if (langs.Count > 0)
-                context.Admin_Language.RemoveRange(langs);
+                DB.Admin_Language.RemoveRange(langs);
 
             if (usersLogin.Count > 0)
-                context.User_Login.RemoveRange(usersLogin);
+                DB.User_Login.RemoveRange(usersLogin);
 
             if (userInformations.Count > 0)
-                context.User_Information.RemoveRange(userInformations);
+                DB.User_Information.RemoveRange(userInformations);
 
-            context.SaveChanges();
+            DB.SaveChanges();
         }
 
         public static Guid CreateUser(string userName, string email, string password)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(Guid.NewGuid());
 
             string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
@@ -141,8 +134,7 @@ namespace ApiServerTest.Tests
                 query.Update(color);
             }
 
-            NbbContext context = NbbContext.Create();
-            Admin_ColorTheme? result = context.Admin_ColorTheme.FirstOrDefault(c => c.Name == themeName);
+            Admin_ColorTheme? result = DB.Admin_ColorTheme.FirstOrDefault(c => c.Name == themeName);
 
             return result;
         }
@@ -154,8 +146,7 @@ namespace ApiServerTest.Tests
             Model_Language lang = new(code, langName, "{\"foo\":\"bar\"}");
             query.Update(lang);
 
-            NbbContext context = NbbContext.Create();
-            Admin_Language? result = context.Admin_Language.FirstOrDefault(c => c.Code == code);
+            Admin_Language? result = DB.Admin_Language.FirstOrDefault(c => c.Code == code);
 
             return result;
         }
@@ -172,7 +163,7 @@ namespace ApiServerTest.Tests
 
         public static Model_Editor CreateTemplate(string? templateName, string userGuid, Guid? updateTemplateId)
         {
-            EditorQueries query = Helpers.ReturnEditorQuery(userGuid);
+            EditorQueries query = ReturnEditorQuery(userGuid);
             Guid rowId = Guid.NewGuid();
             Guid templateId = Guid.NewGuid();
             Guid templateCellId = Guid.NewGuid();
@@ -229,22 +220,20 @@ namespace ApiServerTest.Tests
 
         public static void SetUserTokensNull(Guid userGuid, string email)
         {
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == userGuid);
+            User_Login user = DB.User_Login.First(u => u.ID == userGuid);
             user.StatusToken = null;
             user.StatusCode = null;
             user.StatusTokenExpireTime = null;
             user.Email = email;
             user.EmailNormalized = email.Normalize().ToLower();
-            context.SaveChanges();
+            DB.SaveChanges();
         }
 
         public static void SetUserAdmin(Guid userId)
         {
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == userId);
+            User_Login user = DB.User_Login.First(u => u.ID == userId);
             user.Admin = true;
-            context.SaveChanges();
+            DB.SaveChanges();
         }
     }
 }

@@ -1,11 +1,11 @@
-﻿using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Database.Admin;
+﻿using StyleWerk.NBB.Database.Admin;
 using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
+    [Collection("Sequential")]
     public class ColorTest
     {
         private Guid DefaultUserGuid { get; set; }
@@ -96,8 +96,7 @@ namespace ApiServerTest.Tests
             Admin_ColorTheme? result = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestColor", theme.ID);
             Assert.NotNull(result);
 
-            NbbContext context = NbbContext.Create();
-            Admin_ColorTheme? dbtheme = context.Admin_ColorTheme.FirstOrDefault(c => c.ID == result.ID);
+            Admin_ColorTheme? dbtheme = Helpers.DB.Admin_ColorTheme.FirstOrDefault(c => c.ID == result.ID);
             Assert.NotEqual(theme.Name, dbtheme?.Name);
         }
 
@@ -135,9 +134,8 @@ namespace ApiServerTest.Tests
             ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
             query.Remove(theme?.ID);
 
-            NbbContext context = NbbContext.Create();
             Assert.NotNull(theme);
-            Admin_ColorTheme? dbTheme = context.Admin_ColorTheme.FirstOrDefault(t => t.ID == theme.ID);
+            Admin_ColorTheme? dbTheme = Helpers.DB.Admin_ColorTheme.FirstOrDefault(t => t.ID == theme.ID);
             Assert.Null(dbTheme);
         }
 
@@ -189,10 +187,9 @@ namespace ApiServerTest.Tests
             Helpers.SetUserAdmin(DefaultUserGuid);
             Admin_ColorTheme? theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
 
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login user = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             user.Admin = false;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
 

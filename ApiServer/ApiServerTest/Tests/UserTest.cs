@@ -6,6 +6,8 @@ using StyleWerk.NBB.Models;
 
 namespace ApiServerTest.Tests
 {
+    [Collection("Sequential")]
+
     public class UserTest
     {
         private Guid DefaultUserGuid { get; set; }
@@ -107,10 +109,9 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            NbbContext context = NbbContext.Create();
-            User_Login? setupUser = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login? setupUser = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             setupUser.StatusCode = UserStatus.EmailVerification;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             Model_Login login = new(DefaultUser, DefaultPassword, true);
@@ -128,10 +129,9 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            NbbContext context = NbbContext.Create();
-            User_Login? setupUser = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login? setupUser = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             setupUser.StatusCode = UserStatus.PasswordReset;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             Model_Login login = new(DefaultUser, DefaultPassword, true);
@@ -173,14 +173,12 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            NbbContext context = NbbContext.Create();
-            User_Login? user = context.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
+            User_Login? user = Helpers.DB.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
 
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             query.VerifyEmail(user?.StatusToken);
 
-            NbbContext context2 = NbbContext.Create();
-            User_Login user2 = context2.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login user2 = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             Assert.Null(user2.StatusCode);
             Assert.Null(user2.StatusToken);
             Assert.Null(user2.StatusTokenExpireTime);
@@ -224,17 +222,16 @@ namespace ApiServerTest.Tests
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
-            NbbContext context = NbbContext.Create();
-            User_Login? user = context.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
+            User_Login? user = Helpers.DB.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
 
-            User_Login? dbUser = context.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
+            User_Login? dbUser = Helpers.DB.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
 
             string newToken = Guid.NewGuid().ToString();
             Assert.NotNull(user);
             Assert.NotNull(dbUser);
             user.StatusToken = newToken;
             dbUser.StatusCode = UserStatus.PasswordReset;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             try
             {
@@ -254,14 +251,13 @@ namespace ApiServerTest.Tests
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
-            NbbContext context = NbbContext.Create();
-            User_Login? user = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login? user = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             long todayPlusTwo = new DateTimeOffset(DateTime.UtcNow).AddDays(2).ToUnixTimeMilliseconds();
             string newToken = Guid.NewGuid().ToString();
             user.StatusToken = newToken;
             user.StatusCode = UserStatus.EmailVerification;
             user.StatusTokenExpireTime = todayPlusTwo;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             try
             {
@@ -343,11 +339,10 @@ namespace ApiServerTest.Tests
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
-            NbbContext context = NbbContext.Create();
-            User_Login? user = context.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
+            User_Login? user = Helpers.DB.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
             Assert.NotNull(user);
             user.StatusCode = UserStatus.EmailVerification;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             try
             {
@@ -424,15 +419,14 @@ namespace ApiServerTest.Tests
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.NewGuid().ToString());
-            NbbContext context = NbbContext.Create();
 
-            User_Login? user = context.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
+            User_Login? user = Helpers.DB.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
             long todayPlusTwo = new DateTimeOffset(DateTime.UtcNow).AddDays(2).ToUnixTimeMilliseconds();
             Assert.NotNull(user);
             user.StatusTokenExpireTime = todayPlusTwo;
             user.StatusCode = UserStatus.PasswordReset;
             user.StatusToken = null;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             string? token = query.RequestPasswordReset(DefaultEmail);
             Model_ResetPassword password = new(token, DefaultPassword);
@@ -568,14 +562,13 @@ namespace ApiServerTest.Tests
 
             Model_Token refreshTokenSetup = setup.GetRefreshToken(DefaultUserGuid, true);
 
-            NbbContext context = NbbContext.Create();
             long todayPlusTwo = new DateTimeOffset(DateTime.UtcNow).AddDays(-2).ToUnixTimeMilliseconds();
-            User_Token rToken = context.User_Token.First(t => t.ID == DefaultUserGuid);
+            User_Token rToken = Helpers.DB.User_Token.First(t => t.ID == DefaultUserGuid);
             rToken.RefreshTokenExpiryTime = todayPlusTwo;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
-            User_Token myToken = context.User_Token.First(t => t.ID == DefaultUserGuid);
+            User_Token myToken = Helpers.DB.User_Token.First(t => t.ID == DefaultUserGuid);
             Model_RefreshToken token = new(myToken.RefreshToken, true);
             User_Login action() => query.GetUser(token);
 
@@ -617,11 +610,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            NbbContext DB = NbbContext.Create();
-            ApplicationUser user = DB.GetUser(DefaultUserGuid);
+            ApplicationUser user = Helpers.DB.GetUser(DefaultUserGuid);
 
             string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36";
-            AuthQueries query = new(DB, user, userAgent, SecretData.GetData());
+            AuthQueries query = new(Helpers.DB, user, userAgent, SecretData.GetData());
 
             query.RemoveSessions();
             Assert.True(true);
@@ -646,12 +638,11 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login user = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             user.StatusCode = UserStatus.EmailChange;
             user.StatusToken = null;
             user.StatusTokenExpireTime = null;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             string? statusToken = query.UpdateEmail("chloe.hauer@lbs4.salzburg.at");
@@ -664,18 +655,16 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login user = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             user.StatusCode = UserStatus.EmailChange;
             user.StatusToken = null;
             user.StatusTokenExpireTime = null;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
-            NbbContext DB = NbbContext.Create();
-            ApplicationUser applicationUser = DB.GetUser(DefaultUserGuid);
+            ApplicationUser applicationUser = Helpers.DB.GetUser(DefaultUserGuid);
 
             string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.38";
-            AuthQueries query = new(DB, applicationUser, userAgent, SecretData.GetData());
+            AuthQueries query = new(Helpers.DB, applicationUser, userAgent, SecretData.GetData());
 
             string? statusToken = query.UpdateEmail("juliane.krenek@cablelink.at");
             query.VerifyUpdatedEmail(statusToken);
@@ -708,7 +697,6 @@ namespace ApiServerTest.Tests
             Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
 
             AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
-            _ = NbbContext.Create();
             Helpers.SetUserTokensNull(DefaultUserGuid, DefaultEmail);
 
             query.RequestPasswordReset(DefaultEmail);
@@ -750,12 +738,11 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login user = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             user.StatusToken = null;
             user.StatusCode = null;
             user.StatusTokenExpireTime = null;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             try
             {
@@ -776,20 +763,18 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login user = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             user.StatusToken = null;
             user.StatusCode = UserStatus.EmailChange;
             user.StatusTokenExpireTime = null;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             AuthQueries updateEmail = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             string? token = updateEmail.UpdateEmail("chloe.hauer@lbs4.salzburg.at");
 
-            context = NbbContext.Create();
-            User_Login user2 = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login user2 = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             user.StatusCode = null;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             try
             {
@@ -809,21 +794,19 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login user = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             user.StatusToken = null;
             user.StatusCode = UserStatus.EmailChange;
             user.StatusTokenExpireTime = null;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             AuthQueries updateEmail = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             string? token = updateEmail.UpdateEmail("chloe.hauer@lbs4.salzburg.at");
 
-            context = NbbContext.Create();
-            User_Login user2 = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login user2 = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             long todayPlusTwo = new DateTimeOffset(DateTime.UtcNow).AddDays(-2).ToUnixTimeMilliseconds();
             user.StatusTokenExpireTime = todayPlusTwo;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             try
             {
@@ -893,10 +876,9 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(DefaultUser, DefaultEmail, DefaultPassword);
 
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login user = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             user.StatusCode = UserStatus.EmailChange;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
             Model_UpdateUserData data = new(null, "Violet", "Riorson", null);

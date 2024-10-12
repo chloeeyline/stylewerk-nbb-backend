@@ -1,11 +1,12 @@
-﻿using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Database.Admin;
+﻿using StyleWerk.NBB.Database.Admin;
 using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
+    [Collection("Sequential")]
+
     public class LanguageTest
     {
         private Guid DefaultUserGuid { get; set; }
@@ -97,7 +98,7 @@ namespace ApiServerTest.Tests
             Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "Australian");
 
             Assert.NotNull(language);
-            Admin_Language? lang = NbbContext.Create().Admin_Language.FirstOrDefault(l => l.Code == language.Code);
+            Admin_Language? lang = Helpers.DB.Admin_Language.FirstOrDefault(l => l.Code == language.Code);
             Assert.NotEqual(lang?.Name, language?.Name);
         }
 
@@ -134,9 +135,8 @@ namespace ApiServerTest.Tests
             LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
             query.Remove(language?.Code);
 
-            NbbContext context = NbbContext.Create();
             Assert.NotNull(language);
-            Admin_Language? lang = context.Admin_Language.FirstOrDefault(l => l.Code == language.Code);
+            Admin_Language? lang = Helpers.DB.Admin_Language.FirstOrDefault(l => l.Code == language.Code);
             Assert.Null(lang);
         }
 
@@ -186,10 +186,9 @@ namespace ApiServerTest.Tests
             Helpers.SetUserAdmin(DefaultUserGuid);
             Admin_Language? language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
 
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login user = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             user.Admin = false;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
             try

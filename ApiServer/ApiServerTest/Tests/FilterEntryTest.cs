@@ -3,6 +3,7 @@ using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
+    [Collection("Sequential")]
     public class FilterEntryTest
     {
         private Guid DefaultUserGuid { get; set; }

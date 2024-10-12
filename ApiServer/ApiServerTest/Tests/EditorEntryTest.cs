@@ -1,9 +1,9 @@
-﻿using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Models;
+﻿using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
+    [Collection("Sequential")]
     public class EditorEntryTest
     {
         private Guid DefaultUserGuid { get; set; }
@@ -25,8 +25,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
 
-            NbbContext context = NbbContext.Create();
-            StyleWerk.NBB.Database.Structure.Structure_Entry? dbEntry = context.Structure_Entry.FirstOrDefault(t => t.ID == entry.ID);
+            StyleWerk.NBB.Database.Structure.Structure_Entry? dbEntry = Helpers.DB.Structure_Entry.FirstOrDefault(t => t.ID == entry.ID);
             Assert.NotNull(dbEntry);
         }
         [Fact]
@@ -298,11 +297,10 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             Model_Editor entry = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
 
-            NbbContext context = NbbContext.Create();
-            StyleWerk.NBB.Database.Structure.Structure_Template? dbTemplate = context.Structure_Template.FirstOrDefault(t => t.ID == template.TemplateID);
+            StyleWerk.NBB.Database.Structure.Structure_Template? dbTemplate = Helpers.DB.Structure_Template.FirstOrDefault(t => t.ID == template.TemplateID);
             Assert.NotNull(dbTemplate);
-            context.Structure_Template.Remove(dbTemplate);
-            context.SaveChanges();
+            Helpers.DB.Structure_Template.Remove(dbTemplate);
+            Helpers.DB.SaveChanges();
 
             EditorQueries query = Helpers.ReturnEditorQuery(DefaultUserGuid.ToString());
             Model_Editor action() => query.GetEntry(entry.ID);
