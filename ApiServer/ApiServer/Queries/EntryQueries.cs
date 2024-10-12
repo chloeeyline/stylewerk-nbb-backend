@@ -8,9 +8,6 @@ namespace StyleWerk.NBB.Queries;
 
 public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
-    /// <summary>
-    /// Load all Entries that are available for User and filter them by the specified filters
-    /// </summary>
     public List<Model_EntryItem> List(string? name, string? username, string? templateName, string? tags, bool? includePublic)
     {
         username = username?.Normalize().ToLower();
@@ -36,11 +33,6 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         return result;
     }
 
-    /// <summary>
-    /// Removes an entry and all its Details
-    /// </summary>
-    /// <param name="id"></param>
-    /// <exception cref="RequestException"></exception>
     public void Remove(Guid? id)
     {
         if (id is null || id == Guid.Empty)

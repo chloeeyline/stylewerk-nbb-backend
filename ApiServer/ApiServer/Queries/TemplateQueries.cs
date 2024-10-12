@@ -9,17 +9,6 @@ namespace StyleWerk.NBB.Queries;
 
 public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQueries(DB, CurrentUser)
 {
-    /// <summary>
-    /// Filtering all templates based on the given Filters
-    /// </summary>
-    /// <param name="page"></param>
-    /// <param name="perPage"></param>
-    /// <param name="name"></param>
-    /// <param name="username"></param>
-    /// <param name="description"></param>
-    /// <param name="tags"></param>
-    /// <param name="includePublic"></param>
-    /// <returns></returns>
     public Model_TemplatePaging List(int? page, int? perPage, string? name, string? username, string? description, string? tags, bool? includePublic)
     {
         // Normalize the username for comparison
@@ -61,11 +50,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         return paging;
     }
 
-    /// <summary>
-    /// Remove a Template, all its rows, cells and entries where the template was used
-    /// </summary>
-    /// <param name="id"></param>
-    /// <exception cref="RequestException"></exception>
     public void Remove(Guid? id)
     {
         if (id is null || id == Guid.Empty)
@@ -80,12 +64,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         DB.SaveChanges();
     }
 
-    /// <summary>
-    /// Copies a template for the currentuser
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    /// <exception cref="RequestException"></exception>
     public Model_Editor Copy(Guid? id)
     {
         if (id is null || id == Guid.Empty)
