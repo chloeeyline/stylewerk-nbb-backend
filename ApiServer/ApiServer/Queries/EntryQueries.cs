@@ -16,7 +16,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         username = username?.Normalize().ToLower();
         tags = tags?.Normalize().ToLower();
 
-        IQueryable<Structure_Entry> query = DB.Structure_Entry.Include(s => s.O_User).Include(s => s.O_Template).Where(s => s.O_User.UsernameNormalized == username);
+        IQueryable<Structure_Entry> query = DB.Structure_Entry.Include(s => s.O_User).Include(s => s.O_Template).Where(s => s.O_User.UsernameNormalized == username || (s.IsPublic && includePublic == true));
 
         if (!string.IsNullOrWhiteSpace(name))
             query = query.Where(s => s.Name.Contains(name));

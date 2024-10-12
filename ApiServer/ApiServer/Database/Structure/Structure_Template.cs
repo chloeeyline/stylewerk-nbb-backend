@@ -12,6 +12,7 @@ public class Structure_Template : IConnectedEntity<Structure_Template>, IEntity_
     public required Guid UserID { get; set; }
     public required string Name { get; set; }
     public required string NameNormalized { get; set; }
+    public required bool IsPublic { get; set; }
     public string? Description { get; set; }
     public string? Tags { get; set; }
     public long CreatedAt { get; set; }
@@ -31,6 +32,7 @@ public class Structure_Template : IConnectedEntity<Structure_Template>, IEntity_
         b.UseIEntity_Name();
         b.UseIEntity_UniqueName();
 
+        b.Property(s => s.IsPublic).IsRequired(true);
         b.Property(s => s.Description).IsRequired(false).HasMaxLength(500);
         b.Property(s => s.Tags).IsRequired(false);
         b.UseIEntity_EditDate();

@@ -178,8 +178,8 @@ namespace ApiServerTest.Tests
             Guid templateCellId = Guid.NewGuid();
 
             Template template = updateTemplateId.HasValue
-                ? new(updateTemplateId.Value, templateName, "Test", "Test")
-                : new(templateId, templateName, "Test", "Test");
+                ? new(updateTemplateId.Value, templateName, false, "Test", "Test")
+                : new(templateId, templateName, false, "Test", "Test");
 
             TemplateCell templateCell = new(templateCellId, 1, false, false, null, null, null);
             TemplateRow templateRow = new(rowId, false, false, false);
@@ -193,7 +193,7 @@ namespace ApiServerTest.Tests
             entryrows.Add(entryRow);
 
 
-            Model_Editor newTemplate = new(Guid.Empty, null, Guid.Empty, null, null, false, template, entryrows);
+            Model_Editor newTemplate = new(Guid.Empty, null, Guid.Empty, null, null, false, false, template, entryrows);
             Model_Editor result = query.UpdateTemplate(newTemplate);
 
             return result;
@@ -221,7 +221,7 @@ namespace ApiServerTest.Tests
 
             }
 
-            Model_Editor newEntry = new(Guid.NewGuid(), folderId, template.TemplateID, title, tags, false, template.Template, entryrows);
+            Model_Editor newEntry = new(Guid.NewGuid(), folderId, template.TemplateID, title, tags, false, false, template.Template, entryrows);
             Model_Editor result = query.UpdateEntry(newEntry);
 
             return result;

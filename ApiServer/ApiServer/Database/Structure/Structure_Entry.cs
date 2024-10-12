@@ -15,6 +15,7 @@ public class Structure_Entry : IConnectedEntity<Structure_Entry>, IEntity_GuidID
     public required Guid TemplateID { get; set; }
     public Guid? FolderID { get; set; }
     public required bool IsEncrypted { get; set; }
+    public required bool IsPublic { get; set; }
     public string? Tags { get; set; }
     public long CreatedAt { get; set; }
     public long LastUpdatedAt { get; set; }
@@ -37,6 +38,7 @@ public class Structure_Entry : IConnectedEntity<Structure_Entry>, IEntity_GuidID
         b.Property(s => s.TemplateID).IsRequired(true);
         b.Property(s => s.FolderID).IsRequired(false);
         b.Property(s => s.IsEncrypted).IsRequired(true);
+        b.Property(s => s.IsPublic).IsRequired(true);
 
         b.Property(s => s.Tags).IsRequired(false);
         b.UseIEntity_EditDate();

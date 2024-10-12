@@ -26,7 +26,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         username = username?.Normalize().ToLower();
         tags = tags?.Normalize().ToLower();
 
-        IQueryable<Structure_Template> query = DB.Structure_Template.Include(s => s.O_User).Where(s => s.O_User.UsernameNormalized == username);
+        IQueryable<Structure_Template> query = DB.Structure_Template.Include(s => s.O_User).Where(s => s.O_User.UsernameNormalized == username || (s.IsPublic && includePublic == true));
 
         if (!string.IsNullOrWhiteSpace(name))
             query = query.Where(s => s.Name.Contains(name));
@@ -100,6 +100,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             UserID = CurrentUser.ID,
             Name = $"{copyTemplate.Name} (Kopie)",
             NameNormalized = $"{copyTemplate.Name} (Kopie)".NormalizeName(),
+            IsPublic = false,
             Description = copyTemplate.Description,
             Tags = copyTemplate.Tags,
         };
