@@ -9,14 +9,10 @@ namespace ApiServerTest.Tests
     public class LanguageTest
     {
         private Guid DefaultUserGuid { get; set; }
-        private Guid OtherUserDefaultGuid { get; set; }
 
         private readonly string Username = "TestUser";
         private readonly string Email = "chloe.hauer@lbs4.salzburg.at";
         private readonly string Password = "TestTest@123";
-
-        private readonly string OtherUsername = "TestUser1";
-        private readonly string OtherEmail = "florian.windisch@lbs4.salzburg.at";
 
         #region Add
 
@@ -27,7 +23,7 @@ namespace ApiServerTest.Tests
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
 
-            Admin_Language result = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
+            Admin_Language? result = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
             Assert.NotNull(result);
         }
 
@@ -97,12 +93,12 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
+            Admin_Language? language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
             Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "Australian");
 
-            NbbContext context = NbbContext.Create();
-            Admin_Language? lang = context.Admin_Language.FirstOrDefault(l => l.Code == language.Code);
-            Assert.NotEqual(lang.Name, language.Name);
+            Assert.NotNull(language);
+            Admin_Language? lang = NbbContext.Create().Admin_Language.FirstOrDefault(l => l.Code == language.Code);
+            Assert.NotEqual(lang?.Name, language?.Name);
         }
 
         [Fact]
@@ -111,7 +107,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
+            _ = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
             Helpers.CreateLanguage(DefaultUserGuid.ToString(), "de", "Australian");
 
             try
@@ -133,12 +129,13 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
+            Admin_Language? language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
 
             LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
-            query.Remove(language.Code);
+            query.Remove(language?.Code);
 
             NbbContext context = NbbContext.Create();
+            Assert.NotNull(language);
             Admin_Language? lang = context.Admin_Language.FirstOrDefault(l => l.Code == language.Code);
             Assert.Null(lang);
         }
@@ -187,7 +184,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
+            Admin_Language? language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
 
             NbbContext context = NbbContext.Create();
             User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
@@ -197,6 +194,7 @@ namespace ApiServerTest.Tests
             LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
             try
             {
+                Assert.NotNull(language);
                 query.Remove(language.Code);
             }
             catch (RequestException ex)
@@ -214,9 +212,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
+            Admin_Language? language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
 
             LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
+            Assert.NotNull(language);
             Model_Language details = query.Details(language.Code);
 
             Assert.NotNull(details);
@@ -269,7 +268,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
+            _ = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
 
             LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
             List<Model_Language> details = query.List();
@@ -298,9 +297,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_Language language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
+            Admin_Language? language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
 
             LanguageQueries query = Helpers.ReturnLanguageQuery(DefaultUserGuid.ToString());
+            Assert.NotNull(language);
             string details = query.Get(language.Code);
 
             Assert.NotNull(details);

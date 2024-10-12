@@ -230,6 +230,8 @@ namespace ApiServerTest.Tests
             User_Login? dbUser = context.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
 
             string newToken = Guid.NewGuid().ToString();
+            Assert.NotNull(user);
+            Assert.NotNull(dbUser);
             user.StatusToken = newToken;
             dbUser.StatusCode = UserStatus.PasswordReset;
             context.SaveChanges();
@@ -343,6 +345,7 @@ namespace ApiServerTest.Tests
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             NbbContext context = NbbContext.Create();
             User_Login? user = context.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
+            Assert.NotNull(user);
             user.StatusCode = UserStatus.EmailVerification;
             context.SaveChanges();
 
@@ -425,6 +428,7 @@ namespace ApiServerTest.Tests
 
             User_Login? user = context.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
             long todayPlusTwo = new DateTimeOffset(DateTime.UtcNow).AddDays(2).ToUnixTimeMilliseconds();
+            Assert.NotNull(user);
             user.StatusTokenExpireTime = todayPlusTwo;
             user.StatusCode = UserStatus.PasswordReset;
             user.StatusToken = null;

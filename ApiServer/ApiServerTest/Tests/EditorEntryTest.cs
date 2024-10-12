@@ -37,7 +37,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             Model_Editor action() => Helpers.CreateEntry(DefaultUserGuid.ToString(), string.Empty, null, "Test", template);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -80,7 +80,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -102,7 +102,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.NoDataFound);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -127,7 +127,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.YouDontOwnTheData);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -150,7 +150,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.NoDataFound);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -174,7 +174,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.YouDontOwnTheData);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -196,7 +196,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.NameMustBeUnique);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -219,7 +219,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.YouDontOwnTheData);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -242,7 +242,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
-            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException ex = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.NameMustBeUnique);
             Assert.Equal(result.Code, ex.Code);
         }
@@ -271,7 +271,7 @@ namespace ApiServerTest.Tests
             EditorQueries query = Helpers.ReturnEditorQuery(DefaultUserGuid.ToString());
             Model_Editor action() => query.GetEntry(Guid.Empty);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -285,7 +285,7 @@ namespace ApiServerTest.Tests
             EditorQueries query = Helpers.ReturnEditorQuery(DefaultUserGuid.ToString());
             Model_Editor action() => query.GetEntry(Guid.NewGuid());
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.NoDataFound);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -300,13 +300,14 @@ namespace ApiServerTest.Tests
 
             NbbContext context = NbbContext.Create();
             StyleWerk.NBB.Database.Structure.Structure_Template? dbTemplate = context.Structure_Template.FirstOrDefault(t => t.ID == template.TemplateID);
+            Assert.NotNull(dbTemplate);
             context.Structure_Template.Remove(dbTemplate);
             context.SaveChanges();
 
             EditorQueries query = Helpers.ReturnEditorQuery(DefaultUserGuid.ToString());
             Model_Editor action() => query.GetEntry(entry.ID);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.NoDataFound);
             Assert.Equal(result.Code, exception.Code);
         }

@@ -21,16 +21,13 @@ public class TemplateController(NbbContext db) : BaseController(db)
     /// <param name="username">username</param>
     /// <param name="description">template description</param>
     /// <param name="tags">tags on the template</param>
-    /// <param name="publicShared">tempate is public visible</param>
-    /// <param name="shared">template is shared</param>
-    /// <param name="includeOwned">template belongs to current user</param>
-    /// <param name="directUser">username has to be exactly the given username</param>
+    /// <param name="includePublic">tempate is public visible</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_TemplatePaging>))]
     [HttpGet(nameof(List))]
-    public IActionResult List(int page, int perPage, string? name, string? username, string? description, string? tags, bool? publicShared, bool? shared, bool? includeOwned, bool? directUser)
+    public IActionResult List(int page, int perPage, string? name, string? username, string? description, string? tags, bool? includePublic)
     {
-        Model_TemplatePaging result = Query.List(page, perPage, name, username, description, tags, publicShared, shared, includeOwned, directUser);
+        Model_TemplatePaging result = Query.List(page, perPage, name, username, description, tags, includePublic);
         return Ok(new Model_Result<Model_TemplatePaging>(result));
     }
 

@@ -2,7 +2,6 @@
 
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Core;
-using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
 
@@ -26,7 +25,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
                 .Where(s => s.UserID == CurrentUser.ID && s.FolderID == null)
                 .Include(s => s.O_Template)
                 .Include(s => s.O_User)
-                .Select(s => new Model_EntryItem(s.ID, s.FolderID ?? Guid.Empty, s.Name, s.IsEncrypted, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, ShareVisibility.None)),
+                .Select(s => new Model_EntryItem(s.ID, Guid.Empty, s.Name, s.IsEncrypted, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username)),
         ];
         entryFolders.Insert(0, new Model_EntryFolders(Guid.Empty, null, result));
         return entryFolders;
@@ -47,7 +46,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
                 .Include(s => s.O_Folder)
                 .Include(s => s.O_User)
                 .Where(s => s.FolderID == id)
-                .Select(s => new Model_EntryItem(s.ID, s.FolderID ?? Guid.Empty, s.Name, s.IsEncrypted, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, ShareVisibility.None)),
+                .Select(s => new Model_EntryItem(s.ID, s.FolderID ?? Guid.Empty, s.Name, s.IsEncrypted, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username)),
         ];
 
         return list;
