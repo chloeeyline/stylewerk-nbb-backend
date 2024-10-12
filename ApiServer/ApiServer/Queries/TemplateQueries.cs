@@ -43,7 +43,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         List<Model_TemplateItem> pagedQuery = [.. query
             .Skip(page.Value * perPage.Value)
             .Take(perPage.Value)
-            .Select(s => new Model_TemplateItem(s.ID, s.Name, s.Description, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_User.Username))];
+            .Select(s => new Model_TemplateItem(s.ID, s.Name, s.IsPublic, s.Description, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_User.Username))];
 
         // Return the final paginated result
         Model_TemplatePaging paging = new(new Paging(tCount, page.Value, maxPages, perPage.Value), pagedQuery);

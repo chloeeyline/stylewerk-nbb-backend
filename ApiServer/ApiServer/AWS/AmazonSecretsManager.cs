@@ -46,15 +46,14 @@ public record SecretData(string DbUser, string DbPassword, string DbHost, string
 
     public string ConnectionString => $"Username={DbUser};Password={DbPassword};Host={DbHost};Port={DbPort};Database={DbDatabase};Include Error Detail=true;";
 
-    public static SecretData GetData() => JsonSerializer.Deserialize<SecretData?>(Load()) ?? throw new Exception();
+    public static SecretData GetData(bool isLocal = false) => JsonSerializer.Deserialize<SecretData?>(Load(isLocal)) ?? throw new Exception();
 
-    public static string Load()
+    public static string Load(bool isLocal = false)
     {
 #if Local
-        return DebugSecret();
-#else
-        return ActiveSecret();
+        isLocal = true;
 #endif
+        return isLocal ? DebugSecret() : ActiveSecret();
     }
 
     public static string ActiveSecret()

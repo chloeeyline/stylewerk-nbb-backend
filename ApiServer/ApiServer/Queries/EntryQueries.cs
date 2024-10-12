@@ -28,7 +28,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             query = query.Where(s => s.O_User.UsernameNormalized.Contains(username));
 
         List<Model_EntryItem> result = [.. query.OrderBy(s => s.LastUpdatedAt)
-            .Select(s => new Model_EntryItem(s.ID, s.FolderID ?? Guid.Empty, s.Name, s.IsEncrypted, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username))];
+            .Select(s => new Model_EntryItem(s.ID, s.FolderID ?? Guid.Empty, s.Name, s.IsEncrypted, s.IsPublic, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username))];
 
         return result;
     }

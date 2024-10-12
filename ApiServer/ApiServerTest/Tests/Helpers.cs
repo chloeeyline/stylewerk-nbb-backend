@@ -11,7 +11,7 @@ namespace ApiServerTest.Tests
 {
     public class Helpers
     {
-        public readonly static NbbContext DB = NbbContext.Create();
+        public readonly static NbbContext DB = NbbContext.Create(true);
 
         public static EntryFolderQueries ReturnFolderQuery(string userGuid)
         {
@@ -49,7 +49,7 @@ namespace ApiServerTest.Tests
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
             string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
-            AuthQueries query = new(DB, user, userAgent, SecretData.GetData());
+            AuthQueries query = new(DB, user, userAgent, SecretData.GetData(true));
             return query;
         }
 
@@ -108,10 +108,10 @@ namespace ApiServerTest.Tests
             ApplicationUser user = DB.GetUser(Guid.NewGuid());
 
             string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
-            AuthQueries query = new(DB, user, userAgent, SecretData.GetData());
+            AuthQueries query = new(DB, user, userAgent, SecretData.GetData(true));
 
             Model_Registration register = new(userName, email, password, "Chloe", "Hauer", UserGender.Female, 0);
-            query.Registration(register);
+            query.Registration(register, true);
 
             Model_Login login = new(userName, password, true);
             User_Login myUser = query.GetUser(login);
@@ -155,7 +155,7 @@ namespace ApiServerTest.Tests
         {
             EntryFolderQueries query = ReturnFolderQuery(user);
 
-            Model_EntryFolders folder = new(Guid.Empty, folderName, []);
+            Model_EntryFolders folder = new(Guid.Empty, folderName, [], false, 0, null);
             Model_EntryFolders result = query.Update(folder);
 
             return result;

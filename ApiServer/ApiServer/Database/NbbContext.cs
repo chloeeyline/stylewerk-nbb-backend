@@ -142,9 +142,12 @@ public partial class NbbContext : DbContext
             new ApplicationUser(login, information);
     }
 
-    public static NbbContext Create()
+    public static NbbContext Create(bool isLocal = false)
     {
-        SecretData secretData = SecretData.GetData();
+#if Local
+        isLocal = true;
+#endif
+        SecretData secretData = SecretData.GetData(isLocal);
         DbContextOptionsBuilder<NbbContext> builder = new();
         builder.UseNpgsql(secretData.ConnectionString);
         return new NbbContext(builder.Options);

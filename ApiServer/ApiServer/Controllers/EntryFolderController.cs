@@ -24,6 +24,14 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<List<Model_EntryFolders>>(result));
     }
 
+    [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
+    [HttpGet(nameof(List2))]
+    public IActionResult List2(string? name, string? username, string? templateName, string? tags, bool? includePublic)
+    {
+        List<Model_EntryFolders> result = Query.List(name, username, templateName, tags, includePublic);
+        return base.Ok(new Model_Result<List<Model_EntryFolders>>(result));
+    }
+
     /// <summary>
     /// Gets all items in a folder
     /// </summary>
