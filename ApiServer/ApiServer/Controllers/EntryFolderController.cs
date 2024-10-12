@@ -13,7 +13,7 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
     public EntryFolderQueries Query => new(DB, CurrentUser);
 
     /// <summary>
-    /// Get all folders with entries from current user
+    /// Gets all folders with entries from current user
     /// </summary>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_EntryFolders>>))]
@@ -25,7 +25,7 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// Get all items in a folder
+    /// Gets all items in a folder
     /// </summary>
     /// <param name="id">folder ID</param>
     /// <returns></returns>
@@ -39,7 +39,7 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// Change folder name or add a folder
+    /// Changes folder name or add a folder
     /// </summary>
     /// <param name="model">contains folder ID, name and entries</param>
     /// <returns></returns>
@@ -53,7 +53,7 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// Remove a folder but preserve all the items that were in it
+    /// Removes a folder but preserve all the items that were in it
     /// </summary>
     /// <param name="id">folder ID</param>
     /// <returns></returns>
@@ -67,7 +67,7 @@ public class EntryFolderController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// Reorder folder for drap and drop 
+    /// Reorders folders for drap and drop 
     /// </summary>
     /// <param name="model">list of all folders for the current user</param>
     /// <returns></returns>

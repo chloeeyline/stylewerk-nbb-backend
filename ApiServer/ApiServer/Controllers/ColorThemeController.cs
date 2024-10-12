@@ -1,11 +1,9 @@
-﻿using System.Text.Json;
-
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
+using System.Text.Json;
 
 namespace StyleWerk.NBB.Controllers;
 
@@ -14,7 +12,13 @@ public class ColorThemeController(NbbContext db) : BaseController(db)
 {
     public ColorThemeQueries Query => new(DB, CurrentUser);
 
+    /// <summary>
+    /// Gets color theme data as JSON
+    /// </summary>
+    /// <param name="id">color theme ID</param>
+    /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
     [HttpGet]
     public IActionResult Get(Guid? id)
     {
@@ -22,6 +26,10 @@ public class ColorThemeController(NbbContext db) : BaseController(db)
         return Ok(JsonSerializer.Deserialize(result, typeof(object)));
     }
 
+    /// <summary>
+    /// Lists all available color themes
+    /// </summary>
+    /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<List<Model_ColorTheme>>))]
     [HttpGet(nameof(List))]
     public IActionResult List()
@@ -30,7 +38,13 @@ public class ColorThemeController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<List<Model_ColorTheme>>(result));
     }
 
+    /// <summary>
+    /// Loads color theme name, base and data for download
+    /// </summary>
+    /// <param name="id">color theme ID</param>
+    /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<Model_ColorTheme>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound)]
     [HttpGet(nameof(Details))]
     public IActionResult Details(Guid? id)
     {
@@ -38,7 +52,13 @@ public class ColorThemeController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<Model_ColorTheme>(result));
     }
 
+    /// <summary>
+    /// Removes a color theme 
+    /// </summary>
+    /// <param name="id">color theme ID</param>
+    /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.UserMustBeAdmin)]
     [HttpPost(nameof(Remove))]
     public IActionResult Remove(Guid? id)
     {
@@ -46,7 +66,13 @@ public class ColorThemeController(NbbContext db) : BaseController(db)
         return Ok(new Model_Result<string>());
     }
 
+    /// <summary>
+    /// Adds or updates a color theme
+    /// </summary>
+    /// <param name="model">contains name, base and data as JSON</param>
+    /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
+    [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.UserMustBeAdmin, ResultCodes.NameMustBeUnique)]
     [HttpPost(nameof(Update)), Authorize]
     public IActionResult Update([FromBody] Model_ColorTheme? model)
     {
