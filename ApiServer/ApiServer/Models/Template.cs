@@ -1,5 +1,3 @@
-using StyleWerk.NBB.Database.Share;
-
 namespace StyleWerk.NBB.Models;
 
 public record Model_TemplatePaging(Paging Paging, List<Model_TemplateItem> Items);
@@ -10,5 +8,4 @@ public record Model_TemplateItem(
     string? Tags,
     long CreatedAt,
     long LastUpdatedAt,
-    string Username,
-    ShareVisibility Visibility);
+    string Username);

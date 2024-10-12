@@ -3,6 +3,7 @@ using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
+    [Collection("Sequential")]
     public class FolderTest
     {
 
@@ -52,7 +53,7 @@ namespace ApiServerTest.Tests
 
             Model_EntryFolders action() => query.Update(folder);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>) action);
             RequestException result = new(ResultCodes.MissingRight);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -70,7 +71,7 @@ namespace ApiServerTest.Tests
 
             Model_EntryFolders action() => query.Update(folder);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>) action);
             RequestException result = new(ResultCodes.NameMustBeUnique);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -85,7 +86,7 @@ namespace ApiServerTest.Tests
 
             Model_EntryFolders action() => query.Update(newFolder);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_EntryFolders>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }

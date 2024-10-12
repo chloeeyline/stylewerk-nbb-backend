@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StyleWerk.NBB.Database;
@@ -11,9 +12,11 @@ using StyleWerk.NBB.Database;
 namespace StyleWerk.NBB.Migrations
 {
     [DbContext(typeof(NbbContext))]
-    partial class NbbContextModelSnapshot : ModelSnapshot
+    [Migration("20241012190717_RemoveShareItem")]
+    partial class RemoveShareItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -93,9 +96,6 @@ namespace StyleWerk.NBB.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsEncrypted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsPublic")
                         .HasColumnType("boolean");
 
                     b.Property<long>("LastUpdatedAt")
@@ -227,9 +227,6 @@ namespace StyleWerk.NBB.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
-
-                    b.Property<bool>("IsPublic")
-                        .HasColumnType("boolean");
 
                     b.Property<long>("LastUpdatedAt")
                         .HasColumnType("bigint");

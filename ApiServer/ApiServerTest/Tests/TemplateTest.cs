@@ -1,10 +1,11 @@
-﻿using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Database.Structure;
+﻿using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
+    [Collection("Sequential")]
+
     public class TemplateTest
     {
         private Guid DefaultUserGuid { get; set; }
@@ -105,8 +106,7 @@ namespace ApiServerTest.Tests
 
             query.Copy(templateOtherUser.TemplateID);
 
-            NbbContext context = NbbContext.Create();
-            Structure_Template? template = context.Structure_Template.FirstOrDefault(t => t.UserID == DefaultUserGuid && t.Name == "TestTemplate (Kopie)");
+            Structure_Template? template = Helpers.DB.Structure_Template.FirstOrDefault(t => t.UserID == DefaultUserGuid && t.Name == "TestTemplate (Kopie)");
             Assert.NotNull(template);
         }
 

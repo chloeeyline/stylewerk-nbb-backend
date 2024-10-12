@@ -1,22 +1,18 @@
-﻿using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Database.Admin;
+﻿using StyleWerk.NBB.Database.Admin;
 using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
+    [Collection("Sequential")]
     public class ColorTest
     {
         private Guid DefaultUserGuid { get; set; }
-        private Guid OtherUserDefaultGuid { get; set; }
 
         private readonly string Username = "TestUser";
         private readonly string Email = "chloe.hauer@lbs4.salzburg.at";
         private readonly string Password = "TestTest@123";
-
-        private readonly string OtherUsername = "TestUser1";
-        private readonly string OtherEmail = "florian.windisch@lbs4.salzburg.at";
 
         #region add
         [Fact]
@@ -26,7 +22,7 @@ namespace ApiServerTest.Tests
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
 
-            Admin_ColorTheme result = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Admin_ColorTheme? result = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
             Assert.NotNull(result);
         }
 
@@ -73,7 +69,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            _ = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
 
             try
             {
@@ -95,12 +91,13 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
-            Admin_ColorTheme result = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestColor", theme.ID);
+            Admin_ColorTheme? theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Assert.NotNull(theme);
+            Admin_ColorTheme? result = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestColor", theme.ID);
+            Assert.NotNull(result);
 
-            NbbContext context = NbbContext.Create();
-            Admin_ColorTheme? dbtheme = context.Admin_ColorTheme.FirstOrDefault(c => c.ID == result.ID);
-            Assert.NotEqual(theme.Name, dbtheme.Name);
+            Admin_ColorTheme? dbtheme = Helpers.DB.Admin_ColorTheme.FirstOrDefault(c => c.ID == result.ID);
+            Assert.NotEqual(theme.Name, dbtheme?.Name);
         }
 
         [Fact]
@@ -109,11 +106,12 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Admin_ColorTheme? theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
             _ = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "DefaultTheme", Guid.Empty);
 
             try
             {
+                Assert.NotNull(theme);
                 _ = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "DefaultTheme", theme.ID);
             }
             catch (RequestException ex)
@@ -131,13 +129,13 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Admin_ColorTheme? theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
 
             ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
-            query.Remove(theme.ID);
+            query.Remove(theme?.ID);
 
-            NbbContext context = NbbContext.Create();
-            Admin_ColorTheme? dbTheme = context.Admin_ColorTheme.FirstOrDefault(t => t.ID == theme.ID);
+            Assert.NotNull(theme);
+            Admin_ColorTheme? dbTheme = Helpers.DB.Admin_ColorTheme.FirstOrDefault(t => t.ID == theme.ID);
             Assert.Null(dbTheme);
         }
 
@@ -187,17 +185,17 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Admin_ColorTheme? theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
 
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == DefaultUserGuid);
+            User_Login user = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             user.Admin = false;
-            context.SaveChanges();
+            Helpers.DB.SaveChanges();
 
             ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
 
             try
             {
+                Assert.NotNull(theme);
                 query.Remove(theme.ID);
             }
             catch (RequestException ex)
@@ -216,9 +214,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Admin_ColorTheme? theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
 
             ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
+            Assert.NotNull(theme);
             Model_ColorTheme result = query.Details(theme.ID);
 
             Assert.NotNull(result);
@@ -235,7 +234,7 @@ namespace ApiServerTest.Tests
 
             Model_ColorTheme action() => query.Details(Guid.Empty);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_ColorTheme>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_ColorTheme>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -251,7 +250,7 @@ namespace ApiServerTest.Tests
 
             Model_ColorTheme action() => query.Details(Guid.NewGuid());
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_ColorTheme>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_ColorTheme>) action);
             RequestException result = new(ResultCodes.NoDataFound);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -265,7 +264,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            _ = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
 
             ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
             List<Model_ColorTheme> result = query.List();
@@ -282,9 +281,10 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Admin_ColorTheme? theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
             ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
 
+            Assert.NotNull(theme);
             string result = query.Get(theme.ID);
             Assert.NotNull(result);
         }
@@ -295,12 +295,12 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             Helpers.SetUserAdmin(DefaultUserGuid);
-            Admin_ColorTheme theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
+            Admin_ColorTheme? theme = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestTheme", Guid.Empty);
             ColorThemeQueries query = Helpers.ReturnColorQuery(DefaultUserGuid.ToString());
 
             string action() => query.Get(Guid.Empty);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -315,7 +315,7 @@ namespace ApiServerTest.Tests
 
             string action() => query.Get(Guid.NewGuid());
 
-            RequestException exception = Assert.Throws<RequestException>((Func<string>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<string>) action);
             RequestException result = new(ResultCodes.NoDataFound);
             Assert.Equal(result.Code, exception.Code);
         }

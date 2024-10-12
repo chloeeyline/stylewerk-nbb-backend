@@ -7,6 +7,7 @@ public record Model_Editor(
     string? Name,
     string? Tags,
     bool IsEncrypted,
+    bool IsPublic,
     Template? Template,
     List<EntryRow> Items);
 public record EntryRow(
@@ -23,6 +24,7 @@ public record EntryCell(
 public record Template(
     Guid ID,
     string? Name,
+    bool IsPublic,
     string? Description,
     string? Tags);
 public record TemplateRow(Guid ID,

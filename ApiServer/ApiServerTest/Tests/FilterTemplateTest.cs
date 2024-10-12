@@ -3,6 +3,7 @@ using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
+    [Collection("Sequential")]
     public class FilterTemplateTest
     {
         private Guid DefaultUserGuid { get; set; }
@@ -21,7 +22,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, false, false, true, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, false);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -33,7 +34,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, true, false, false, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, true);
             Assert.Equal(templates.Items, []);
         }
 
@@ -45,7 +46,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, false, true, false, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, false);
             Assert.Equal(templates.Items, []);
         }
 
@@ -57,7 +58,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, false, false, false, true);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, false);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -69,7 +70,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, true, true, true, true);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, true);
             Assert.NotNull(templates);
             Assert.True(templates.Items.Count > 0);
         }
@@ -82,7 +83,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, true, false, true, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, true);
             Assert.True(templates.Items.Count > 0);
         }
         #endregion
@@ -97,7 +98,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, false, false, true, false);
+            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, false);
             Assert.NotNull(templates);
             Assert.True(templates.Items.Count > 0);
         }
@@ -110,7 +111,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, true, false, false, false);
+            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, true);
             Assert.Equal(templates.Items, []);
         }
 
@@ -122,7 +123,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, false, true, false, false);
+            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, false);
             Assert.Equal(templates.Items, []);
         }
 
@@ -134,7 +135,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, false, false, false, true);
+            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, false);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -146,7 +147,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, true, true, true, false);
+            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, true);
             Assert.True(templates.Items.Count > 0);
         }
         #endregion
@@ -161,7 +162,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, false, false, true, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, false);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -173,7 +174,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, true, false, false, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, true);
             Assert.Equal(templates.Items, []);
         }
 
@@ -185,7 +186,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, false, true, false, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, false);
             Assert.Equal(templates.Items, []);
         }
 
@@ -197,7 +198,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, false, false, false, true);
+            Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, false);
             Assert.Equal(templates.Items, []);
         }
 
@@ -209,7 +210,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, true, true, true, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, true);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -224,7 +225,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, false, false, true, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, false);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -236,7 +237,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, true, false, false, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, true);
             Assert.Equal(templates.Items, []);
         }
 
@@ -248,7 +249,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, false, true, false, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, false);
             Assert.Empty(templates.Items);
         }
 
@@ -260,7 +261,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, false, false, false, true);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, false);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -272,7 +273,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, true, true, true, true);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, true);
             Assert.True(templates.Items.Count > 0);
         }
         #endregion
@@ -286,7 +287,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", false, false, true, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", false);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -298,7 +299,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", true, false, false, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", true);
             Assert.Equal(templates.Items, []);
         }
 
@@ -310,7 +311,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", false, true, false, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", false);
             Assert.Equal(templates.Items, []);
         }
 
@@ -322,7 +323,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", false, false, false, true);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", false);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -334,7 +335,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", true, true, true, true);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", true);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -346,7 +347,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", true, false, true, false);
+            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", true);
             Assert.True(templates.Items.Count > 0);
         }
         #endregion
@@ -359,7 +360,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, true, false, true, false);
+            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, true);
             Assert.NotNull(templates);
             Assert.True(templates.Items.Count > 0);
         }
@@ -372,7 +373,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, "Test", "Test", "Test", "Test", true, true, true, false);
+            Model_TemplatePaging templates = query.List(1, 2, "Test", "Test", "Test", "Test", true);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -384,7 +385,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, "Test", "Test", "Test", "Test", false, false, false, false);
+            Model_TemplatePaging templates = query.List(1, 2, "Test", "Test", "Test", "Test", false);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -396,7 +397,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(-1, 2, "Test", "Test", "Test", "Test", false, false, false, false);
+            Model_TemplatePaging templates = query.List(-1, 2, "Test", "Test", "Test", "Test", false);
             Assert.NotNull(templates);
         }
 
@@ -408,7 +409,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, -2, "Test", "Test", "Test", "Test", false, false, true, false);
+            Model_TemplatePaging templates = query.List(1, -2, "Test", "Test", "Test", "Test", false);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -420,7 +421,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, " ", null, null, null, false, false, true, false);
+            Model_TemplatePaging templates = query.List(1, 2, " ", null, null, null, false);
             Assert.True(templates.Items.Count > 0);
         }
 
@@ -432,7 +433,7 @@ namespace ApiServerTest.Tests
 
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, "", null, null, null, false, false, true, false);
+            Model_TemplatePaging templates = query.List(1, 2, "", null, null, null, false);
             Assert.True(templates.Items.Count > 0);
         }
     }

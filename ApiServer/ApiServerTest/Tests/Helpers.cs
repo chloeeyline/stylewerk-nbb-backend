@@ -2,7 +2,6 @@
 using StyleWerk.NBB.AWS;
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Database.Admin;
-using StyleWerk.NBB.Database.Share;
 using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Database.User;
 using StyleWerk.NBB.Models;
@@ -12,9 +11,10 @@ namespace ApiServerTest.Tests
 {
     public class Helpers
     {
+        public readonly static NbbContext DB = NbbContext.Create();
+
         public static EntryFolderQueries ReturnFolderQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
             EntryFolderQueries query = new(DB, user);
             return query;
@@ -22,7 +22,6 @@ namespace ApiServerTest.Tests
 
         public static TemplateQueries ReturnTemplateQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
             TemplateQueries query = new(DB, user);
@@ -31,7 +30,6 @@ namespace ApiServerTest.Tests
 
         public static EntryQueries ReturnEntryQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
             EntryQueries query = new(DB, user);
@@ -40,34 +38,14 @@ namespace ApiServerTest.Tests
 
         public static EditorQueries ReturnEditorQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
             EditorQueries query = new(DB, user);
             return query;
         }
 
-        public static ShareQueries ReturnShareQuery(string userGuid)
-        {
-            NbbContext DB = NbbContext.Create();
-            ApplicationUser user = DB.GetUser(new Guid(userGuid));
-
-            ShareQueries query = new(DB, user);
-            return query;
-        }
-
-        public static ShareGroupQueries ReturnShareGroupQuery(string userGuid)
-        {
-            NbbContext DB = NbbContext.Create();
-            ApplicationUser user = DB.GetUser(new Guid(userGuid));
-
-            ShareGroupQueries query = new(DB, user);
-            return query;
-        }
-
         public static AuthQueries ReturnAuthQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
             string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
@@ -77,7 +55,6 @@ namespace ApiServerTest.Tests
 
         public static ColorThemeQueries ReturnColorQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
             ColorThemeQueries query = new(DB, user);
@@ -86,7 +63,6 @@ namespace ApiServerTest.Tests
 
         public static LanguageQueries ReturnLanguageQuery(string userGuid)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(new Guid(userGuid));
 
             LanguageQueries query = new(DB, user);
@@ -95,50 +71,40 @@ namespace ApiServerTest.Tests
 
         public static void DeleteAll()
         {
-            NbbContext context = NbbContext.Create();
-            List<Structure_Entry_Folder> folders = [.. context.Structure_Entry_Folder];
-            List<Structure_Template> templates = [.. context.Structure_Template];
-            List<User_Login> usersLogin = [.. context.User_Login];
-            List<User_Information> userInformations = [.. context.User_Information];
-            List<Structure_Entry> entries = [.. context.Structure_Entry];
-            List<Share_Item> items = [.. context.Share_Item];
-            List<Share_Group> groups = [.. context.Share_Group];
-            List<Admin_ColorTheme> colors = [.. context.Admin_ColorTheme];
-            List<Admin_Language> langs = [.. context.Admin_Language];
+            List<Structure_Entry_Folder> folders = [.. DB.Structure_Entry_Folder];
+            List<Structure_Template> templates = [.. DB.Structure_Template];
+            List<User_Login> usersLogin = [.. DB.User_Login];
+            List<User_Information> userInformations = [.. DB.User_Information];
+            List<Structure_Entry> entries = [.. DB.Structure_Entry];
+            List<Admin_ColorTheme> colors = [.. DB.Admin_ColorTheme];
+            List<Admin_Language> langs = [.. DB.Admin_Language];
 
             if (folders.Count > 0)
-                context.Structure_Entry_Folder.RemoveRange(folders);
+                DB.Structure_Entry_Folder.RemoveRange(folders);
 
             if (templates.Count > 0)
-                context.Structure_Template.RemoveRange(templates);
+                DB.Structure_Template.RemoveRange(templates);
 
             if (entries.Count > 0)
-                context.Structure_Entry.RemoveRange(entries);
-
-            if (items.Count > 0)
-                context.Share_Item.RemoveRange(items);
-
-            if (groups.Count > 0)
-                context.Share_Group.RemoveRange(groups);
+                DB.Structure_Entry.RemoveRange(entries);
 
             if (colors.Count > 0)
-                context.Admin_ColorTheme.RemoveRange(colors);
+                DB.Admin_ColorTheme.RemoveRange(colors);
 
             if (langs.Count > 0)
-                context.Admin_Language.RemoveRange(langs);
+                DB.Admin_Language.RemoveRange(langs);
 
             if (usersLogin.Count > 0)
-                context.User_Login.RemoveRange(usersLogin);
+                DB.User_Login.RemoveRange(usersLogin);
 
             if (userInformations.Count > 0)
-                context.User_Information.RemoveRange(userInformations);
+                DB.User_Information.RemoveRange(userInformations);
 
-            context.SaveChanges();
+            DB.SaveChanges();
         }
 
         public static Guid CreateUser(string userName, string email, string password)
         {
-            NbbContext DB = NbbContext.Create();
             ApplicationUser user = DB.GetUser(Guid.NewGuid());
 
             string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
@@ -153,24 +119,7 @@ namespace ApiServerTest.Tests
             return myUser.ID;
         }
 
-        public static Model_Group CreateGroup(string groupName, string userGuid)
-        {
-            Model_Group group = new(Guid.NewGuid(), groupName, 3);
-            ShareGroupQueries query = ReturnShareGroupQuery(userGuid);
-            Model_Group newGroup = query.Update(group);
-
-            return newGroup;
-        }
-
-        public static void AddUserToGroup(string addUser, Guid groupId, string username, string userId)
-        {
-            Model_GroupUser newUser = new(addUser, groupId, username);
-
-            ShareGroupQueries query = Helpers.ReturnShareGroupQuery(userId);
-            query.UpdateUser(newUser);
-        }
-
-        public static Admin_ColorTheme CreateColorTheme(string userId, string themeName, Guid updateTheme)
+        public static Admin_ColorTheme? CreateColorTheme(string userId, string themeName, Guid updateTheme)
         {
             ColorThemeQueries query = ReturnColorQuery(userId);
 
@@ -185,32 +134,21 @@ namespace ApiServerTest.Tests
                 query.Update(color);
             }
 
-            NbbContext context = NbbContext.Create();
-            Admin_ColorTheme? result = context.Admin_ColorTheme.FirstOrDefault(c => c.Name == themeName);
+            Admin_ColorTheme? result = DB.Admin_ColorTheme.FirstOrDefault(c => c.Name == themeName);
 
             return result;
         }
 
-        public static Admin_Language CreateLanguage(string userId, string code, string langName)
+        public static Admin_Language? CreateLanguage(string userId, string code, string langName)
         {
             LanguageQueries query = ReturnLanguageQuery(userId);
 
             Model_Language lang = new(code, langName, "{\"foo\":\"bar\"}");
             query.Update(lang);
 
-            NbbContext context = NbbContext.Create();
-            Admin_Language? result = context.Admin_Language.FirstOrDefault(c => c.Code == code);
+            Admin_Language? result = DB.Admin_Language.FirstOrDefault(c => c.Code == code);
 
             return result;
-        }
-
-
-        public static void ShareWithGroup(Guid itemId, Guid groupId, Guid userId, string who, ShareType type)
-        {
-            ShareQueries queryShare = ReturnShareQuery(userId.ToString());
-            Model_ShareItem newItem = new(Guid.Empty, itemId, who, ShareVisibility.Group, type, groupId.ToString());
-            queryShare.Update(newItem);
-
         }
 
         public static Model_EntryFolders CreateFolder(string user, string folderName)
@@ -225,14 +163,14 @@ namespace ApiServerTest.Tests
 
         public static Model_Editor CreateTemplate(string? templateName, string userGuid, Guid? updateTemplateId)
         {
-            EditorQueries query = Helpers.ReturnEditorQuery(userGuid);
+            EditorQueries query = ReturnEditorQuery(userGuid);
             Guid rowId = Guid.NewGuid();
             Guid templateId = Guid.NewGuid();
             Guid templateCellId = Guid.NewGuid();
 
             Template template = updateTemplateId.HasValue
-                ? new(updateTemplateId.Value, templateName, "Test", "Test")
-                : new(templateId, templateName, "Test", "Test");
+                ? new(updateTemplateId.Value, templateName, false, "Test", "Test")
+                : new(templateId, templateName, false, "Test", "Test");
 
             TemplateCell templateCell = new(templateCellId, 1, false, false, null, null, null);
             TemplateRow templateRow = new(rowId, false, false, false);
@@ -246,7 +184,7 @@ namespace ApiServerTest.Tests
             entryrows.Add(entryRow);
 
 
-            Model_Editor newTemplate = new(Guid.Empty, null, Guid.Empty, null, null, false, template, entryrows);
+            Model_Editor newTemplate = new(Guid.Empty, null, Guid.Empty, null, null, false, false, template, entryrows);
             Model_Editor result = query.UpdateTemplate(newTemplate);
 
             return result;
@@ -274,7 +212,7 @@ namespace ApiServerTest.Tests
 
             }
 
-            Model_Editor newEntry = new(Guid.NewGuid(), folderId, template.TemplateID, title, tags, false, template.Template, entryrows);
+            Model_Editor newEntry = new(Guid.NewGuid(), folderId, template.TemplateID, title, tags, false, false, template.Template, entryrows);
             Model_Editor result = query.UpdateEntry(newEntry);
 
             return result;
@@ -282,22 +220,20 @@ namespace ApiServerTest.Tests
 
         public static void SetUserTokensNull(Guid userGuid, string email)
         {
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == userGuid);
+            User_Login user = DB.User_Login.First(u => u.ID == userGuid);
             user.StatusToken = null;
             user.StatusCode = null;
             user.StatusTokenExpireTime = null;
             user.Email = email;
             user.EmailNormalized = email.Normalize().ToLower();
-            context.SaveChanges();
+            DB.SaveChanges();
         }
 
         public static void SetUserAdmin(Guid userId)
         {
-            NbbContext context = NbbContext.Create();
-            User_Login user = context.User_Login.First(u => u.ID == userId);
+            User_Login user = DB.User_Login.First(u => u.ID == userId);
             user.Admin = true;
-            context.SaveChanges();
+            DB.SaveChanges();
         }
     }
 }

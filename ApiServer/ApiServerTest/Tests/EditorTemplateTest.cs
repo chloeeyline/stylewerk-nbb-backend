@@ -1,10 +1,10 @@
-﻿using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Database.Structure;
+﻿using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
+    [Collection("Sequential")]
     public class EditorTemplateTest
     {
         private Guid DefaultUserGuid { get; set; }
@@ -27,8 +27,7 @@ namespace ApiServerTest.Tests
             EditorQueries query = Helpers.ReturnEditorQuery(DefaultUserGuid.ToString());
             Model_Editor result = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
 
-            NbbContext context = NbbContext.Create();
-            Structure_Template? dbTemplate = context.Structure_Template.FirstOrDefault(t => t.ID == result.TemplateID);
+            Structure_Template? dbTemplate = Helpers.DB.Structure_Template.FirstOrDefault(t => t.ID == result.TemplateID);
             Assert.NotNull(dbTemplate);
         }
 
@@ -40,7 +39,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => Helpers.CreateTemplate(string.Empty, DefaultUserGuid.ToString(), null);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -55,7 +54,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.NameMustBeUnique);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -71,8 +70,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             Model_Editor updateTemplate = Helpers.CreateTemplate("DefaultTemplate", DefaultUserGuid.ToString(), template.ID);
 
-            NbbContext context = NbbContext.Create();
-            Structure_Template dbTemplate = context.Structure_Template.First(t => t.ID == updateTemplate.TemplateID);
+            Structure_Template dbTemplate = Helpers.DB.Structure_Template.First(t => t.ID == updateTemplate.TemplateID);
             Assert.NotEqual(template.Template?.Name, dbTemplate.Name);
         }
 
@@ -86,7 +84,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             Model_Editor action() => Helpers.CreateTemplate("DefaultTemplate", OtherUserDefaultGuid.ToString(), template.TemplateID);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.YouDontOwnTheData);
             Assert.Equal(result.Code, exception.Code);
 
@@ -103,7 +101,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), template2.TemplateID);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.NameMustBeUnique);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -134,7 +132,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.GetTemplate(null);
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.DataIsInvalid);
             Assert.Equal(result.Code, exception.Code);
         }
@@ -149,7 +147,7 @@ namespace ApiServerTest.Tests
 
             Model_Editor action() => query.GetTemplate(Guid.NewGuid());
 
-            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>)action);
+            RequestException exception = Assert.Throws<RequestException>((Func<Model_Editor>) action);
             RequestException result = new(ResultCodes.NoDataFound);
             Assert.Equal(result.Code, exception.Code);
         }

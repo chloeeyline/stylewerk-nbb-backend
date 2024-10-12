@@ -90,8 +90,8 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             }
         }
 
-        Template templateModel = new(tEntity.ID, tEntity.Name, tEntity.Description, tEntity.Description);
-        Model_Editor editorModel = new(eEntity.ID, eEntity.FolderID, tEntity.ID, eEntity.Name, eEntity.Tags, eEntity.IsEncrypted, templateModel, entryRows);
+        Template templateModel = new(tEntity.ID, tEntity.Name, tEntity.IsPublic, tEntity.Description, tEntity.Description);
+        Model_Editor editorModel = new(eEntity.ID, eEntity.FolderID, tEntity.ID, eEntity.Name, eEntity.Tags, eEntity.IsEncrypted, eEntity.IsPublic, templateModel, entryRows);
 
         return editorModel;
     }
@@ -120,8 +120,8 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             entryRows.Add(eRowModel);
         }
 
-        Template templateModel = new(tEntity.ID, tEntity.Name, tEntity.Description, tEntity.Tags);
-        Model_Editor editorModel = new(Guid.Empty, null, tEntity.ID, null, null, false, templateModel, entryRows);
+        Template templateModel = new(tEntity.ID, tEntity.Name, tEntity.IsPublic, tEntity.Description, tEntity.Tags);
+        Model_Editor editorModel = new(Guid.Empty, null, tEntity.ID, null, null, false, false, templateModel, entryRows);
 
         return editorModel;
     }
@@ -145,6 +145,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
                 UserID = CurrentUser.ID,
                 Name = templateModel.Name,
                 NameNormalized = templateModel.Name.NormalizeName(),
+                IsPublic = templateModel.IsPublic,
                 Description = string.IsNullOrWhiteSpace(templateModel.Description) ? null : templateModel.Description,
                 Tags = string.IsNullOrWhiteSpace(templateModel.Tags) ? null : templateModel.Tags.Normalize().ToLower(),
             };
@@ -271,6 +272,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
                 NameNormalized = model.Name.NormalizeName(),
                 Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags.Normalize().ToLower(),
                 IsEncrypted = model.IsEncrypted,
+                IsPublic = model.IsPublic,
             };
 
             DB.Structure_Entry.Add(entryEntity);

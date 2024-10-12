@@ -1,10 +1,10 @@
-﻿using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Database.Structure;
+﻿using StyleWerk.NBB.Database.Structure;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
+    [Collection("Sequential")]
     public class EntryTest
     {
         private Guid DefaultUserGuid { get; set; }
@@ -28,8 +28,7 @@ namespace ApiServerTest.Tests
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
             query.Remove(entry.ID);
 
-            NbbContext context = NbbContext.Create();
-            Structure_Entry? dbEntry = context.Structure_Entry.FirstOrDefault(e => e.ID == entry.ID);
+            Structure_Entry? dbEntry = Helpers.DB.Structure_Entry.FirstOrDefault(e => e.ID == entry.ID);
             Assert.Null(dbEntry);
         }
 

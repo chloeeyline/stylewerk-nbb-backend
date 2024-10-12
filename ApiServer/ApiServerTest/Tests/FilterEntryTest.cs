@@ -3,6 +3,7 @@ using StyleWerk.NBB.Queries;
 
 namespace ApiServerTest.Tests
 {
+    [Collection("Sequential")]
     public class FilterEntryTest
     {
         private Guid DefaultUserGuid { get; set; }
@@ -21,7 +22,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entrys = query.List(null, null, null, null, false, false, true, false);
+            List<Model_EntryItem> entrys = query.List(null, null, null, null, false);
             Assert.True(entrys.Count > 0);
         }
 
@@ -33,7 +34,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entrys = query.List(null, null, null, null, true, false, false, false);
+            List<Model_EntryItem> entrys = query.List(null, null, null, null, true);
             Assert.Empty(entrys);
         }
 
@@ -45,7 +46,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entrys = query.List(null, null, null, null, false, true, false, false);
+            List<Model_EntryItem> entrys = query.List(null, null, null, null, false);
             Assert.Empty(entrys);
         }
 
@@ -57,7 +58,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entrys = query.List(null, null, null, null, false, false, false, true);
+            List<Model_EntryItem> entrys = query.List(null, null, null, null, false);
             Assert.True(entrys.Count > 0);
         }
 
@@ -69,7 +70,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entrys = query.List(null, null, null, null, true, true, true, true);
+            List<Model_EntryItem> entrys = query.List(null, null, null, null, true);
             Assert.NotNull(entrys);
             Assert.True(entrys.Count > 0);
         }
@@ -82,7 +83,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntry", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entrys = query.List(null, null, null, null, true, false, true, false);
+            List<Model_EntryItem> entrys = query.List(null, null, null, null, true);
             Assert.True(entrys.Count > 0);
         }
         #endregion
@@ -96,7 +97,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entries = query.List("Test", null, null, null, false, false, true, false);
+            List<Model_EntryItem> entries = query.List("Test", null, null, null, false);
             Assert.NotNull(entries);
             Assert.True(entries.Count > 0);
         }
@@ -109,7 +110,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entries = query.List("Test", null, null, null, true, false, false, false);
+            List<Model_EntryItem> entries = query.List("Test", null, null, null, true);
             Assert.Empty(entries);
         }
 
@@ -121,7 +122,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entries = query.List("Test", null, null, null, false, true, false, false);
+            List<Model_EntryItem> entries = query.List("Test", null, null, null, false);
             Assert.Empty(entries);
         }
 
@@ -133,7 +134,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entries = query.List("Test", null, null, null, false, false, false, true);
+            List<Model_EntryItem> entries = query.List("Test", null, null, null, false);
             Assert.True(entries.Count > 0);
         }
 
@@ -145,7 +146,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entries = query.List("Test", null, null, null, true, true, true, false);
+            List<Model_EntryItem> entries = query.List("Test", null, null, null, true);
             Assert.True(entries.Count > 0);
         }
         #endregion
@@ -159,7 +160,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entries = query.List(null, "Test", null, null, false, false, true, false);
+            List<Model_EntryItem> entries = query.List(null, "Test", null, null, false);
             Assert.True(entries.Count > 0);
         }
 
@@ -171,7 +172,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entries = query.List(null, "Test", null, null, true, false, false, false);
+            List<Model_EntryItem> entries = query.List(null, "Test", null, null, true);
             Assert.Empty(entries);
         }
 
@@ -183,7 +184,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entries = query.List(null, "Test", null, null, false, true, false, false);
+            List<Model_EntryItem> entries = query.List(null, "Test", null, null, false);
             Assert.Empty(entries);
         }
 
@@ -195,7 +196,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entries = query.List(null, "Test", null, null, false, false, false, true);
+            List<Model_EntryItem> entries = query.List(null, "Test", null, null, false);
             Assert.Empty(entries);
         }
 
@@ -207,7 +208,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> entries = query.List(null, "Test", null, null, true, true, true, false);
+            List<Model_EntryItem> entries = query.List(null, "Test", null, null, true);
             Assert.True(entries.Count > 0);
         }
         #endregion
@@ -221,7 +222,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> templates = query.List(null, null, "Test", null, false, false, true, false);
+            List<Model_EntryItem> templates = query.List(null, null, "Test", null, false);
             Assert.NotNull(templates);
             Assert.True(templates.Count > 0);
         }
@@ -234,7 +235,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> templates = query.List(null, null, "Test", null, true, false, false, false);
+            List<Model_EntryItem> templates = query.List(null, null, "Test", null, true);
             Assert.Empty(templates);
         }
 
@@ -246,7 +247,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> templates = query.List(null, null, "Test", null, false, true, false, false);
+            List<Model_EntryItem> templates = query.List(null, null, "Test", null, false);
             Assert.Empty(templates);
         }
 
@@ -258,7 +259,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> templates = query.List(null, null, "Test", null, false, false, false, true);
+            List<Model_EntryItem> templates = query.List(null, null, "Test", null, false);
             Assert.True(templates.Count > 0);
         }
 
@@ -270,7 +271,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> templates = query.List(null, null, "Test", null, true, true, true, false);
+            List<Model_EntryItem> templates = query.List(null, null, "Test", null, true);
             Assert.True(templates.Count > 0);
         }
         #endregion
@@ -284,7 +285,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> templates = query.List(null, null, null, "Test", false, false, true, false);
+            List<Model_EntryItem> templates = query.List(null, null, null, "Test", false);
             Assert.True(templates.Count > 0);
         }
 
@@ -296,7 +297,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> templates = query.List(null, null, null, "Test", true, false, false, false);
+            List<Model_EntryItem> templates = query.List(null, null, null, "Test", true);
             Assert.Empty(templates);
         }
 
@@ -308,7 +309,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> templates = query.List(null, null, null, "Test", false, true, false, false);
+            List<Model_EntryItem> templates = query.List(null, null, null, "Test", false);
             Assert.Empty(templates);
         }
 
@@ -320,7 +321,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> templates = query.List(null, null, null, "Test", false, false, false, true);
+            List<Model_EntryItem> templates = query.List(null, null, null, "Test", false);
             Assert.True(templates.Count > 0);
         }
 
@@ -332,7 +333,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> templates = query.List(null, null, null, "Test", true, true, true, true);
+            List<Model_EntryItem> templates = query.List(null, null, null, "Test", true);
             Assert.True(templates.Count > 0);
         }
 
@@ -344,7 +345,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> templates = query.List(null, null, null, "Test", true, false, true, false);
+            List<Model_EntryItem> templates = query.List(null, null, null, "Test", true);
             Assert.True(templates.Count > 0);
         }
         #endregion
@@ -358,7 +359,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> templates = query.List("Test", null, null, null, true, false, true, false);
+            List<Model_EntryItem> templates = query.List("Test", null, null, null, true);
             Assert.NotNull(templates);
             Assert.True(templates.Count > 0);
         }
@@ -371,7 +372,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             _ = Helpers.CreateEntry(DefaultUserGuid.ToString(), "TestEntries", null, "Test", template);
             EntryQueries query = Helpers.ReturnEntryQuery(DefaultUserGuid.ToString());
-            List<Model_EntryItem> templates = query.List("Test", "Test", null, "Test", false, false, false, false);
+            List<Model_EntryItem> templates = query.List("Test", "Test", null, "Test", false);
             Assert.True(templates.Count > 0);
         }
         #endregion
