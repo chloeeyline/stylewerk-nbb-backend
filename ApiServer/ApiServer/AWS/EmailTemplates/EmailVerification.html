@@ -10,7 +10,32 @@
             padding: 20px;
         }
 
+        h1{
+            padding-bottom: 0;
+            margin-bottom: .3rem;
+        }
+
+        h5{
+            text-transform: uppercase;
+            font-weight: 100;
+            margin-bottom: 3px;
+        }
+
+        div > h2{
+            text-align: center;
+            margin-top: 0;
+        }
+
+        div > p{
+            margin: 0;
+            font-size: 13px;
+            text-align: center;
+        }
+
         .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             background-color: #ffffff;
             width: 100%;
             max-width: 600px;
@@ -21,28 +46,42 @@
 
         .button {
             display: inline-block;
-            padding: 10px 20px;
+            padding: .8rem 8rem;
             margin-top: 20px;
-            background-color: #007bff;
+            margin-bottom: 20px;
+            background-color: #bf80ff;
             color: #ffffff;
             text-decoration: none;
             border-radius: 5px;
+            font-weight: bold;
+            font-size: 13px;
         }
 
         .footer {
             text-align: center;
             font-size: 12px;
-            color: #666666;
+            color: #cccccc;
             margin-top: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Verify Your Email Address</h2>
-        <p>Thank you for signing up. Please click the button below to verify your email address.</p>
-        <a href="YOUR_VERIFICATION_LINK_HERE" class="button">Verify Email</a>
-        <p class="footer">If you did not request this email, you can safely ignore it.</p>
+        <h1>Stylewerk</h1>
+        <div>
+            <h5>Thanks for signing up on NBB - Notes but better!</h5>
+            <h2>Verify your Email</h2>
+        </div>
+        <div>
+            <p>Click the button below to verify.</p>
+        </div>
+        <a href="YOUR_VERIFICATION_LINK_HERE" class="button">Verify</a>
+        <div>
+            <p>Confirming this request will verify</p>
+            <p>YOUR_EMAIL</p>
+        </div>
+
+        <p class="footer">If you didn't request this email, you can safely ignore it.</p>
     </div>
 </body>
 </html>
