@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Text.Json;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
 using StyleWerk.NBB.Database;
 using StyleWerk.NBB.Models;
 using StyleWerk.NBB.Queries;
-using System.Text.Json;
 
 namespace StyleWerk.NBB.Controllers;
 
@@ -59,7 +61,7 @@ public class ColorThemeController(NbbContext db) : BaseController(db)
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.NoDataFound, ResultCodes.UserMustBeAdmin)]
-    [HttpPost(nameof(Remove))]
+    [HttpPost(nameof(Remove)), Authorize]
     public IActionResult Remove(Guid? id)
     {
         Query.Remove(id);
