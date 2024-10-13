@@ -9,4 +9,5 @@ public record Model_TemplateItem(
     string? Tags,
     long CreatedAt,
     long LastUpdatedAt,
-    string Username);
+    string Username,
+    bool Owned);
