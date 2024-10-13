@@ -13,7 +13,11 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         username = username?.Normalize().ToLower();
         tags = tags?.Normalize().ToLower();
 
-        IQueryable<Structure_Entry> query = DB.Structure_Entry.Include(s => s.O_User).Include(s => s.O_Template).Where(s => s.O_User.UsernameNormalized == username || (s.IsPublic && includePublic == true));
+        IQueryable<Structure_Entry> query = DB.Structure_Entry.Include(s => s.O_User).Include(s => s.O_Template);
+
+        query = string.IsNullOrWhiteSpace(username)
+            ? query.Where(s => s.UserID == CurrentUser.ID || (s.IsPublic && includePublic == true))
+            : query.Where(s => s.O_User.UsernameNormalized.Contains(username));
 
         if (!string.IsNullOrWhiteSpace(name))
             query = query.Where(s => s.Name.Contains(name));
@@ -23,9 +27,6 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
 
         if (!string.IsNullOrWhiteSpace(tags))
             query = query.Where(s => !string.IsNullOrWhiteSpace(s.Tags) && s.Tags.Contains(tags));
-
-        if (!string.IsNullOrWhiteSpace(username))
-            query = query.Where(s => s.O_User.UsernameNormalized.Contains(username));
 
         List<Model_EntryItem> result = [.. query.OrderBy(s => s.LastUpdatedAt)
             .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsEncrypted, s.IsPublic, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, s.UserID == CurrentUser.ID))];

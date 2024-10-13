@@ -15,7 +15,11 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         username = username?.Normalize().ToLower();
         tags = tags?.Normalize().ToLower();
 
-        IQueryable<Structure_Template> query = DB.Structure_Template.Include(s => s.O_User).Where(s => s.O_User.UsernameNormalized == username || (s.IsPublic && includePublic == true));
+        IQueryable<Structure_Template> query = DB.Structure_Template.Include(s => s.O_User);
+
+        query = string.IsNullOrWhiteSpace(username)
+            ? query.Where(s => s.UserID == CurrentUser.ID || (s.IsPublic && includePublic == true))
+            : query.Where(s => s.O_User.UsernameNormalized.Contains(username));
 
         if (!string.IsNullOrWhiteSpace(name))
             query = query.Where(s => s.Name.Contains(name));
@@ -25,9 +29,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
 
         if (!string.IsNullOrWhiteSpace(tags))
             query = query.Where(s => !string.IsNullOrWhiteSpace(s.Tags) && s.Tags.Contains(tags));
-
-        if (!string.IsNullOrWhiteSpace(username))
-            query = query.Where(s => s.O_User.UsernameNormalized.Contains(username));
 
         query = query.OrderBy(s => s.LastUpdatedAt);
 
