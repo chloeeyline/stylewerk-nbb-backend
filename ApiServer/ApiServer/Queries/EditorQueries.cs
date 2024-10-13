@@ -212,7 +212,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
                         IsRequired = tCellModel.IsRequired,
                         Text = tCellModel.Text,
                         Description = tCellModel.Description,
-                        MetaData = tCellModel.Text
+                        MetaData = tCellModel.MetaData
                     };
                     DB.Structure_Template_Cell.Add(tCellEntity);
                 }
