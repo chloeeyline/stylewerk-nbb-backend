@@ -33,7 +33,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
-            Model_EntryFolders newFolder = new(Guid.Empty, $"TestFolder", [], false, 0, null);
+            Model_EntryFolders newFolder = new(Guid.Empty, $"TestFolder", [], 0);
 
             Model_EntryFolders response = query.Update(newFolder);
 
@@ -49,7 +49,7 @@ namespace ApiServerTest.Tests
 
             Model_EntryFolders responseOtherUser = Helpers.CreateFolder(OtherUserDefaultGuid.ToString(), "TestFolder");
             EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
-            Model_EntryFolders folder = new(responseOtherUser.ID, "TestFolder1", [], false, 0, null);
+            Model_EntryFolders folder = new(responseOtherUser.ID, "TestFolder1", [], 0);
 
             Model_EntryFolders action() => query.Update(folder);
 
@@ -67,7 +67,7 @@ namespace ApiServerTest.Tests
             Model_EntryFolders folderUser = Helpers.CreateFolder(DefaultUserGuid.ToString(), "TestFolder");
             Model_EntryFolders folder2 = Helpers.CreateFolder(DefaultUserGuid.ToString(), "TestFolder1");
             EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
-            Model_EntryFolders folder = new(folderUser.ID, "TestFolder1", [], false, 0, null);
+            Model_EntryFolders folder = new(folderUser.ID, "TestFolder1", [], 0);
 
             Model_EntryFolders action() => query.Update(folder);
 
@@ -82,7 +82,7 @@ namespace ApiServerTest.Tests
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
             EntryFolderQueries query = Helpers.ReturnFolderQuery(DefaultUserGuid.ToString());
-            Model_EntryFolders newFolder = new(Guid.Empty, null, [], false, 0, null);
+            Model_EntryFolders newFolder = new(Guid.Empty, null, [], 0);
 
             Model_EntryFolders action() => query.Update(newFolder);
 

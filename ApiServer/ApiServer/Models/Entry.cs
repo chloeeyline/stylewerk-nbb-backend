@@ -1,9 +1,8 @@
 ﻿namespace StyleWerk.NBB.Models;
 
-public record Model_EntryFolders(Guid ID, string? Name, Model_EntryItem[] Items, bool Owned, int TotalCount, int? FilteredCount);
+public record Model_EntryFolders(Guid ID, string? Name, Model_EntryItem[] Items, int Count);
 
 public record Model_EntryItem(Guid ID,
-    Guid FolderID,
     string Name,
     bool IsEncrypted,
     bool IsPublic,
@@ -11,4 +10,5 @@ public record Model_EntryItem(Guid ID,
     long CreatedAt,
     long LastUpdatedAt,
     string TemplateName,
-    string Username);
+    string Username,
+    bool Owned);

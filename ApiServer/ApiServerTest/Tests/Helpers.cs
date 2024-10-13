@@ -155,7 +155,7 @@ namespace ApiServerTest.Tests
         {
             EntryFolderQueries query = ReturnFolderQuery(user);
 
-            Model_EntryFolders folder = new(Guid.Empty, folderName, [], false, 0, null);
+            Model_EntryFolders folder = new(Guid.Empty, folderName, [], 0);
             Model_EntryFolders result = query.Update(folder);
 
             return result;
