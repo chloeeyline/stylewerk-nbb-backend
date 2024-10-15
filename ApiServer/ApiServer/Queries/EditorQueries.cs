@@ -162,6 +162,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             templateEntity.Name = templateModel.Name;
             templateEntity.Description = string.IsNullOrWhiteSpace(templateModel.Description) ? null : templateModel.Description;
             templateEntity.Tags = string.IsNullOrWhiteSpace(templateModel.Tags) ? null : templateModel.Tags.Normalize().ToLower();
+            templateEntity.IsPublic = templateModel.IsPublic;
         }
 
         List<Guid> rowIDs = [];
@@ -293,6 +294,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             entryEntity.Name = model.Name;
             entryEntity.Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower();
             entryEntity.IsEncrypted = model.IsEncrypted;
+            entryEntity.IsEncrypted = model.IsPublic;
         }
 
         Guid rowTemplateID = Guid.Empty;
