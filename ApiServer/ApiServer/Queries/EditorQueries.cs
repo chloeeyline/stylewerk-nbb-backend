@@ -294,7 +294,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             entryEntity.Name = model.Name;
             entryEntity.Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower();
             entryEntity.IsEncrypted = model.IsEncrypted;
-            entryEntity.IsEncrypted = model.IsPublic;
+            entryEntity.IsPublic = model.IsPublic;
         }
 
         Guid rowTemplateID = Guid.Empty;
