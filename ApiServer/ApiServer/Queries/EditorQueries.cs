@@ -13,7 +13,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
     {
         return [.. list.OrderBy(s => s.SortOrder).Select(s =>
             new EntryCell(
-                Guid.Empty,
+                Guid.NewGuid(),
                 s.ID,
                 null,
                 new TemplateCell(
@@ -37,6 +37,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
         Structure_Entry eEntity = DB.Structure_Entry
             .Include(s => s.O_Template)
                 .ThenInclude(s => s.O_Rows)
+                .ThenInclude(s => s.O_Cells)
             .Include(s => s.O_Rows) // Load rows for the entry
                 .ThenInclude(s => s.O_Template) // Include template for each row
             .Include(s => s.O_Rows) // Load cells for each row
@@ -60,7 +61,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             if (eRowEntities.Count == 0)
             {
                 List<EntryCell> cells = CreateCellsFromTemplate(tRowEntity.O_Cells);
-                EntryRow eRowModel = new(Guid.Empty, tRowEntity.ID, tRowModel, cells);
+                EntryRow eRowModel = new(Guid.NewGuid(), tRowEntity.ID, tRowModel, cells);
                 entryRows.Add(eRowModel);
             }
             else
@@ -116,12 +117,12 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             List<EntryCell> entryCells = CreateCellsFromTemplate(tCellEntities);
 
             TemplateRow tRowModel = new(tRowEntity.ID, tRowEntity.CanWrapCells, tRowEntity.CanRepeat, tRowEntity.HideOnNoInput);
-            EntryRow eRowModel = new(Guid.Empty, tRowEntity.ID, tRowModel, entryCells);
+            EntryRow eRowModel = new(Guid.NewGuid(), tRowEntity.ID, tRowModel, entryCells);
             entryRows.Add(eRowModel);
         }
 
         Template templateModel = new(tEntity.ID, tEntity.Name, tEntity.IsPublic, tEntity.Description, tEntity.Tags);
-        Model_Editor editorModel = new(Guid.Empty, null, tEntity.ID, null, null, false, false, templateModel, entryRows);
+        Model_Editor editorModel = new(Guid.NewGuid(), null, tEntity.ID, null, null, false, false, templateModel, entryRows);
 
         return editorModel;
     }
