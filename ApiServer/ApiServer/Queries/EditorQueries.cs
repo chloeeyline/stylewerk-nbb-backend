@@ -68,23 +68,21 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             {
                 foreach (Structure_Entry_Row eRowEntity in eRowEntities)
                 {
-                    List<Structure_Entry_Cell> eCellEntities = [.. eRowEntity.O_Cells.OrderBy(s => s.O_Template.SortOrder)];
+                    List<Structure_Template_Cell> tCellEntities = [.. tRowEntity.O_Cells.OrderBy(s => s.SortOrder)];
 
-                    if (eCellEntities.Count == 0)
+                    entryCells = [];
+                    foreach (Structure_Template_Cell tCellEntity in tCellEntities)
                     {
-                        entryCells = CreateCellsFromTemplate(tRowEntity.O_Cells);
+                        Structure_Entry_Cell? eCellEntity = DB.Structure_Entry_Cell.FirstOrDefault(s => s.TemplateID == tCellEntity.ID && s.RowID == eRowEntity.ID);
+
+                        EntryCell cellModel;
+                        TemplateCell cellModelTemplate = new(tCellEntity.ID, tCellEntity.InputHelper, tCellEntity.HideOnEmpty, tCellEntity.IsRequired, tCellEntity.Text, tCellEntity.Description, tCellEntity.MetaData);
+                        cellModel = eCellEntity is null
+                            ? new(Guid.NewGuid(), tCellEntity.ID, null, cellModelTemplate)
+                            : new(eCellEntity.ID, tCellEntity.ID, eCellEntity.Data, cellModelTemplate);
+                        entryCells.Add(cellModel);
                     }
-                    else
-                    {
-                        entryCells = [];
-                        foreach (Structure_Entry_Cell eCellEntity in eCellEntities)
-                        {
-                            Structure_Template_Cell tCellEntity = eCellEntity.O_Template;
-                            TemplateCell cellModelTemplate = new(tCellEntity.ID, tCellEntity.InputHelper, tCellEntity.HideOnEmpty, tCellEntity.IsRequired, tCellEntity.Text, tCellEntity.Description, tCellEntity.MetaData);
-                            EntryCell cellModel = new(eCellEntity.ID, tCellEntity.ID, eCellEntity.Data, cellModelTemplate);
-                            entryCells.Add(cellModel);
-                        }
-                    }
+
                     EntryRow eRowModel = new(eRowEntity.ID, tRowEntity.ID, tRowModel, entryCells);
                     entryRows.Add(eRowModel);
                 }
