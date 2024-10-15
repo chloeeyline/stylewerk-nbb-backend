@@ -25,15 +25,17 @@ builder.Services.AddAWSLambdaHosting(LambdaEventSource.HttpApi);
 
 builder.AddJWT(secretData);
 builder.AddSwagger();
-#if Local
-builder.Services.AddCors(options =>
+
+if (builder.Environment.IsDevelopment())
 {
-    options.AddDefaultPolicy(options =>
-        options.AllowAnyOrigin()
-        .AllowAnyMethod()
-        .AllowAnyHeader());
-});
-#endif
+    builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(options =>
+            options.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+    });
+}
 
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 builder.Logging.AddFilter("Microsoft.AspNetCore", LogLevel.Warning);

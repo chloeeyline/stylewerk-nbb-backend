@@ -199,7 +199,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             foreach (EntryCell eCellModel in eRowModel.Items)
             {
                 TemplateCell tCellModel = eCellModel.Template ?? throw new RequestException(ResultCodes.NoDataFound);
-                Structure_Template_Cell? tCellEntity = DB.Structure_Template_Cell.SingleOrDefault(c => c.ID == eCellModel.ID);
+                Structure_Template_Cell? tCellEntity = DB.Structure_Template_Cell.SingleOrDefault(c => c.ID == tCellModel.ID);
 
                 if (tCellEntity is null)
                 {
@@ -229,9 +229,11 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
                 }
                 cellIDs.Add(tCellEntity.ID);
             }
-            DB.Structure_Template_Cell.RemoveRange(DB.Structure_Template_Cell.Where(s => !cellIDs.Contains(s.ID) && s.RowID == tRowEntity.ID));
+            List<Structure_Template_Cell> deleteCellList = [.. DB.Structure_Template_Cell.Where(s => !cellIDs.Contains(s.ID) && s.RowID == tRowEntity.ID)];
+            DB.Structure_Template_Cell.RemoveRange(deleteCellList);
         }
-        DB.Structure_Template_Row.RemoveRange(DB.Structure_Template_Row.Where(s => !rowIDs.Contains(s.ID) && s.TemplateID == templateEntity.ID));
+        List<Structure_Template_Row> deleteRowList = [.. DB.Structure_Template_Row.Where(s => !rowIDs.Contains(s.ID) && s.TemplateID == templateEntity.ID)];
+        DB.Structure_Template_Row.RemoveRange(deleteRowList);
 
         DB.SaveChanges();
         return GetTemplate(templateEntity.ID);
