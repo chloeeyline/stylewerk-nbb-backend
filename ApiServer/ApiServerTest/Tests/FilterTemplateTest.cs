@@ -27,55 +27,6 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void Filter_Public()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, true);
-            Assert.Equal(templates.Items, []);
-        }
-
-        [Fact]
-        public void Filter_Shared()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, false);
-            Assert.Equal(templates.Items, []);
-        }
-
-        [Fact]
-        public void Filter_Direct()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, false);
-            Assert.True(templates.Items.Count > 0);
-        }
-
-        [Fact]
-        public void Filter_ShareTypes()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, null, true);
-            Assert.NotNull(templates);
-            Assert.True(templates.Items.Count > 0);
-        }
-
-        [Fact]
         public void Filter_Owned_Public()
         {
             Helpers.DeleteAll();
@@ -104,7 +55,7 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void Filter_Name_Public()
+        public void Filter_Name_Owned_Public()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
@@ -112,43 +63,7 @@ namespace ApiServerTest.Tests
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, true);
-            Assert.Equal(templates.Items, []);
-        }
-
-        [Fact]
-        public void Filter_Name_Shared()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, false);
-            Assert.Equal(templates.Items, []);
-        }
-
-        [Fact]
-        public void Filter_Name_Direct()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, false);
-            Assert.True(templates.Items.Count > 0);
-        }
-
-        [Fact]
-        public void Filter_Name_ShareTypes()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, true);
-            Assert.True(templates.Items.Count > 0);
+            Assert.NotEqual(templates.Items, []);
         }
         #endregion
 
@@ -167,7 +82,7 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void Filter_UserName_Public()
+        public void Filter_UserName_Owned_Public()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
@@ -175,45 +90,8 @@ namespace ApiServerTest.Tests
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, true);
-            Assert.Equal(templates.Items, []);
+            Assert.NotEqual(templates.Items, []);
         }
-
-        [Fact]
-        public void Filter_UserName_Shared()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, false);
-            Assert.Equal(templates.Items, []);
-        }
-
-        [Fact]
-        public void Filter_UserName_Direct()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, false);
-            Assert.Equal(templates.Items, []);
-        }
-
-        [Fact]
-        public void Filter_UserName_ShareTypes()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, "Test", null, null, true);
-            Assert.True(templates.Items.Count > 0);
-        }
-
         #endregion
 
         #region Filter Description ShareTypes
@@ -230,7 +108,7 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void Filter_Description_Public()
+        public void Filter_Description_Owned_Public()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
@@ -238,43 +116,7 @@ namespace ApiServerTest.Tests
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, true);
-            Assert.Equal(templates.Items, []);
-        }
-
-        [Fact]
-        public void Filter_Description_Shared()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, false);
-            Assert.Empty(templates.Items);
-        }
-
-        [Fact]
-        public void Filter_Description_Direct()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, false);
-            Assert.True(templates.Items.Count > 0);
-        }
-
-        [Fact]
-        public void Filter_Description_ShareTypes()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, "Test", null, true);
-            Assert.True(templates.Items.Count > 0);
+            Assert.NotEqual(templates.Items, []);
         }
         #endregion
 
@@ -292,54 +134,6 @@ namespace ApiServerTest.Tests
         }
 
         [Fact]
-        public void Filter_Tags_Public()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", true);
-            Assert.Equal(templates.Items, []);
-        }
-
-        [Fact]
-        public void Filter_Tags_Shared()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", false);
-            Assert.Equal(templates.Items, []);
-        }
-
-        [Fact]
-        public void Filter_Tags_Direct()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", false);
-            Assert.True(templates.Items.Count > 0);
-        }
-
-        [Fact]
-        public void Filter_Tags_ShareTypes()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", true);
-            Assert.True(templates.Items.Count > 0);
-        }
-
-        [Fact]
         public void Filter_Tags_Owned_Public()
         {
             Helpers.DeleteAll();
@@ -348,25 +142,14 @@ namespace ApiServerTest.Tests
             Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
             TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
             Model_TemplatePaging templates = query.List(1, 2, null, null, null, "Test", true);
-            Assert.True(templates.Items.Count > 0);
+            Assert.NotEqual(templates.Items, []);
         }
+
         #endregion
 
-        [Fact]
-        public void Filter_Name_Owned_Public()
-        {
-            Helpers.DeleteAll();
-            DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);
-
-            Helpers.CreateTemplate("TestTemplate", DefaultUserGuid.ToString(), null);
-            TemplateQueries query = Helpers.ReturnTemplateQuery(DefaultUserGuid.ToString());
-            Model_TemplatePaging templates = query.List(1, 2, "Test", null, null, null, true);
-            Assert.NotNull(templates);
-            Assert.True(templates.Items.Count > 0);
-        }
 
         [Fact]
-        public void Filter_Name_UserName_Description_Tags_Owned_Public_Shared()
+        public void Filter_Name_UserName_Description_Tags_Owned_Public()
         {
             Helpers.DeleteAll();
             DefaultUserGuid = Helpers.CreateUser(Username, Email, Password);

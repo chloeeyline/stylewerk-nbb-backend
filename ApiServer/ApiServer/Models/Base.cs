@@ -2,6 +2,13 @@
 
 namespace StyleWerk.NBB.Models;
 
+/// <summary>
+/// Used to determine how many templates or entries should be shown in the overview
+/// </summary>
+/// <param name="Count">total count</param>
+/// <param name="Page">number of pages</param>
+/// <param name="MaxPage">max number of page</param>
+/// <param name="PerPage">how many templates or entries should be shown per page</param>
 public record Paging(int Count, int Page, int MaxPage, int PerPage);
 
 /// <summary>
@@ -9,10 +16,10 @@ public record Paging(int Count, int Page, int MaxPage, int PerPage);
 /// </summary>
 public record Model_Result<T>(int Code, ResultCodes CodeName, T? Data)
 {
-    public Model_Result() : this((int) ResultCodes.Success, ResultCodes.Success, default) { }
-    public Model_Result(T? data) : this((int) ResultCodes.SuccessReturnData, ResultCodes.SuccessReturnData, data) { }
-    public Model_Result(ResultCodes code) : this((int) code, code, default) { }
-    public Model_Result(ResultCodes code, T? data) : this((int) code, code, data) { }
+    public Model_Result() : this((int)ResultCodes.Success, ResultCodes.Success, default) { }
+    public Model_Result(T? data) : this((int)ResultCodes.SuccessReturnData, ResultCodes.SuccessReturnData, data) { }
+    public Model_Result(ResultCodes code) : this((int)code, code, default) { }
+    public Model_Result(ResultCodes code, T? data) : this((int)code, code, data) { }
 }
 
 [Serializable]
@@ -20,6 +27,14 @@ public class RequestException(ResultCodes Code, string? message = null, Exceptio
 {
     public ResultCodes Code { get; set; } = Code;
 
+    /// <summary>
+    /// Used to throw a new exception based on the given result code
+    /// </summary>
+    /// <param name="code">are defined in an enum</param>
+    /// <param name="message">additional message for the user</param>
+    /// <param name="memberName">shows the member</param>
+    /// <param name="lineNumber">shows the number of the line in which the error was thrown</param>
+    /// <returns></returns>
     private static string CreateMessage(ResultCodes code,
         string? message = null,
         string memberName = "",
