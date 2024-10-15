@@ -54,7 +54,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
         foreach (Structure_Template_Row tRowEntity in tRowEntities)
         {
             List<Structure_Entry_Row> eRowEntities = [.. eEntity.O_Rows
-                .Where(s => s.TemplateID == tRowEntity.TemplateID)
+                .Where(s => s.TemplateID == tRowEntity.ID)
                 .OrderBy(s => s.SortOrder)];
             TemplateRow tRowModel = new(tRowEntity.ID, tRowEntity.CanWrapCells, tRowEntity.CanRepeat, tRowEntity.HideOnNoInput);
 
