@@ -196,7 +196,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         }
     }
 
-    public void VerifyEmail(string? token)
+    public void VerifyEmail(string? token, bool isLocal)
     {
         if (token is null)
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -206,7 +206,17 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         if (user.StatusCode != UserStatus.EmailVerification)
             throw new RequestException(ResultCodes.WrongStatusCode);
         if (UserTimeStamps.Now >= user.StatusTokenExpireTime)
+        {
+            if (isLocal)
+            {
+                user.StatusCode = UserStatus.EmailVerification;
+                user.StatusToken = GetStatusToken();
+                user.StatusTokenExpireTime = UserTimeStamps.StatusTokenDuration;
+                DB.SaveChanges();
+                SendMail_VerifyEmail(user.Email, user.StatusToken);
+            }
             throw new RequestException(ResultCodes.StatusTokenExpired);
+        }
 
         user.StatusCode = null;
         user.StatusToken = null;
@@ -244,7 +254,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         }
     }
 
-    public void ResetPassword(Model_ResetPassword? model)
+    public void ResetPassword(Model_ResetPassword? model, bool isLocal)
     {
         if (model is null ||
             string.IsNullOrWhiteSpace(model.Password))
@@ -258,7 +268,17 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         if (user.StatusCode is null || user.StatusCode is not UserStatus.PasswordReset)
             throw new RequestException(ResultCodes.WrongStatusCode);
         if (UserTimeStamps.Now >= user.StatusTokenExpireTime)
+        {
+            if (isLocal)
+            {
+                user.StatusCode = UserStatus.PasswordReset;
+                user.StatusToken = GetStatusToken();
+                user.StatusTokenExpireTime = UserTimeStamps.StatusTokenDuration;
+                DB.SaveChanges();
+                SendMail_ResetPassword(user.Email, user.StatusToken);
+            }
             throw new RequestException(ResultCodes.RefreshTokenExpired);
+        }
 
         user.PasswordSalt = GetSalt();
         user.PasswordHash = HashPassword(model.Password, user.PasswordSalt);
@@ -308,7 +328,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         }
     }
 
-    public void VerifyUpdatedEmail(string? token)
+    public void VerifyUpdatedEmail(string? token, bool isLocal)
     {
         if (string.IsNullOrWhiteSpace(token))
             throw new RequestException(ResultCodes.DataIsInvalid);
@@ -320,7 +340,21 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         if (string.IsNullOrWhiteSpace(CurrentUser.Login.NewEmail))
             throw new RequestException(ResultCodes.WrongStatusCode);
         if (UserTimeStamps.Now >= CurrentUser.Login.StatusTokenExpireTime)
+        {
+            if (isLocal)
+            {
+                User_Login? user = DB.User_Login.FirstOrDefault(s => s.ID == CurrentUser.ID);
+                if (user is not null)
+                {
+                    user.StatusCode = UserStatus.PasswordReset;
+                    user.StatusToken = GetStatusToken();
+                    user.StatusTokenExpireTime = UserTimeStamps.StatusTokenDuration;
+                    DB.SaveChanges();
+                    SendMail_ResetPassword(user.Email, user.StatusToken);
+                }
+            }
             throw new RequestException(ResultCodes.StatusTokenExpired);
+        }
 
         DB.User_Token.RemoveRange(DB.User_Token.Where(s => s.ID == CurrentUser.ID && s.Agent != UserAgent));
         CurrentUser.Login.Email = CurrentUser.Login.NewEmail;
@@ -465,6 +499,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         string content = SimpleEmailService.AccessEmailTemplate("EmailVerification.html");
         string url = $"{SecretData.FrontendUrl}/user/verify-email?id={token}";
         content = content.Replace("YOUR_VERIFICATION_LINK_HERE", url);
+        content = content.Replace("YOUR_EMAIL", email);
         return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
     }
 
@@ -480,6 +515,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     {
         string content = SimpleEmailService.AccessEmailTemplate("EmailChange.html");
         content = content.Replace("YOUR_VERIFICATION_LINK_HERE", status);
+        content = content.Replace("YOUR_EMAIL", email);
         return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
     }
     #endregion

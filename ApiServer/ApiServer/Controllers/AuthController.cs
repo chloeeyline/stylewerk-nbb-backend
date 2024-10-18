@@ -84,7 +84,11 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     [HttpPost(nameof(VerifyEmail))]
     public IActionResult VerifyEmail(string? token)
     {
-        Authentication.VerifyEmail(token);
+        bool isLocal = false;
+#if Local
+        isLocal = true;
+#endif
+        Authentication.VerifyEmail(token, isLocal);
         return Ok(new Model_Result<string>());
     }
     #endregion
@@ -123,7 +127,11 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     [HttpPost(nameof(ResetPassword))]
     public IActionResult ResetPassword([FromBody] Model_ResetPassword? model)
     {
-        Authentication.ResetPassword(model);
+        bool isLocal = false;
+#if Local
+        isLocal = true;
+#endif
+        Authentication.ResetPassword(model, isLocal);
         return Ok(new Model_Result<string>());
     }
     #endregion
@@ -189,7 +197,11 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     [HttpPost(nameof(VerifyUpdatedEmail)), Authorize]
     public IActionResult VerifyUpdatedEmail(string? code)
     {
-        Authentication.VerifyUpdatedEmail(code);
+        bool isLocal = false;
+#if Local
+        isLocal = true;
+#endif
+        Authentication.VerifyUpdatedEmail(code, isLocal);
         return Ok(new Model_Result<string>());
     }
     #endregion
