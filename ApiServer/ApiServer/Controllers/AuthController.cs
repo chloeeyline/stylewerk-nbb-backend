@@ -73,9 +73,9 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
     }
 
     /// <summary>
-    /// Verifies the email of the registered user
+    /// Verifies the email of the newly registered user
     /// </summary>
-    /// <param name="token">status token of the user</param>
+    /// <param name="token">status token of the mail</param>
     /// <returns></returns>
     [ApiExplorerSettings(GroupName = "Registration")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
@@ -167,7 +167,7 @@ public class AuthController(NbbContext db, IOptions<SecretData> SecretData) : Ba
 
     #region Change Email
     /// <summary>
-    /// Changes the email of the current user
+    /// Sends an Email with a Code to changes the email of the current user
     /// </summary>
     /// <param name="email">email of the user</param>
     /// <returns></returns>
