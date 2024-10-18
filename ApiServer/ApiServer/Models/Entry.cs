@@ -21,7 +21,7 @@ public record Model_EntryFolders(Guid ID, string? Name, Model_EntryItem[] Items,
 /// <param name="LastUpdatedAt">show when the entry was last updated as unix timestamp</param>
 /// <param name="TemplateName">shows the template name the entry is based on</param>
 /// <param name="Username">shows the creator of the entry</param>
-/// <param name="Owned">shows whether the entry belongs to current user or was copied from another user</param>
+/// <param name="Owned">shows whether the entry belongs to current user or is from another user</param>
 public record Model_EntryItem(Guid ID,
     string Name,
     bool IsEncrypted,

@@ -41,7 +41,7 @@ public class ColorThemeController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// Loads color theme name, base and data for download
+    /// Loads color theme name, base and data for for editor list
     /// </summary>
     /// <param name="id">color theme ID</param>
     /// <returns></returns>
@@ -71,7 +71,7 @@ public class ColorThemeController(NbbContext db) : BaseController(db)
     /// <summary>
     /// Adds or updates a color theme
     /// </summary>
-    /// <param name="model">contains name, base and data as JSON</param>
+    /// <param name="model">contains name, base and data as JSON <br/> If updating an existing one also includes it's ID</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.UserMustBeAdmin, ResultCodes.NameMustBeUnique)]

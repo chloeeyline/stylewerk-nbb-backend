@@ -15,7 +15,7 @@ public class TemplateController(NbbContext db) : BaseController(db)
     /// <summary>
     /// Lists all templates based on given filters
     /// </summary>
-    /// <param name="page">pages</param>
+    /// <param name="page">current page</param>
     /// <param name="perPage">how many templates per page should be shown</param>
     /// <param name="name">template name</param>
     /// <param name="username">username</param>

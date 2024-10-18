@@ -3,12 +3,12 @@
 namespace StyleWerk.NBB.Models;
 
 /// <summary>
-/// Used to determine how many templates or entries should be shown in the overview
+/// Used to determine how many items exists for the given fitler
 /// </summary>
 /// <param name="Count">total count</param>
-/// <param name="Page">number of pages</param>
+/// <param name="Page">current page</param>
 /// <param name="MaxPage">max number of page</param>
-/// <param name="PerPage">how many templates or entries should be shown per page</param>
+/// <param name="PerPage">how many items should be shown per page</param>
 public record Paging(int Count, int Page, int MaxPage, int PerPage);
 
 /// <summary>
@@ -16,10 +16,10 @@ public record Paging(int Count, int Page, int MaxPage, int PerPage);
 /// </summary>
 public record Model_Result<T>(int Code, ResultCodes CodeName, T? Data)
 {
-    public Model_Result() : this((int)ResultCodes.Success, ResultCodes.Success, default) { }
-    public Model_Result(T? data) : this((int)ResultCodes.SuccessReturnData, ResultCodes.SuccessReturnData, data) { }
-    public Model_Result(ResultCodes code) : this((int)code, code, default) { }
-    public Model_Result(ResultCodes code, T? data) : this((int)code, code, data) { }
+    public Model_Result() : this((int) ResultCodes.Success, ResultCodes.Success, default) { }
+    public Model_Result(T? data) : this((int) ResultCodes.SuccessReturnData, ResultCodes.SuccessReturnData, data) { }
+    public Model_Result(ResultCodes code) : this((int) code, code, default) { }
+    public Model_Result(ResultCodes code, T? data) : this((int) code, code, data) { }
 }
 
 [Serializable]

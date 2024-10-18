@@ -5,84 +5,38 @@ using StyleWerk.NBB.Database.Core;
 
 namespace StyleWerk.NBB.Database.User;
 
-/// <summary>
-/// Represents user login credentials and related information.
-/// </summary>
 public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
 {
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
     public required Guid ID { get; set; }
 
-    /// <summary>
-    /// The email address associated with the user account.
-    /// </summary>
     public required string Email { get; set; }
 
-    /// <summary>
-    /// A normalized version of the email for consistent lookups.
-    /// </summary>
     public required string EmailNormalized { get; set; }
 
-    /// <summary>
-    /// The username associated with the user account.
-    /// </summary>
     public required string Username { get; set; }
 
-    /// <summary>
-    /// A normalized version of the username for consistent lookups.
-    /// </summary>
     public required string UsernameNormalized { get; set; }
 
-    /// <summary>
-    /// Hash of the user's password.
-    /// </summary>
     public required string PasswordHash { get; set; }
 
-    /// <summary>
-    /// Salt used along with the password hash.
-    /// </summary>
     public required string PasswordSalt { get; set; }
 
-    /// <summary>
-    /// Indicates whether the user has administrative privileges.
-    /// </summary>
     public required bool Admin { get; set; }
 
-    /// <summary>
-    /// Current status code of the user, indicating states like email verification or password reset.
-    /// </summary>
     public UserStatus? StatusCode { get; set; }
 
-    /// <summary>
-    /// Optional token used for operations such as password reset or email change verification.
-    /// </summary>
     public string? StatusToken { get; set; }
 
-    /// <summary>
-    /// The timestamp when the status token was issued.
-    /// </summary>
     public long? StatusTokenExpireTime { get; set; }
 
     public string? NewEmail { get; set; }
 
 #pragma warning disable CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
-    /// <summary>
-    /// Navigation property for the user's detailed information.
-    /// </summary>
     public virtual User_Information O_Information { get; set; }
 
-    /// <summary>
-    /// Navigation property for the user's authentication tokens.
-    /// </summary>
     public virtual List<User_Token> O_Token { get; set; }
 #pragma warning restore CS8618 // Ein Non-Nullable-Feld muss beim Beenden des Konstruktors einen Wert ungleich NULL enthalten. Erwägen Sie die Deklaration als Nullable.
 
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
-    /// <param name="b"><inheritdoc/></param>
     public static void Build(EntityTypeBuilder<User_Login> b)
     {
         b.UseTemplates();
@@ -109,10 +63,6 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
         b.HasIndex(s => s.StatusToken).IsUnique(true);
     }
 
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
-    /// <param name="b"><inheritdoc/></param>
     public static void Connect(EntityTypeBuilder<User_Login> b)
     {
         b.HasOne(s => s.O_Information)
@@ -132,19 +82,10 @@ public class User_Login : IConnectedEntity<User_Login>, IEntity_GuidID
 
 public enum UserStatus
 {
-    /// <summary>
-    /// Indicates that the user's email address needs to be verified. This status is typically set after a new user registration or when a user updates their email address.
-    /// </summary>
     EmailVerification = 1,
 
-    /// <summary>
-    /// Indicates that the user has requested a change of email address and this new email needs verification before it can replace the old one.
-    /// </summary>
     EmailChange = 2,
 
-    /// <summary>
-    /// Indicates that the user has requested a password reset. This status is usually set when a user has forgotten their password and initiated a process to set a new one.
-    /// </summary>
     PasswordReset = 3
 }
 

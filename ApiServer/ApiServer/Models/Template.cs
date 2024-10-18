@@ -18,7 +18,7 @@ public record Model_TemplatePaging(Paging Paging, List<Model_TemplateItem> Items
 /// <param name="CreatedAt">creation date as unix timestamp</param>
 /// <param name="LastUpdatedAt">shows the date when the template was last updated</param>
 /// <param name="Username">shows the username of the creator</param>
-/// <param name="Owned">boolean to decide whether the template belongs to the current user or was copied</param>
+/// <param name="Owned">boolean to decide whether the template belongs to the current user or another user</param>
 public record Model_TemplateItem(
     Guid ID,
     string Name,

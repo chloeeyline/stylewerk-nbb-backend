@@ -41,7 +41,7 @@ public class LanguageController(NbbContext db) : BaseController(db)
     }
 
     /// <summary>
-    /// Loads language title, code and details for the download 
+    /// Loads language title, code and details for the download or the list
     /// </summary>
     /// <param name="code">language code</param>
     /// <returns></returns>
@@ -71,7 +71,7 @@ public class LanguageController(NbbContext db) : BaseController(db)
     /// <summary>
     /// Adds or updates a language with its details
     /// </summary>
-    /// <param name="model">contains language code, title and data as JSON</param>
+    /// <param name="model">contains language code, title and data as JSON <br/> If updating an existing one also includes it's ID</param>
     /// <returns></returns>
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Model_Result<string>))]
     [ResultCodesResponse(ResultCodes.DataIsInvalid, ResultCodes.UserMustBeAdmin, ResultCodes.NameMustBeUnique)]

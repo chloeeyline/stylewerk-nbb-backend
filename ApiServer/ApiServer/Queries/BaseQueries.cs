@@ -1,5 +1,4 @@
 ﻿using StyleWerk.NBB.Database;
-using StyleWerk.NBB.Models;
 
 namespace StyleWerk.NBB.Queries;
 
