@@ -286,7 +286,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             if (entryEntity.TemplateID != model.TemplateID)
                 throw new RequestException(ResultCodes.TemplateDoesntMatch);
 
-            entryEntity.FolderID = model.FolderID;
+            entryEntity.FolderID = model.FolderID == Guid.Empty ? null : model.FolderID;
             entryEntity.Name = model.Name;
             entryEntity.Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower();
             entryEntity.IsEncrypted = model.IsEncrypted;
