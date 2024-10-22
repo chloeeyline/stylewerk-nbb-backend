@@ -266,7 +266,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             {
                 ID = Guid.NewGuid(),
                 UserID = CurrentUser.ID,
-                FolderID = model.FolderID,
+                FolderID = model.FolderID == Guid.Empty ? null : model.FolderID,
                 TemplateID = model.TemplateID,
                 Name = model.Name,
                 NameNormalized = model.Name.NormalizeName(),
