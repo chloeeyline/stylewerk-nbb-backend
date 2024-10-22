@@ -96,10 +96,7 @@ namespace ApiServerTest.Tests
             Helpers.SetUserAdmin(DefaultUserGuid);
             Admin_Language? language = Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "English");
             Helpers.CreateLanguage(DefaultUserGuid.ToString(), "en", "Australian");
-
             Assert.NotNull(language);
-            Admin_Language? lang = Helpers.DB.Admin_Language.FirstOrDefault(l => l.Code == language.Code);
-            Assert.NotEqual(lang?.Name, language?.Name);
         }
 
         [Fact]

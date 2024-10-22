@@ -56,7 +56,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             List<Structure_Entry_Row> eRowEntities = [.. eEntity.O_Rows
                 .Where(s => s.TemplateID == tRowEntity.ID)
                 .OrderBy(s => s.SortOrder)];
-            TemplateRow tRowModel = new(tRowEntity.ID, tRowEntity.CanWrapCells, tRowEntity.CanRepeat, tRowEntity.HideOnNoInput);
+            TemplateRow tRowModel = new(tRowEntity.ID, tRowEntity.CanRepeat, tRowEntity.HideOnNoInput);
 
             if (eRowEntities.Count == 0)
             {
@@ -90,7 +90,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
         }
 
         Template templateModel = new(tEntity.ID, tEntity.Name, tEntity.IsPublic, tEntity.Description, tEntity.Description);
-        Model_Editor editorModel = new(eEntity.ID, eEntity.FolderID, tEntity.ID, eEntity.Name, eEntity.Tags, eEntity.IsEncrypted, eEntity.IsPublic, templateModel, entryRows);
+        Model_Editor editorModel = new(eEntity.ID, eEntity.FolderID, tEntity.ID, eEntity.Name, eEntity.Tags, eEntity.IsEncrypted, eEntity.IsPublic, templateModel, eEntity.UserID == CurrentUser.ID, entryRows);
 
         return editorModel;
     }
@@ -114,13 +114,13 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             List<Structure_Template_Cell> tCellEntities = [.. tRowEntity.O_Cells.OrderBy(cell => cell.SortOrder)];
             List<EntryCell> entryCells = CreateCellsFromTemplate(tCellEntities);
 
-            TemplateRow tRowModel = new(tRowEntity.ID, tRowEntity.CanWrapCells, tRowEntity.CanRepeat, tRowEntity.HideOnNoInput);
+            TemplateRow tRowModel = new(tRowEntity.ID, tRowEntity.CanRepeat, tRowEntity.HideOnNoInput);
             EntryRow eRowModel = new(Guid.NewGuid(), tRowEntity.ID, tRowModel, entryCells);
             entryRows.Add(eRowModel);
         }
 
         Template templateModel = new(tEntity.ID, tEntity.Name, tEntity.IsPublic, tEntity.Description, tEntity.Tags);
-        Model_Editor editorModel = new(Guid.NewGuid(), null, tEntity.ID, null, null, false, false, templateModel, entryRows);
+        Model_Editor editorModel = new(Guid.NewGuid(), null, tEntity.ID, null, null, false, false, templateModel, tEntity.UserID == CurrentUser.ID, entryRows);
 
         return editorModel;
     }
@@ -177,7 +177,6 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
                     ID = Guid.NewGuid(),
                     TemplateID = templateEntity.ID,
                     SortOrder = rowSortOrder++,
-                    CanWrapCells = tRowModel.CanWrapCells,
                     CanRepeat = tRowModel.CanRepeat,
                     HideOnNoInput = tRowModel.HideOnNoInput
                 };
@@ -186,7 +185,6 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             else
             {
                 tRowEntity.SortOrder = rowSortOrder++;
-                tRowEntity.CanWrapCells = tRowModel.CanWrapCells;
                 tRowEntity.CanRepeat = tRowModel.CanRepeat;
                 tRowEntity.HideOnNoInput = tRowModel.HideOnNoInput;
             }

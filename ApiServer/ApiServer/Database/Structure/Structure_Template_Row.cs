@@ -9,7 +9,6 @@ public class Structure_Template_Row : IConnectedEntity<Structure_Template_Row>, 
     public required Guid ID { get; set; }
     public required Guid TemplateID { get; set; }
     public required int SortOrder { get; set; }
-    public required bool CanWrapCells { get; set; }
     public required bool CanRepeat { get; set; }
     public required bool HideOnNoInput { get; set; }
 
@@ -25,7 +24,6 @@ public class Structure_Template_Row : IConnectedEntity<Structure_Template_Row>, 
         b.Property(s => s.TemplateID).IsRequired(true);
 
         b.UseIEntity_SortOrder();
-        b.Property(s => s.CanWrapCells).IsRequired(true);
         b.Property(s => s.CanRepeat).IsRequired(true);
         b.Property(s => s.HideOnNoInput).IsRequired(true);
     }

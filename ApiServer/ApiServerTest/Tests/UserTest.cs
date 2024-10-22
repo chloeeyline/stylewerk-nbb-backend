@@ -176,7 +176,7 @@ namespace ApiServerTest.Tests
             User_Login? user = Helpers.DB.User_Login.FirstOrDefault(u => u.ID == DefaultUserGuid);
 
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
-            query.VerifyEmail(user?.StatusToken);
+            query.VerifyEmail(user?.StatusToken, true);
 
             User_Login user2 = Helpers.DB.User_Login.First(u => u.ID == DefaultUserGuid);
             Assert.Null(user2.StatusCode);
@@ -191,7 +191,7 @@ namespace ApiServerTest.Tests
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
-                query.VerifyEmail(null);
+                query.VerifyEmail(null, true);
             }
             catch (RequestException ex)
             {
@@ -206,7 +206,7 @@ namespace ApiServerTest.Tests
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
-                query.VerifyEmail(Guid.NewGuid().ToString());
+                query.VerifyEmail(Guid.NewGuid().ToString(), true);
             }
             catch (RequestException ex)
             {
@@ -235,7 +235,7 @@ namespace ApiServerTest.Tests
 
             try
             {
-                query.VerifyEmail(user?.StatusToken);
+                query.VerifyEmail(user?.StatusToken, true);
             }
             catch (RequestException ex)
             {
@@ -261,7 +261,7 @@ namespace ApiServerTest.Tests
 
             try
             {
-                query.VerifyEmail(user?.StatusToken);
+                query.VerifyEmail(user?.StatusToken, true);
             }
             catch (RequestException ex)
             {
@@ -295,7 +295,7 @@ namespace ApiServerTest.Tests
 
             string? token = query.RequestPasswordReset(DefaultEmail, true);
             Model_ResetPassword password = new(token, DefaultPassword);
-            query.ResetPassword(password);
+            query.ResetPassword(password, true);
             Assert.True(true);
         }
 
@@ -362,7 +362,7 @@ namespace ApiServerTest.Tests
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             try
             {
-                query.ResetPassword(null);
+                query.ResetPassword(null, true);
             }
             catch (RequestException ex)
             {
@@ -381,7 +381,7 @@ namespace ApiServerTest.Tests
             Model_ResetPassword password = new(Guid.NewGuid().ToString(), DefaultPassword);
             try
             {
-                query.ResetPassword(password);
+                query.ResetPassword(password, true);
             }
             catch (RequestException ex)
             {
@@ -403,7 +403,7 @@ namespace ApiServerTest.Tests
 
             try
             {
-                query.ResetPassword(password);
+                query.ResetPassword(password, true);
             }
             catch (RequestException ex)
             {
@@ -433,7 +433,7 @@ namespace ApiServerTest.Tests
 
             try
             {
-                query.ResetPassword(password);
+                query.ResetPassword(password, true);
             }
             catch (RequestException ex)
             {
@@ -508,7 +508,7 @@ namespace ApiServerTest.Tests
             AuthQueries query = Helpers.ReturnAuthQuery(Guid.Empty.ToString());
             string? statusToken = query.RequestPasswordReset(DefaultEmail, true);
             Model_ResetPassword password = new(statusToken, DefaultPassword);
-            query.ResetPassword(password);
+            query.ResetPassword(password, true);
 
             Model_Login login = new(DefaultUser, DefaultPassword, true);
             User_Login user = query.GetUser(login);
@@ -667,7 +667,7 @@ namespace ApiServerTest.Tests
             AuthQueries query = new(Helpers.DB, applicationUser, userAgent, SecretData.GetData(true));
 
             string? statusToken = query.UpdateEmail("juliane.krenek@cablelink.at", true);
-            query.VerifyUpdatedEmail(statusToken);
+            query.VerifyUpdatedEmail(statusToken, true);
             Assert.True(true);
         }
 
@@ -723,7 +723,7 @@ namespace ApiServerTest.Tests
 
             try
             {
-                query.VerifyUpdatedEmail(" ");
+                query.VerifyUpdatedEmail(" ", true);
             }
             catch (RequestException ex)
             {
@@ -748,7 +748,7 @@ namespace ApiServerTest.Tests
             {
 
                 AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
-                query.VerifyUpdatedEmail(Guid.NewGuid().ToString());
+                query.VerifyUpdatedEmail(Guid.NewGuid().ToString(), true);
             }
             catch (RequestException ex)
             {
@@ -779,7 +779,7 @@ namespace ApiServerTest.Tests
             try
             {
                 AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
-                query.VerifyUpdatedEmail(token);
+                query.VerifyUpdatedEmail(token, true);
             }
             catch (RequestException ex)
             {
@@ -811,7 +811,7 @@ namespace ApiServerTest.Tests
             try
             {
                 AuthQueries query = Helpers.ReturnAuthQuery(DefaultUserGuid.ToString());
-                query.VerifyUpdatedEmail(token);
+                query.VerifyUpdatedEmail(token, true);
             }
             catch (RequestException ex)
             {

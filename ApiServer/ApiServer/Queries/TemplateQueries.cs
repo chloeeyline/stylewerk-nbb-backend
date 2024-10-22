@@ -96,7 +96,6 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
                 ID = Guid.NewGuid(),
                 TemplateID = template.ID,
                 SortOrder = row.SortOrder,
-                CanWrapCells = row.CanWrapCells,
                 CanRepeat = row.CanRepeat,
                 HideOnNoInput = row.CanRepeat,
             };

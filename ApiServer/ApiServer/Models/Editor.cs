@@ -11,6 +11,7 @@
 /// <param name="IsEncrypted">decides wether the entry is encrypted or not</param>
 /// <param name="IsPublic">decides if the entry is shared public</param>
 /// <param name="Template">contains all template details</param>
+/// <param name="Owned">if the loaded data are your own</param>
 /// <param name="Items">list of all entry rows</param>
 public record Model_Editor(
     Guid ID,
@@ -21,6 +22,7 @@ public record Model_Editor(
     bool IsEncrypted,
     bool IsPublic,
     Template? Template,
+    bool Owned,
     List<EntryRow> Items);
 
 /// <summary>
@@ -68,11 +70,9 @@ public record Template(
 /// Symbolizes one template row without being bound to the template
 /// </summary>
 /// <param name="ID">unique identifier of the template row</param>
-/// <param name="CanWrapCells">boolean to decide whether the row can wrap cells</param>
 /// <param name="CanRepeat">boolean to decide whether the row can be repeated</param>
 /// <param name="HideOnNoInput">boolean to decide whether the row should be shown if all inputs in this row are empty</param>
 public record TemplateRow(Guid ID,
-    bool CanWrapCells,
     bool CanRepeat,
     bool HideOnNoInput);
 

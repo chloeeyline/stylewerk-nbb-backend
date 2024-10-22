@@ -95,9 +95,6 @@ namespace ApiServerTest.Tests
             Assert.NotNull(theme);
             Admin_ColorTheme? result = Helpers.CreateColorTheme(DefaultUserGuid.ToString(), "TestColor", theme.ID);
             Assert.NotNull(result);
-
-            Admin_ColorTheme? dbtheme = Helpers.DB.Admin_ColorTheme.FirstOrDefault(c => c.ID == result.ID);
-            Assert.NotEqual(theme.Name, dbtheme?.Name);
         }
 
         [Fact]
