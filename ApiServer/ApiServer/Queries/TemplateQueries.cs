@@ -12,8 +12,9 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
     public Model_TemplatePaging List(int? page, int? perPage, string? name, string? username, string? description, string? tags, bool? includePublic)
     {
         // Normalize the username for comparison
-        username = username?.Normalize().ToLower();
-        tags = tags?.Normalize().ToLower();
+        username = username?.Normalize().ToLower().Trim();
+        tags = tags?.Normalize().ToLower().Trim();
+        name = name?.Normalize().ToLower().Trim();
 
         IQueryable<Structure_Template> query = DB.Structure_Template.Include(s => s.O_User);
 
@@ -22,13 +23,16 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             : query.Where(s => s.O_User.UsernameNormalized.Contains(username));
 
         if (!string.IsNullOrWhiteSpace(name))
-            query = query.Where(s => s.Name.Contains(name));
+            query = query.Where(s => s.NameNormalized.Contains(name));
 
         if (!string.IsNullOrWhiteSpace(description))
             query = query.Where(s => !string.IsNullOrWhiteSpace(s.Description) && s.Description.Contains(description));
 
         if (!string.IsNullOrWhiteSpace(tags))
+        {
+            tags = string.Join(",", tags.Split(',').Order());
             query = query.Where(s => !string.IsNullOrWhiteSpace(s.Tags) && s.Tags.Contains(tags));
+        }
 
         query = query.OrderBy(s => s.LastUpdatedAt);
 

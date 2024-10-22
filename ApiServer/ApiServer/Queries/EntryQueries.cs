@@ -10,8 +10,10 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
 {
     public List<Model_EntryItem> List(string? name, string? username, string? templateName, string? tags, bool? includePublic)
     {
-        username = username?.Normalize().ToLower();
-        tags = tags?.Normalize().ToLower();
+        username = username?.Normalize().ToLower().Trim();
+        tags = tags?.Normalize().ToLower().Trim();
+        name = name?.Normalize().ToLower().Trim();
+        templateName = templateName?.Normalize().ToLower().Trim();
 
         IQueryable<Structure_Entry> query = DB.Structure_Entry.Include(s => s.O_User).Include(s => s.O_Template);
 
@@ -20,13 +22,16 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             : query.Where(s => s.O_User.UsernameNormalized.Contains(username));
 
         if (!string.IsNullOrWhiteSpace(name))
-            query = query.Where(s => s.Name.Contains(name));
+            query = query.Where(s => s.NameNormalized.Contains(name));
 
         if (!string.IsNullOrWhiteSpace(templateName))
-            query = query.Where(s => s.O_Template.Name.Contains(templateName));
+            query = query.Where(s => s.O_Template.NameNormalized.Contains(templateName));
 
         if (!string.IsNullOrWhiteSpace(tags))
+        {
+            tags = string.Join(",", tags.Split(',').Order());
             query = query.Where(s => !string.IsNullOrWhiteSpace(s.Tags) && s.Tags.Contains(tags));
+        }
 
         List<Model_EntryItem> result = [.. query.OrderBy(s => s.LastUpdatedAt)
             .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsEncrypted, s.IsPublic, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, s.UserID == CurrentUser.ID))];

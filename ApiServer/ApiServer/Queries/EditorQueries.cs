@@ -146,7 +146,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
                 NameNormalized = templateModel.Name.NormalizeName(),
                 IsPublic = templateModel.IsPublic,
                 Description = string.IsNullOrWhiteSpace(templateModel.Description) ? null : templateModel.Description,
-                Tags = string.IsNullOrWhiteSpace(templateModel.Tags) ? null : templateModel.Tags.Normalize().ToLower(),
+                Tags = string.IsNullOrWhiteSpace(templateModel.Tags) ? null : string.Join(",", templateModel.Tags.Normalize().ToLower().Split(',').Order())
             };
             DB.Structure_Template.Add(templateEntity);
         }
@@ -272,7 +272,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
                 TemplateID = model.TemplateID,
                 Name = model.Name,
                 NameNormalized = model.Name.NormalizeName(),
-                Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags.Normalize().ToLower(),
+                Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : string.Join(",", model.Tags.Normalize().ToLower().Split(',').Order()),
                 IsEncrypted = model.IsEncrypted,
                 IsPublic = model.IsPublic,
             };
