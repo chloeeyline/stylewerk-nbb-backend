@@ -293,6 +293,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             entryEntity.IsPublic = model.IsPublic;
         }
 
+        List<Guid> rowIDs = [];
         Guid rowTemplateID = Guid.Empty;
         int rowSortOrder = 0;
         foreach (EntryRow row in model.Items)
@@ -355,10 +356,19 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             if (!isNewRow && !hasData)
                 DB.Structure_Entry_Row.Remove(entryRow);
             if (isNewRow && hasData)
+            {
                 DB.Structure_Entry_Row.Add(entryRow);
+                rowIDs.Add(row.ID);
+            }
+            else
+            {
+                rowIDs.Add(row.ID);
+            }
             rowSortOrder = rowTemplateID == entryRow.TemplateID ? rowSortOrder + 1 : 0;
             rowTemplateID = entryRow.TemplateID;
         }
+        List<Structure_Entry_Row> deleteRowList = [.. DB.Structure_Entry_Row.Where(s => !rowIDs.Contains(s.ID) && s.EntryID == entryEntity.ID)];
+        DB.Structure_Entry_Row.RemoveRange(deleteRowList);
         DB.SaveChanges();
 
         return GetEntry(entryEntity.ID);
