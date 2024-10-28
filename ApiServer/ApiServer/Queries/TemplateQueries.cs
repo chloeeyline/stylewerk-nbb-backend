@@ -39,15 +39,15 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
         // Calculate pagination
         int tCount = query.Count();
         if (!perPage.HasValue || perPage < 20)
-            perPage = 20;
+            perPage = tCount;
         int maxPages = (int) Math.Ceiling(tCount / (double) perPage);
         if (!page.HasValue || page >= maxPages || page < 0)
             page = 0;
 
         // Apply pagination
         List<Model_TemplateItem> pagedQuery = [.. query
-            .Skip(page.Value * perPage.Value)
-            .Take(perPage.Value)
+            //.Skip(page.Value * perPage.Value)
+            //.Take(perPage.Value)
             .Select(s => new Model_TemplateItem(s.ID, s.Name, s.IsPublic, s.Description, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_User.Username, s.UserID == CurrentUser.ID))];
 
         // Return the final paginated result
