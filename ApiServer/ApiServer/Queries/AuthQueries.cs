@@ -508,7 +508,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         string content = SimpleEmailService.AccessEmailTemplate("ResetPassword.html");
         string url = $"{SecretData.FrontendUrl}/user/reset-password?id={token}";
         content = content.Replace("YOUR_VERIFICATION_LINK_HERE", url);
-        return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
+        return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Reset Password", content);
     }
 
     private static bool SendMail_UpdateEmail(string email, string status)
@@ -516,7 +516,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
         string content = SimpleEmailService.AccessEmailTemplate("EmailChange.html");
         content = content.Replace("YOUR_CODE", status);
         content = content.Replace("YOUR_EMAIL", email);
-        return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
+        return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Change Email", content);
     }
     #endregion
 }
