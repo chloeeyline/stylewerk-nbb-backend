@@ -514,7 +514,7 @@ public partial class AuthQueries(NbbContext DB, ApplicationUser CurrentUser, str
     private static bool SendMail_UpdateEmail(string email, string status)
     {
         string content = SimpleEmailService.AccessEmailTemplate("EmailChange.html");
-        content = content.Replace("YOUR_VERIFICATION_LINK_HERE", status);
+        content = content.Replace("YOUR_CODE", status);
         content = content.Replace("YOUR_EMAIL", email);
         return SimpleEmailService.SendMail("noreply@stylewerk.org", email, "Stylewerk NBB - Email Verification for new Account", content);
     }
