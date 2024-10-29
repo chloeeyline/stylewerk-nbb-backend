@@ -90,7 +90,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
         }
 
         Template templateModel = new(tEntity.ID, tEntity.Name, tEntity.IsPublic, tEntity.Description, tEntity.Description);
-        Model_Editor editorModel = new(eEntity.ID, eEntity.FolderID, tEntity.ID, eEntity.Name, eEntity.Tags, eEntity.IsEncrypted, eEntity.IsPublic, templateModel, eEntity.UserID == CurrentUser.ID, entryRows);
+        Model_Editor editorModel = new(eEntity.ID, eEntity.FolderID, tEntity.ID, eEntity.Name, eEntity.Tags, eEntity.IsPublic, templateModel, eEntity.UserID == CurrentUser.ID, entryRows);
 
         return editorModel;
     }
@@ -120,7 +120,7 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
         }
 
         Template templateModel = new(tEntity.ID, tEntity.Name, tEntity.IsPublic, tEntity.Description, tEntity.Tags);
-        Model_Editor editorModel = new(Guid.NewGuid(), null, tEntity.ID, null, null, false, false, templateModel, tEntity.UserID == CurrentUser.ID, entryRows);
+        Model_Editor editorModel = new(Guid.NewGuid(), null, tEntity.ID, null, null, false, templateModel, tEntity.UserID == CurrentUser.ID, entryRows);
 
         return editorModel;
     }
@@ -271,7 +271,6 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
                 Name = model.Name,
                 NameNormalized = model.Name.NormalizeName(),
                 Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : string.Join(",", model.Tags.Normalize().ToLower().Split(',').Order()),
-                IsEncrypted = model.IsEncrypted,
                 IsPublic = model.IsPublic,
             };
 
@@ -289,7 +288,6 @@ public class EditorQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQue
             entryEntity.FolderID = model.FolderID == Guid.Empty ? null : model.FolderID;
             entryEntity.Name = model.Name;
             entryEntity.Tags = string.IsNullOrWhiteSpace(model.Tags) ? null : model.Tags?.Normalize().ToLower();
-            entryEntity.IsEncrypted = model.IsEncrypted;
             entryEntity.IsPublic = model.IsPublic;
         }
 

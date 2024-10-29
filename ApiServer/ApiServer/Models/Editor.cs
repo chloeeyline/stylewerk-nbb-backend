@@ -8,7 +8,6 @@
 /// <param name="TemplateID">unique template identifier</param>
 /// <param name="Name">name of the entry</param>
 /// <param name="Tags">tags on the entry</param>
-/// <param name="IsEncrypted">decides wether the entry is encrypted or not</param>
 /// <param name="IsPublic">decides if the entry is shared public</param>
 /// <param name="Template">contains all template details</param>
 /// <param name="Owned">if the loaded data are your own</param>
@@ -19,7 +18,6 @@ public record Model_Editor(
     Guid TemplateID,
     string? Name,
     string? Tags,
-    bool IsEncrypted,
     bool IsPublic,
     Template? Template,
     bool Owned,

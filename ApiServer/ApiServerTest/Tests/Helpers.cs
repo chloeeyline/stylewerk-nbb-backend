@@ -184,7 +184,7 @@ namespace ApiServerTest.Tests
             entryrows.Add(entryRow);
 
 
-            Model_Editor newTemplate = new(Guid.Empty, null, Guid.Empty, null, null, false, false, template, false, entryrows);
+            Model_Editor newTemplate = new(Guid.Empty, null, Guid.Empty, null, null, false, template, false, entryrows);
             Model_Editor result = query.UpdateTemplate(newTemplate);
 
             return result;
@@ -212,7 +212,7 @@ namespace ApiServerTest.Tests
 
             }
 
-            Model_Editor newEntry = new(Guid.NewGuid(), folderId, template.TemplateID, title, tags, false, false, template.Template, false, entryrows);
+            Model_Editor newEntry = new(Guid.NewGuid(), folderId, template.TemplateID, title, tags, false, template.Template, false, entryrows);
             Model_Editor result = query.UpdateEntry(newEntry);
 
             return result;

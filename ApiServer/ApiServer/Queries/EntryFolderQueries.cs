@@ -26,7 +26,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
                 .Where(s => s.UserID == CurrentUser.ID && s.FolderID == null)
                 .Include(s => s.O_Template)
                 .Include(s => s.O_User)
-                .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsEncrypted, s.IsPublic, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, true)),
+                .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsPublic, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, true)),
         ];
         entryFolders.Insert(0, new Model_EntryFolders(Guid.Empty, null, result, result.Length));
         return entryFolders;
@@ -47,7 +47,7 @@ public class EntryFolderQueries(NbbContext DB, ApplicationUser CurrentUser) : Ba
                 .Include(s => s.O_Folder)
                 .Include(s => s.O_User)
                 .Where(s => s.FolderID == id)
-                .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsEncrypted, s.IsPublic, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, true)),
+                .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsPublic, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, true)),
         ];
 
         return list;

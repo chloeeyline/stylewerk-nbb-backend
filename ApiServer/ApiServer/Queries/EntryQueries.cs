@@ -34,7 +34,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
         }
 
         List<Model_EntryItem> result = [.. query.OrderBy(s => s.O_User.UsernameNormalized).ThenBy(s => s.LastUpdatedAt)
-            .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsEncrypted, s.IsPublic, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, s.UserID == CurrentUser.ID))];
+            .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsPublic, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, s.UserID == CurrentUser.ID))];
 
         return result;
     }

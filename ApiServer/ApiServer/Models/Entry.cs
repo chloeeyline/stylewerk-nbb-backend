@@ -14,7 +14,6 @@ public record Model_EntryFolders(Guid ID, string? Name, Model_EntryItem[] Items,
 /// </summary>
 /// <param name="ID">unique identifier of the entry</param>
 /// <param name="Name">name of the entry</param>
-/// <param name="IsEncrypted">boolean to show whether the entry datas encrypted</param>
 /// <param name="IsPublic">boolean to show whether the entry is public visible</param>
 /// <param name="Tags">tags on entry</param>
 /// <param name="CreatedAt">show the creation date as unix timestamp</param>
@@ -24,7 +23,6 @@ public record Model_EntryFolders(Guid ID, string? Name, Model_EntryItem[] Items,
 /// <param name="Owned">shows whether the entry belongs to current user or is from another user</param>
 public record Model_EntryItem(Guid ID,
     string Name,
-    bool IsEncrypted,
     bool IsPublic,
     string? Tags,
     long CreatedAt,

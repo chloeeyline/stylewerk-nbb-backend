@@ -56,7 +56,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = query.GetTemplate(modelTemplate.TemplateID);
             Model_Editor getEntry = query.GetEntry(entry.ID);
 
-            Model_Editor uEntry = new(entry.ID, null, template.TemplateID, "DefaultTemplate", "Test", false, false, template.Template, false, getEntry.Items);
+            Model_Editor uEntry = new(entry.ID, null, template.TemplateID, "DefaultTemplate", "Test", false, template.Template, false, getEntry.Items);
             Model_Editor updatedEntry = query.UpdateEntry(uEntry);
 
             Assert.NotEqual(entry.Name, updatedEntry.Name);
@@ -75,7 +75,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = query.GetTemplate(modelTemplate.TemplateID);
             Model_Editor getEntry = query.GetEntry(entry.ID);
 
-            Model_Editor uEntry = new(entry.ID, null, template.TemplateID, null, "Test", false, false, template.Template, false, getEntry.Items);
+            Model_Editor uEntry = new(entry.ID, null, template.TemplateID, null, "Test", false, template.Template, false, getEntry.Items);
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
@@ -97,7 +97,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = query.GetTemplate(modelTemplate.TemplateID);
             Model_Editor getEntry = query.GetEntry(entry.ID);
 
-            Model_Editor uEntry = new(entry.ID, null, Guid.NewGuid(), "TestEntry", "Test", false, false, template.Template, false, getEntry.Items);
+            Model_Editor uEntry = new(entry.ID, null, Guid.NewGuid(), "TestEntry", "Test", false, template.Template, false, getEntry.Items);
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
@@ -122,7 +122,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = query.GetTemplate(modelTemplate.TemplateID);
             Model_Editor getEntry = query.GetEntry(entry.ID);
 
-            Model_Editor uEntry = new(entry.ID, null, template.TemplateID, "DefaultTemplate", "Test", false, false, template.Template, false, getEntry.Items);
+            Model_Editor uEntry = new(entry.ID, null, template.TemplateID, "DefaultTemplate", "Test", false, template.Template, false, getEntry.Items);
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
@@ -145,7 +145,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = query.GetTemplate(modelTemplate.TemplateID);
             Model_Editor getEntry = query.GetEntry(entry.ID);
 
-            Model_Editor uEntry = new(entry.ID, Guid.NewGuid(), template.TemplateID, "DefaultTemplate", "Test", false, false, template.Template, false, getEntry.Items);
+            Model_Editor uEntry = new(entry.ID, Guid.NewGuid(), template.TemplateID, "DefaultTemplate", "Test", false, template.Template, false, getEntry.Items);
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
@@ -169,7 +169,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = query.GetTemplate(modelTemplate.TemplateID);
             Model_Editor getEntry = query.GetEntry(entry.ID);
 
-            Model_Editor uEntry = new(entry.ID, folder.ID, template.TemplateID, "DefaultTemplate", "Test", false, false, template.Template, false, getEntry.Items);
+            Model_Editor uEntry = new(entry.ID, folder.ID, template.TemplateID, "DefaultTemplate", "Test", false, template.Template, false, getEntry.Items);
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
@@ -191,7 +191,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = query.GetTemplate(modelTemplate.TemplateID);
             Model_Editor getEntry = query.GetEntry(entry.ID);
 
-            Model_Editor uEntry = new(Guid.Empty, null, template.TemplateID, "TestEntry", "Test", false, false, template.Template, false, getEntry.Items);
+            Model_Editor uEntry = new(Guid.Empty, null, template.TemplateID, "TestEntry", "Test", false, template.Template, false, getEntry.Items);
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
@@ -214,7 +214,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = query.GetTemplate(modelTemplate.TemplateID);
             Model_Editor getEntry = query.GetEntry(entry.ID);
 
-            Model_Editor uEntry = new(entry.ID, null, template.TemplateID, "DefaultTemplate", "Test", false, false, template.Template, false, getEntry.Items);
+            Model_Editor uEntry = new(entry.ID, null, template.TemplateID, "DefaultTemplate", "Test", false, template.Template, false, getEntry.Items);
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
@@ -237,7 +237,7 @@ namespace ApiServerTest.Tests
             Model_Editor template = query.GetTemplate(modelTemplate.TemplateID);
             Model_Editor getEntry = query.GetEntry(entry2.ID);
 
-            Model_Editor uEntry = new(entry2.ID, null, template.TemplateID, "TestEntry", "Test", false, false, template.Template, false, getEntry.Items);
+            Model_Editor uEntry = new(entry2.ID, null, template.TemplateID, "TestEntry", "Test", false, template.Template, false, getEntry.Items);
 
             Model_Editor action() => query.UpdateEntry(uEntry);
 
