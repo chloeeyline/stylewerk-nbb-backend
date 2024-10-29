@@ -34,7 +34,7 @@ public class TemplateQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQ
             query = query.Where(s => !string.IsNullOrWhiteSpace(s.Tags) && s.Tags.Contains(tags));
         }
 
-        query = query.OrderBy(s => s.LastUpdatedAt);
+        query = query.OrderBy(s => s.O_User.UsernameNormalized).ThenBy(s => s.LastUpdatedAt);
 
         // Calculate pagination
         int tCount = query.Count();

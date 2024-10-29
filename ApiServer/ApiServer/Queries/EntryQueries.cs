@@ -33,7 +33,7 @@ public class EntryQueries(NbbContext DB, ApplicationUser CurrentUser) : BaseQuer
             query = query.Where(s => !string.IsNullOrWhiteSpace(s.Tags) && s.Tags.Contains(tags));
         }
 
-        List<Model_EntryItem> result = [.. query.OrderBy(s => s.LastUpdatedAt)
+        List<Model_EntryItem> result = [.. query.OrderBy(s => s.O_User.UsernameNormalized).ThenBy(s => s.LastUpdatedAt)
             .Select(s => new Model_EntryItem(s.ID, s.Name, s.IsEncrypted, s.IsPublic, s.Tags, s.CreatedAt, s.LastUpdatedAt, s.O_Template.Name, s.O_User.Username, s.UserID == CurrentUser.ID))];
 
         return result;
